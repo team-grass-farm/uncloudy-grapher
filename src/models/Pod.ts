@@ -1,7 +1,12 @@
 interface Pod {
+  id: string;
+  shortId: string;
+  deploymentId: string;
   namespace: string;
-  pod: string;
-  uid: string;
+  CPUUsage: number;
+  memoryUsage: number;
+  CPUSpec: number;
+  memorySpec: number;
 }
 
 namespace Pod {
@@ -27,3 +32,5 @@ namespace Pod {
   //   };
   // }
 }
+
+export default Pod;

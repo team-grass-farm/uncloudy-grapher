@@ -1,8 +1,19 @@
 interface Node {
-  name: string;
+  id: string;
+  region: 'seoul' | 'busan';
   CPUUsage: number;
-  MemoryUsage: number;
-  OS: 'rhel7' | 'rhel8' | 'centos7' | 'centos8' | 'ubuntu';
+  memoryUsage: number;
+  CPUSpec: number;
+  memorySpec: number;
+  os:
+    | 'rhel7'
+    | 'rhel8'
+    | 'rhcos7'
+    | 'rhcos8'
+    | 'centos7'
+    | 'centos8'
+    | 'ubuntu';
+  type: 'bastion' | 'master' | 'router' | 'worker';
 }
 
 namespace Node {
