@@ -18,6 +18,12 @@ namespace Page {
   export interface Detail {
     url: string;
   }
+
+  export interface Option {
+    value: string;
+    label: string;
+    children?: Option[];
+  }
 }
 
 export default Page;

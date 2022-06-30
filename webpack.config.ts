@@ -1,10 +1,11 @@
-import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
 import { CleanWebpackPlugin } from 'clean-webpack-plugin';
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
 import * as webpack from 'webpack';
 import { WebpackManifestPlugin } from 'webpack-manifest-plugin';
+
+import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
 
 import config from './config';
 

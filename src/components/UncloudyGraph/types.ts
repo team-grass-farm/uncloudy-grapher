@@ -6,4 +6,6 @@ export interface Props extends Page.ComponentProps<'div'> {
   nodes?: Node[];
   pods?: Pod[];
   deployments?: Deployment[];
+  showGrids?: boolean;
+  showPoints?: boolean;
 }

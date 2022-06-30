@@ -1,29 +1,42 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { renderLegend, renderObject } from '~utils/painter';
+import { renderGrid, renderLegend, renderObject, renderPoint } from '~utils/painter';
 
 export default (
-  drawingType: 'legend' | 'box' | 'grass'
+  drawingType: 'grid' | 'point' | 'legend' | 'box' | 'grass'
 ): [
   React.RefObject<HTMLCanvasElement>,
-  React.Dispatch<React.SetStateAction<number[][]>>
+  React.Dispatch<React.SetStateAction<number[][]>>,
+  React.Dispatch<React.SetStateAction<boolean>>
 ] => {
   const ref = useRef<HTMLCanvasElement>(null);
   const [dataChunks, updatePainter] = useState<number[][]>([]);
+  const [visible, setVisible] = useState<boolean>(false);
 
   useEffect(() => {
     if (ref.current === null) return;
-    const ctx = ref.current.getContext('2d');
-    if (ctx === null) return;
-
     ref.current.width = ref.current.clientWidth;
     ref.current.height = ref.current.clientHeight;
+  }, [ref]);
 
-    if (drawingType === 'legend') {
-      renderLegend(ctx, ref.current, dataChunks, ['day', 'month']);
-    } else {
-      renderObject(ctx, ref.current, dataChunks, drawingType);
+  useEffect(() => {
+    const ctx = ref.current && ref.current.getContext('2d');
+    if (ctx === null || ref.current === null) return;
+
+    switch (drawingType) {
+      case 'legend':
+        renderLegend(ctx, ref.current, dataChunks, ['day', 'month']);
+        return;
+      case 'grid':
+        renderGrid(ctx, ref.current, visible);
+        return;
+      case 'point':
+        renderPoint(ctx, ref.current, visible);
+        return;
+      default:
+        renderObject(ctx, ref.current, dataChunks, drawingType);
+        return;
     }
-  }, [dataChunks]);
+  }, [dataChunks, visible]);
 
-  return [ref, updatePainter];
+  return [ref, updatePainter, setVisible];
 };

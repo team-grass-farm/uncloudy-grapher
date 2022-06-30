@@ -4,10 +4,17 @@ type Value =
   | {
       text: string;
       color?: never;
+      reversed?: never;
     }
   | {
       text?: never;
       color: string;
+      reversed?: never;
+    }
+  | {
+      text?: never;
+      color?: never;
+      reversed: boolean;
     };
 
 type PaintObject = (
@@ -76,6 +83,30 @@ export const paintCube: PaintObject = (ctx, x, y, dx, dy, h) => [
     ctx.strokeStyle = '#676744';
     ctx.stroke();
     ctx.fill();
+
+    ctx.restore();
+  },
+];
+
+export const paintPoint: PaintObject = (ctx, x, y, dx, dy, h) => [
+  () => {
+    ctx.save();
+    ctx.fillStyle = 'red';
+    ctx.fillRect(x - 3, y - 3, 3, 3);
+    ctx.restore();
+  },
+];
+
+export const paintLine: PaintObject = (ctx, x, y, dx, dy, _, val) => [
+  () => {
+    ctx.save();
+
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + (val && val.reversed ? -dx : dx), y + dy);
+    ctx.strokeStyle = '#ddd';
+    ctx.closePath();
+    ctx.stroke();
 
     ctx.restore();
   },
@@ -154,33 +185,6 @@ export const paintDayText: PaintObject = (ctx, x, y, dx, dy, h, data) => [
   },
 ];
 
-export const paintRectS: PaintObject = (ctx, x, y, dx, dy, h) => {
-  return [
-    () => {
-      ctx.save();
-      ctx.fillStyle = 'red';
-      ctx.fillRect(x, y, dx, dy);
-      console.log('x: ', x, 'y: ', y);
-      ctx.translate(x, y);
-
-      const tileX = dx / 8;
-
-      for (let i = 0; i < 20; i++) {
-        const px = Math.random() * (dx - tileX),
-          py = Math.random() * (dy - tileX);
-        const color =
-          'rgb(' + c(120, 120) + ',' + c(120, 120) + ',' + c(120, 120) + ')';
-        ctx.save();
-        ctx.translate(px, py);
-        ctx.fillStyle = color;
-        ctx.fillRect(0, 0, tileX, tileX);
-        ctx.restore();
-      }
-      ctx.restore();
-    },
-  ];
-};
-
 export const renderLegend = (
   ctx: CanvasRenderingContext2D,
   currentRef: HTMLCanvasElement,
@@ -239,6 +243,95 @@ export const renderLegend = (
         )
       );
   }
+
+  render();
+};
+
+export const renderGrid = (
+  ctx: CanvasRenderingContext2D,
+  currentRef: HTMLCanvasElement,
+  visible: boolean
+) => {
+  const stackPaintingObject: any[] = [];
+
+  const render = () => {
+    ctx.clearRect(0, 0, currentRef.width, currentRef.height);
+    ctx.fillRect(0, 0, currentRef.width, currentRef.height);
+    stackPaintingObject.forEach((paintObject) => paintObject());
+  };
+
+  ctx.lineJoin = 'round';
+  ctx.fillStyle = 'transparent';
+  ctx.scale(1, 1);
+
+  if (visible) {
+    Array.from(
+      Array(parseInt('' + (2 * currentRef.width) / DX, 10)).keys()
+    ).map((px) => {
+      stackPaintingObject.push(
+        ...paintLine(
+          ctx,
+          px * DX,
+          0,
+          currentRef.height * 2,
+          currentRef.height,
+          0,
+          {
+            reversed: true,
+          }
+        ),
+        ...paintLine(
+          ctx,
+          -currentRef.width + px * DX,
+          0,
+          currentRef.height * 2,
+          currentRef.height,
+          0,
+          {
+            reversed: false,
+          }
+        )
+      );
+    });
+  }
+
+  render();
+};
+
+export const renderPoint = (
+  ctx: CanvasRenderingContext2D,
+  currentRef: HTMLCanvasElement,
+  visible: boolean
+) => {
+  const stackPaintingObject: any[] = [];
+  const x0 = 0,
+    y0 = 0;
+
+  const render = () => {
+    ctx.clearRect(0, 0, currentRef.width, currentRef.height);
+    ctx.fillRect(0, 0, currentRef.width, currentRef.height);
+    visible && stackPaintingObject.forEach((paintObject) => paintObject());
+  };
+
+  ctx.lineJoin = 'round';
+  ctx.fillStyle = 'transparent';
+  ctx.scale(1, 1);
+
+  if (visible) {
+    Array.from(Array(parseInt('' + currentRef.height / DY, 10)).keys()).map(
+      (py) => {
+        Array.from(Array(parseInt('' + currentRef.width / DX, 10)).keys()).map(
+          (px) => {
+            stackPaintingObject.push(
+              ...paintPoint(ctx, x0 + px * DX, y0 + py * DY, 0, 0, 0)
+            );
+          }
+        );
+      }
+    );
+  }
+
+  console.log('stack: ', stackPaintingObject);
 
   render();
 };
