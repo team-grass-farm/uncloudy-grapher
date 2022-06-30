@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useTheme } from 'styled-components';
-import { useDrawer } from '~hooks';
+import { usePainter } from '~hooks';
 
 // import Grass from '../Grass';
 import { MainBlock } from './styles';
@@ -8,9 +8,9 @@ import { Props } from './types';
 
 export default ({ id, data, ...otherProps }: Props) => {
   const test = useTheme();
-  const [legendRef, updateLegendDrawer] = useDrawer('legend');
-  const [boxRef, updateBoxDrawer] = useDrawer('box');
-  const [grassRef, updateGrassDrawer] = useDrawer('grass');
+  const [legendRef, updateLegendPainter] = usePainter('legend');
+  const [boxRef, updateBoxPainter] = usePainter('box');
+  const [grassRef, updateGrassPainter] = usePainter('grass');
 
   useEffect(() => {
     console.log('test theme: ', test);
@@ -18,9 +18,9 @@ export default ({ id, data, ...otherProps }: Props) => {
     for (let i = 0; i < data.length; i += 7) {
       chunks.push(data.slice(i, i + 7));
     }
-    updateLegendDrawer(chunks);
-    updateBoxDrawer(chunks);
-    updateGrassDrawer(chunks);
+    updateLegendPainter(chunks);
+    updateBoxPainter(chunks);
+    updateGrassPainter(chunks);
   }, []);
 
   return (

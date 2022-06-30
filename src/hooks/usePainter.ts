@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { renderLegend, renderObject } from '~utils/drawer';
+import { renderLegend, renderObject } from '~utils/painter';
 
 export default (
   drawingType: 'legend' | 'box' | 'grass'
@@ -8,7 +8,7 @@ export default (
   React.Dispatch<React.SetStateAction<number[][]>>
 ] => {
   const ref = useRef<HTMLCanvasElement>(null);
-  const [dataChunks, updateDrawer] = useState<number[][]>([]);
+  const [dataChunks, updatePainter] = useState<number[][]>([]);
 
   useEffect(() => {
     if (ref.current === null) return;
@@ -25,5 +25,5 @@ export default (
     }
   }, [dataChunks]);
 
-  return [ref, updateDrawer];
+  return [ref, updatePainter];
 };

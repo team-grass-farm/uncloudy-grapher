@@ -10,7 +10,7 @@ type Value =
       color: string;
     };
 
-type DrawObject = (
+type PaintObject = (
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -20,7 +20,7 @@ type DrawObject = (
   value?: Value
 ) => (() => void)[];
 
-type DrawCallback = (
+type PaintCallback = (
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -36,7 +36,7 @@ const DY = GRID_SIZE + SPACING;
 const c = (l: number, u: number) =>
   Math.round(Math.random() * (u || 255) + l || 0);
 
-export const drawCube: DrawObject = (ctx, x, y, dx, dy, h) => [
+export const paintCube: PaintObject = (ctx, x, y, dx, dy, h) => [
   () => {
     ctx.save();
     ctx.translate(x, y);
@@ -81,7 +81,7 @@ export const drawCube: DrawObject = (ctx, x, y, dx, dy, h) => [
   },
 ];
 
-export const drawGrasses: DrawObject = (
+export const paintGrasses: PaintObject = (
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -90,7 +90,7 @@ export const drawGrasses: DrawObject = (
   h: number
 ) => {
   const stack: (() => void)[] = [];
-  const drawGrass: DrawCallback = (ctx, x, y, dx, dy, h) => {
+  const paintGrass: PaintCallback = (ctx, x, y, dx, dy, h) => {
     let t = 0;
     const tall = 4 * (Math.random() * 0.4 + 0.6) * h;
     const size = ((Math.random() * 0.4 + 0.6) * dx) / 4;
@@ -117,13 +117,13 @@ export const drawGrasses: DrawObject = (
 
   POS_ZANDIS[parseInt('' + Math.random() * 2, 10)].forEach((posZandi) => {
     console.log('pos: ', posZandi);
-    stack.push(drawGrass(ctx, x + posZandi[0], y + posZandi[1], dx, dy, h));
+    stack.push(paintGrass(ctx, x + posZandi[0], y + posZandi[1], dx, dy, h));
   });
 
   return stack;
 };
 
-export const drawMonthText: DrawObject = (ctx, x, y, dx, dy, h, data) => [
+export const paintMonthText: PaintObject = (ctx, x, y, dx, dy, h, data) => [
   () => {
     ctx.save();
     ctx.translate(x, y);
@@ -139,7 +139,7 @@ export const drawMonthText: DrawObject = (ctx, x, y, dx, dy, h, data) => [
   },
 ];
 
-export const drawDayText: DrawObject = (ctx, x, y, dx, dy, h, data) => [
+export const paintDayText: PaintObject = (ctx, x, y, dx, dy, h, data) => [
   () => {
     ctx.save();
     ctx.translate(x, y);
@@ -154,7 +154,7 @@ export const drawDayText: DrawObject = (ctx, x, y, dx, dy, h, data) => [
   },
 ];
 
-export const drawRectS: DrawObject = (ctx, x, y, dx, dy, h) => {
+export const paintRectS: PaintObject = (ctx, x, y, dx, dy, h) => {
   return [
     () => {
       ctx.save();
@@ -185,9 +185,9 @@ export const renderLegend = (
   ctx: CanvasRenderingContext2D,
   currentRef: HTMLCanvasElement,
   dataChunks: number[][],
-  drawingType: ('day' | 'month')[]
+  paintingType: ('day' | 'month')[]
 ) => {
-  const stackDrawingObject: any[] = [];
+  const stackPaintingObject: any[] = [];
   const length = dataChunks.length;
   const x0 = currentRef.width / 2 + 6 * DX;
   const y0 = currentRef.height / 4 + 6 * DY;
@@ -198,17 +198,17 @@ export const renderLegend = (
   const render = () => {
     ctx.clearRect(0, 0, currentRef.width, currentRef.height);
     ctx.fillRect(0, 0, currentRef.width, currentRef.height);
-    stackDrawingObject.forEach((drawObject) => drawObject());
+    stackPaintingObject.forEach((paintObject) => paintObject());
   };
 
   ctx.lineJoin = 'round';
   ctx.fillStyle = 'transparent';
   ctx.scale(1, 1);
 
-  if (drawingType.includes('month')) {
+  if (paintingType.includes('month')) {
     dataChunks.map((_, y) =>
-      stackDrawingObject.push(
-        ...drawMonthText(
+      stackPaintingObject.push(
+        ...paintMonthText(
           ctx,
           x0 - (-1 + y) * DX,
           y0 + (y + 1) * DY,
@@ -223,11 +223,11 @@ export const renderLegend = (
       )
     );
   }
-  if (drawingType.includes('day')) {
+  if (paintingType.includes('day')) {
     !!dataChunks[0] &&
       dataChunks[0].map((_, x) =>
-        stackDrawingObject.push(
-          ...drawDayText(
+        stackPaintingObject.push(
+          ...paintDayText(
             ctx,
             x0 - (x + length) * DX,
             y0 + (length - x) * DY,
@@ -247,20 +247,20 @@ export const renderObject = (
   ctx: CanvasRenderingContext2D,
   currentRef: HTMLCanvasElement,
   dataChunks: number[][],
-  drawingType: 'box' | 'grass'
+  paintingType: 'box' | 'grass'
 ) => {
-  const stackDrawingObject: any[] = [];
-  const drawObject = drawingType === 'box' ? drawCube : drawGrasses;
+  const stackPaintingObject: any[] = [];
+  const paintObject = paintingType === 'box' ? paintCube : paintGrasses;
   const x0 = currentRef.width / 2 + 6 * DX;
   const y0 = currentRef.height / 4 + 6 * DY;
-  const height = drawingType === 'box' ? 5 : 15;
+  const height = paintingType === 'box' ? 5 : 15;
 
   const render = () => {
     ctx.clearRect(0, 0, currentRef.width, currentRef.height);
     ctx.fillRect(0, 0, currentRef.width, currentRef.height);
-    stackDrawingObject.forEach((drawObject) => drawObject());
+    stackPaintingObject.forEach((paintObject) => paintObject());
 
-    drawingType === 'grass' && requestAnimationFrame(render);
+    paintingType === 'grass' && requestAnimationFrame(render);
   };
 
   ctx.lineJoin = 'round';
@@ -269,8 +269,8 @@ export const renderObject = (
 
   dataChunks.map((contributes, y) =>
     contributes.map((_, x) =>
-      stackDrawingObject.push(
-        ...drawObject(
+      stackPaintingObject.push(
+        ...paintObject(
           ctx,
           x0 - (x + y) * DX,
           y0 + (y - x) * DY,
