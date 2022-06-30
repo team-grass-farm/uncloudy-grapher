@@ -1,4 +1,7 @@
 import 'antd/dist/antd.css';
+
+import { ConfigProvider } from 'antd';
+import locale from 'antd/lib/locale/ko_KR';
 import { ArcElement, Chart, DoughnutController } from 'chart.js';
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -19,10 +22,12 @@ ReactDOM.render(
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
         <ThemeProvider theme={theme}>
-          <GlobalStyles />
-          <BrowserRouter>
-            <Screens />
-          </BrowserRouter>
+          <ConfigProvider locale={locale}>
+            <GlobalStyles />
+            <BrowserRouter>
+              <Screens />
+            </BrowserRouter>
+          </ConfigProvider>
         </ThemeProvider>
       </PersistGate>
     </Provider>
