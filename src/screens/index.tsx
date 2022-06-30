@@ -1,61 +1,23 @@
-import { Cascader, Col, DatePicker, Row, Segmented } from 'antd';
+import { Alert, Button, Cascader, Col, DatePicker, Row, Segmented, Space, Switch } from 'antd';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { UncloudyGraph } from '~components';
+import { DevelopmentOnlyAlert, UncloudyGraph } from '~components';
 import { SAMPLE_NODES, SAMPLE_PODS } from '~constants';
+import { getFilteringOptions } from '~utils/fetcher';
 
 import { BarChartOutlined, CodeOutlined, ToolOutlined } from '@ant-design/icons';
 
 import { MainBlock } from './styles';
 
-interface Option {
-  value: string;
-  label: string;
-  children?: Option[];
-}
-
+import type { Page } from '~models';
 export default () => {
   const [panel, setPanel] = useState<'dev' | 'admin'>('dev');
-  const [options, setOptions] = useState<Option[]>([]);
+  const [options, setOptions] = useState<Page.Option[]>([]);
+  const [showGrids, setShowGrids] = useState<boolean>(true);
+  const [showPoints, setShowPoints] = useState<boolean>(true);
 
   useEffect(() => {
-    if (panel === 'admin') {
-      const candidates: { [s in 'seoul' | 'busan']: Option } = {
-        seoul: { value: 'seoul', label: '서울', children: [] },
-        busan: { value: 'busan', label: '부산', children: [] },
-      };
-      SAMPLE_NODES.forEach((node) => {
-        candidates[node.region].children!.push({
-          value: node.id,
-          label: node.id,
-        });
-      });
-      setOptions([...Object.values(candidates)]);
-      console.log('[Main] Set options to ', [...Object.values(candidates)]);
-    } else {
-      const candidates: { [s: string]: Option } = {};
-      SAMPLE_PODS.forEach((pod) => {
-        if (candidates[pod.deploymentId] === undefined) {
-          candidates[pod.deploymentId] = {
-            value: pod.deploymentId,
-            label: pod.deploymentId,
-            children: [
-              {
-                value: pod.id,
-                label: pod.shortId,
-              },
-            ],
-          };
-        } else {
-          candidates[pod.deploymentId].children!.push({
-            value: pod.id,
-            label: pod.shortId,
-          });
-        }
-      });
-      setOptions([...Object.values(candidates)]);
-      console.log('[Main] Set options to ', [...Object.values(candidates)]);
-    }
+    setOptions(getFilteringOptions(panel));
   }, [panel]);
 
   return (
@@ -120,9 +82,19 @@ export default () => {
           </Col>
         </Row>
       </header>
-      {/* <ContributeGraph id="sample1" data={rawData} /> */}
       <main>
-        <UncloudyGraph nodes={SAMPLE_NODES} pods={SAMPLE_PODS} />
+        <UncloudyGraph
+          nodes={SAMPLE_NODES}
+          pods={SAMPLE_PODS}
+          showGrids={showGrids}
+          showPoints={showPoints}
+        />
+        <DevelopmentOnlyAlert
+          showGrids={showGrids}
+          showPoints={showPoints}
+          onChangeShowGrids={setShowGrids}
+          onChangeShowPoints={setShowPoints}
+        />
       </main>
     </MainBlock>
   );

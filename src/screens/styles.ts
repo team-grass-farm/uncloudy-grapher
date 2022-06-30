@@ -11,6 +11,10 @@ export const MainBlock = styled.div`
     padding: 0.5rem 1rem;
   }
 
+  main > * + * {
+    margin-top: 0.5rem;
+  }
+
   #title-row {
     font-size: 1.5rem;
     svg {
