@@ -2,12 +2,16 @@ import styled from 'styled-components';
 import { MAX_WIDTH } from '~constants';
 
 export const MainBlock = styled.div`
-  padding: 2em 0;
+  padding: 1rem 0;
   max-width: ${MAX_WIDTH}px;
   margin: auto;
 
-  #title-row {
+  header,
+  main {
     padding: 0.5rem 1rem;
+  }
+
+  #title-row {
     font-size: 1.5rem;
     svg {
       margin-right: 0.5em;
@@ -17,8 +21,8 @@ export const MainBlock = styled.div`
     }
   }
 
-  #option-row {
-    padding: 0.5rem 1rem;
+  .ant-row + .ant-row {
+    margin-top: 0.5rem;
   }
 
   #sample1 {

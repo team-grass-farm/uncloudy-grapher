@@ -1,3 +1,4 @@
 {
-  "markdown.marp.chromePath": "/Applications/Google Chrome.app"
+  "markdown.marp.chromePath": "/Applications/Google Chrome.app",
+  "typescript.preferences.importModuleSpecifier": "non-relative"
 }
