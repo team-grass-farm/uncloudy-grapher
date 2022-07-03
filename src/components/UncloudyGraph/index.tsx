@@ -42,17 +42,15 @@ export default ({
 
   return (
     <MainBlock id={id} {...otherProps}>
-      <canvas
-        ref={resourceRef}
-        id="resources"
-        style={{
-          marginBottom: resourceRef.current
-            ? -resourceRef.current.clientHeight
-            : 0,
-        }}
-      />
       {isDevMode && (
         <>
+          <canvas
+            ref={gridRef}
+            id="grids"
+            style={{
+              marginBottom: gridRef.current ? -gridRef.current.clientHeight : 0,
+            }}
+          />
           <canvas
             ref={pointRef}
             id="points"
@@ -62,15 +60,17 @@ export default ({
                 : 0,
             }}
           />
-          <canvas
-            ref={gridRef}
-            id="grids"
-            style={{
-              marginBottom: gridRef.current ? -gridRef.current.clientHeight : 0,
-            }}
-          />
         </>
       )}
+      <canvas
+        ref={resourceRef}
+        id="resources"
+        style={{
+          marginBottom: resourceRef.current
+            ? -resourceRef.current.clientHeight
+            : 0,
+        }}
+      />
 
       <aside>
         <Row id="tool-row">

@@ -1,4 +1,4 @@
-import { Alert, Button, Col, Row, Space, Switch } from 'antd';
+import { Alert, Button, Col, Row, Slider, Space, Switch } from 'antd';
 import React from 'react';
 
 import { MainBlock } from './styles';
@@ -9,8 +9,10 @@ export default ({
   id,
   showGrids,
   showPoints,
+  level,
   onChangeShowGrids,
   onChangeShowPoints,
+  onChangeLevel,
   ...otherProps
 }: Props) => {
   return (
@@ -34,24 +36,44 @@ export default ({
         action={
           <Space direction="vertical">
             <Row gutter={[10, 10]} style={{ textAlign: 'right' }}>
-              <Col span={12}>
-                <label htmlFor="s1">격자 보기 </label>
-                <Switch
-                  id="s1"
-                  size="small"
-                  checked={showGrids}
-                  onChange={onChangeShowGrids}
-                />
-              </Col>
-              <Col span={12}>
-                <label htmlFor="s2">좌표 보기 </label>
-                <Switch
-                  id="s2"
-                  size="small"
-                  checked={showPoints}
-                  onChange={onChangeShowPoints}
-                />
-              </Col>
+              {showGrids !== undefined && (
+                <Col span={12}>
+                  <label htmlFor="s1">격자 보기 </label>
+                  <Switch
+                    id="s1"
+                    size="small"
+                    checked={showGrids}
+                    onChange={onChangeShowGrids}
+                  />
+                </Col>
+              )}
+              {showPoints !== undefined && (
+                <Col span={12}>
+                  <label htmlFor="s2">좌표 보기 </label>
+                  <Switch
+                    id="s2"
+                    size="small"
+                    checked={showPoints}
+                    onChange={onChangeShowPoints}
+                  />
+                </Col>
+              )}
+              {level !== undefined && (
+                <>
+                  <Col span={9}>
+                    <label htmlFor="s3">보기 레벨</label>
+                  </Col>
+                  <Col span={15}>
+                    <Slider
+                      id="s3"
+                      value={level}
+                      min={1}
+                      max={3}
+                      onChange={onChangeLevel}
+                    />
+                  </Col>
+                </>
+              )}
             </Row>
           </Space>
         }
