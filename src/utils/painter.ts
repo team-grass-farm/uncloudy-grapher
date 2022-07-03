@@ -91,8 +91,8 @@ export const paintCube: PaintObject = (ctx, x, y, dx, dy, h) => [
 export const paintPoint: PaintObject = (ctx, x, y, dx, dy, h) => [
   () => {
     ctx.save();
-    ctx.fillStyle = 'red';
-    ctx.fillRect(x - 3, y - 3, 3, 3);
+    ctx.fillStyle = '#dd5555';
+    ctx.fillRect(x - 1.5, y - 1.5, 3, 3);
     ctx.restore();
   },
 ];
@@ -199,12 +199,6 @@ export const renderLegend = (
   const a = new Date(Date.now());
   const b = new Date(a.getFullYear() + '-01-01');
 
-  const render = () => {
-    ctx.clearRect(0, 0, currentRef.width, currentRef.height);
-    ctx.fillRect(0, 0, currentRef.width, currentRef.height);
-    stackPaintingObject.forEach((paintObject) => paintObject());
-  };
-
   ctx.lineJoin = 'round';
   ctx.fillStyle = 'transparent';
   ctx.scale(1, 1);
@@ -244,21 +238,21 @@ export const renderLegend = (
       );
   }
 
-  render();
-};
-
-export const renderGrid = (
-  ctx: CanvasRenderingContext2D,
-  currentRef: HTMLCanvasElement,
-  visible: boolean
-) => {
-  const stackPaintingObject: any[] = [];
-
   const render = () => {
     ctx.clearRect(0, 0, currentRef.width, currentRef.height);
     ctx.fillRect(0, 0, currentRef.width, currentRef.height);
     stackPaintingObject.forEach((paintObject) => paintObject());
   };
+
+  render();
+};
+
+export const renderGrids = (
+  ctx: CanvasRenderingContext2D,
+  currentRef: HTMLCanvasElement,
+  visible: boolean
+) => {
+  const stackPaintingObject: any[] = [];
 
   ctx.lineJoin = 'round';
   ctx.fillStyle = 'transparent';
@@ -295,10 +289,16 @@ export const renderGrid = (
     });
   }
 
+  const render = () => {
+    ctx.clearRect(0, 0, currentRef.width, currentRef.height);
+    ctx.fillRect(0, 0, currentRef.width, currentRef.height);
+    stackPaintingObject.forEach((paintObject) => paintObject());
+  };
+
   render();
 };
 
-export const renderPoint = (
+export const renderPoints = (
   ctx: CanvasRenderingContext2D,
   currentRef: HTMLCanvasElement,
   visible: boolean
@@ -307,36 +307,33 @@ export const renderPoint = (
   const x0 = 0,
     y0 = 0;
 
-  const render = () => {
-    ctx.clearRect(0, 0, currentRef.width, currentRef.height);
-    ctx.fillRect(0, 0, currentRef.width, currentRef.height);
-    visible && stackPaintingObject.forEach((paintObject) => paintObject());
-  };
-
   ctx.lineJoin = 'round';
   ctx.fillStyle = 'transparent';
   ctx.scale(1, 1);
 
   if (visible) {
-    Array.from(Array(parseInt('' + currentRef.height / DY, 10)).keys()).map(
+    Array.from(Array(parseInt('' + currentRef.height / DY, 10) + 1).keys()).map(
       (py) => {
-        Array.from(Array(parseInt('' + currentRef.width / DX, 10)).keys()).map(
-          (px) => {
-            stackPaintingObject.push(
-              ...paintPoint(ctx, x0 + px * DX, y0 + py * DY, 0, 0, 0)
-            );
-          }
-        );
+        Array.from(
+          Array(parseInt('' + currentRef.width / DX, 10) + 1).keys()
+        ).map((px) => {
+          stackPaintingObject.push(
+            ...paintPoint(ctx, x0 + px * DX, y0 + py * DY, 0, 0, 0)
+          );
+        });
       }
     );
   }
 
-  console.log('stack: ', stackPaintingObject);
-
+  const render = () => {
+    ctx.clearRect(0, 0, currentRef.width, currentRef.height);
+    ctx.fillRect(0, 0, currentRef.width, currentRef.height);
+    visible && stackPaintingObject.forEach((paintObject) => paintObject());
+  };
   render();
 };
 
-export const renderObject = (
+export const renderObjects = (
   ctx: CanvasRenderingContext2D,
   currentRef: HTMLCanvasElement,
   dataChunks: number[][],
@@ -347,14 +344,6 @@ export const renderObject = (
   const x0 = currentRef.width / 2 + 6 * DX;
   const y0 = currentRef.height / 4 + 6 * DY;
   const height = paintingType === 'box' ? 5 : 15;
-
-  const render = () => {
-    ctx.clearRect(0, 0, currentRef.width, currentRef.height);
-    ctx.fillRect(0, 0, currentRef.width, currentRef.height);
-    stackPaintingObject.forEach((paintObject) => paintObject());
-
-    paintingType === 'grass' && requestAnimationFrame(render);
-  };
 
   ctx.lineJoin = 'round';
   ctx.fillStyle = 'transparent';
@@ -374,6 +363,14 @@ export const renderObject = (
       )
     )
   );
+
+  const render = () => {
+    ctx.clearRect(0, 0, currentRef.width, currentRef.height);
+    ctx.fillRect(0, 0, currentRef.width, currentRef.height);
+    stackPaintingObject.forEach((paintObject) => paintObject());
+
+    paintingType === 'grass' && requestAnimationFrame(render);
+  };
 
   render();
 };

@@ -1,23 +1,31 @@
-import { Alert, Button, Cascader, Col, DatePicker, Row, Segmented, Space, Switch } from 'antd';
+import { Cascader, Col, DatePicker, Row, Segmented } from 'antd';
 import moment from 'moment';
+import { ValueType } from 'rc-cascader/lib/Cascader';
 import React, { useEffect, useState } from 'react';
 import { DevelopmentOnlyAlert, UncloudyGraph } from '~components';
 import { SAMPLE_NODES, SAMPLE_PODS } from '~constants';
 import { getFilteringOptions } from '~utils/fetcher';
 
-import { BarChartOutlined, CodeOutlined, ToolOutlined } from '@ant-design/icons';
+import {
+  BarChartOutlined,
+  CodeOutlined,
+  ToolOutlined,
+} from '@ant-design/icons';
 
 import { MainBlock } from './styles';
 
 import type { Page } from '~models';
 export default () => {
   const [panel, setPanel] = useState<'dev' | 'admin'>('dev');
-  const [options, setOptions] = useState<Page.Option[]>([]);
+  const [filterOptions, setFilterOptions] = useState<Page.Option[]>([]);
+  const [filter, setFilter] = useState<ValueType>([]);
   const [showGrids, setShowGrids] = useState<boolean>(true);
   const [showPoints, setShowPoints] = useState<boolean>(true);
+  const [level, setLevel] = useState<number>(1);
 
   useEffect(() => {
-    setOptions(getFilteringOptions(panel));
+    setFilterOptions(getFilteringOptions(panel));
+    setFilter([]);
   }, [panel]);
 
   return (
@@ -53,7 +61,8 @@ export default () => {
               style={{
                 width: '100%',
               }}
-              defaultValue={[]}
+              value={filter}
+              onChange={setFilter}
               placeholder={
                 '특정 ' +
                 (panel === 'dev'
@@ -61,7 +70,7 @@ export default () => {
                   : '노드 또는 클러스터') +
                 ' 필터링...'
               }
-              options={options}
+              options={filterOptions}
               multiple
               showCheckedStrategy={Cascader.SHOW_PARENT}
             />
@@ -92,8 +101,10 @@ export default () => {
         <DevelopmentOnlyAlert
           showGrids={showGrids}
           showPoints={showPoints}
+          level={level}
           onChangeShowGrids={setShowGrids}
           onChangeShowPoints={setShowPoints}
+          onChangeLevel={setLevel}
         />
       </main>
     </MainBlock>
