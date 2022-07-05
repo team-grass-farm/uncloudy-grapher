@@ -1,49 +1,12 @@
 import { DAYS, POS_ZANDIS, SPACING } from '~constants';
 
-type Value =
-  | {
-      text: string;
-      color?: never;
-      reversed?: never;
-    }
-  | {
-      text?: never;
-      color: string;
-      reversed?: never;
-    }
-  | {
-      text?: never;
-      color?: never;
-      reversed: boolean;
-    };
-
-type PaintObject = (
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  dx: number,
-  dy: number,
-  h: number,
-  value?: Value
-) => (() => void)[];
-
-type PaintCallback = (
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  dx: number,
-  dy: number,
-  h: number,
-  value?: Value
-) => () => void;
-
 const GRID_SIZE = 10;
 const DX = 2 * (GRID_SIZE + SPACING);
 const DY = GRID_SIZE + SPACING;
 const c = (l: number, u: number) =>
   Math.round(Math.random() * (u || 255) + l || 0);
 
-export const paintCube: PaintObject = (ctx, x, y, dx, dy, h) => [
+export const paintCube: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   () => {
     ctx.save();
     ctx.translate(x, y);
@@ -88,7 +51,7 @@ export const paintCube: PaintObject = (ctx, x, y, dx, dy, h) => [
   },
 ];
 
-export const paintPoint: PaintObject = (ctx, x, y, dx, dy, h) => [
+export const paintPoint: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   () => {
     ctx.save();
     ctx.fillStyle = '#dd5555';
@@ -97,7 +60,7 @@ export const paintPoint: PaintObject = (ctx, x, y, dx, dy, h) => [
   },
 ];
 
-export const paintLine: PaintObject = (ctx, x, y, dx, dy, _, val) => [
+export const paintLine: Painter.PaintObject = (ctx, x, y, dx, dy, _, val) => [
   () => {
     ctx.save();
 
@@ -112,7 +75,7 @@ export const paintLine: PaintObject = (ctx, x, y, dx, dy, _, val) => [
   },
 ];
 
-export const paintGrasses: PaintObject = (
+export const paintGrasses: Painter.PaintObject = (
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -121,7 +84,7 @@ export const paintGrasses: PaintObject = (
   h: number
 ) => {
   const stack: (() => void)[] = [];
-  const paintGrass: PaintCallback = (ctx, x, y, dx, dy, h) => {
+  const paintGrass: Painter.PaintCallback = (ctx, x, y, dx, dy, h) => {
     let t = 0;
     const tall = 4 * (Math.random() * 0.4 + 0.6) * h;
     const size = ((Math.random() * 0.4 + 0.6) * dx) / 4;
@@ -154,7 +117,15 @@ export const paintGrasses: PaintObject = (
   return stack;
 };
 
-export const paintMonthText: PaintObject = (ctx, x, y, dx, dy, h, data) => [
+export const paintMonthText: Painter.PaintObject = (
+  ctx,
+  x,
+  y,
+  dx,
+  dy,
+  h,
+  data
+) => [
   () => {
     ctx.save();
     ctx.translate(x, y);
@@ -170,7 +141,15 @@ export const paintMonthText: PaintObject = (ctx, x, y, dx, dy, h, data) => [
   },
 ];
 
-export const paintDayText: PaintObject = (ctx, x, y, dx, dy, h, data) => [
+export const paintDayText: Painter.PaintObject = (
+  ctx,
+  x,
+  y,
+  dx,
+  dy,
+  h,
+  data
+) => [
   () => {
     ctx.save();
     ctx.translate(x, y);

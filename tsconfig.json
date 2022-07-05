@@ -26,7 +26,7 @@
     "isolatedModules": false,
     "emitDeclarationOnly": true,
     "noEmit": false,
-    "typeRoots": ["./node_modules/@types", "types"],
+    "typeRoots": ["./node_modules/@types", "./@types"],
     "baseUrl": "./src",
     "rootDirs": ["./"],
     "paths": {
