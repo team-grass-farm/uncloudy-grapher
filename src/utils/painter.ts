@@ -231,40 +231,37 @@ export const renderGrids = (
   visible: boolean
 ) => {
   const stackPaintingObject: any[] = [];
+  const x0 = parseInt('' + (currentRef.width % DX), 10);
 
   ctx.lineJoin = 'round';
   ctx.fillStyle = 'transparent';
   ctx.scale(1, 1);
 
   if (visible) {
-    Array.from(
-      Array(parseInt('' + (2 * currentRef.width) / DX, 10)).keys()
-    ).map((px) => {
-      stackPaintingObject.push(
-        ...paintLine(
-          ctx,
-          px * DX,
-          0,
-          currentRef.height * 2,
-          currentRef.height,
-          0,
-          {
-            reversed: true,
-          }
-        ),
-        ...paintLine(
-          ctx,
-          -currentRef.width + px * DX,
-          0,
-          currentRef.height * 2,
-          currentRef.height,
-          0,
-          {
-            reversed: false,
-          }
-        )
-      );
-    });
+    Array.from(Array(parseInt('' + currentRef.width / DX, 10) + 1).keys()).map(
+      (px) => {
+        stackPaintingObject.push(
+          ...paintLine(
+            ctx,
+            x0 + 2 * DX * px,
+            0,
+            currentRef.height * 2,
+            currentRef.height,
+            0,
+            { reversed: true }
+          )
+          // ...paintLine(
+          //   ctx,
+          //   x0 + 2 * DX * px,
+          //   0,
+          //   currentRef.height * 2,
+          //   currentRef.height,
+          //   0,
+          //   { reversed: false }
+          // )
+        );
+      }
+    );
   }
 
   const render = () => {
@@ -282,7 +279,7 @@ export const renderPoints = (
   visible: boolean
 ) => {
   const stackPaintingObject: any[] = [];
-  const x0 = 0,
+  const x0 = parseInt('' + currentRef.width / 2, 10),
     y0 = 0;
 
   ctx.lineJoin = 'round';
@@ -293,10 +290,12 @@ export const renderPoints = (
     Array.from(Array(parseInt('' + currentRef.height / DY, 10) + 1).keys()).map(
       (py) => {
         Array.from(
-          Array(parseInt('' + currentRef.width / DX, 10) + 1).keys()
+          Array(parseInt('' + currentRef.width / (4 * DX), 10)).keys()
         ).map((px) => {
+          const pad = py % 2 ? DX : 0;
           stackPaintingObject.push(
-            ...paintPoint(ctx, x0 + px * DX, y0 + py * DY, 0, 0, 0)
+            ...paintPoint(ctx, pad + px * (2 * DX), y0 + py * DY, 0, 0, 0),
+            ...paintPoint(ctx, x0 + pad + px * (2 * DX), y0 + py * DY, 0, 0, 0)
           );
         });
       }
