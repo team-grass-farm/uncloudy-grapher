@@ -1,10 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  renderGrids,
-  renderLegend,
-  renderObjects,
-  renderPoints,
-} from '~utils/painter';
+import { renderGrids, renderLegend, renderObjects, renderPoints } from '~utils/painter';
 
 export default (
   drawingType: 'grid' | 'point' | 'legend' | 'box' | 'grass'

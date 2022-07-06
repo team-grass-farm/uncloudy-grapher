@@ -6,27 +6,28 @@ import { DevelopmentOnlyAlert, UncloudyGraph } from '~components';
 import { SAMPLE_NODES, SAMPLE_PODS } from '~constants';
 import { getFilteringOptions } from '~utils/fetcher';
 
-import {
-  BarChartOutlined,
-  CodeOutlined,
-  ToolOutlined,
-} from '@ant-design/icons';
+import { BarChartOutlined, CodeOutlined, ToolOutlined } from '@ant-design/icons';
 
 import { MainBlock } from './styles';
 
 import type { Page } from '~models';
 export default () => {
-  const [panel, setPanel] = useState<'dev' | 'admin'>('dev');
+  const [panelMode, setPanelMode] = useState<'dev' | 'admin'>('dev');
   const [filterOptions, setFilterOptions] = useState<Page.Option[]>([]);
   const [filter, setFilter] = useState<ValueType>([]);
-  const [showGrids, setShowGrids] = useState<boolean>(true);
-  const [showPoints, setShowPoints] = useState<boolean>(true);
-  const [level, setLevel] = useState<number>(1);
+
+  const [debuggingOptions, setDebuggingOptions] =
+    useState<Page.DebuggingOptions>({
+      showBlocks: false,
+      showPoints: false,
+      showGrids: true,
+      level: 1,
+    });
 
   useEffect(() => {
-    setFilterOptions(getFilteringOptions(panel));
+    setFilterOptions(getFilteringOptions(panelMode));
     setFilter([]);
-  }, [panel]);
+  }, [panelMode]);
 
   return (
     <MainBlock>
@@ -38,8 +39,8 @@ export default () => {
           </Col>
           <Col className="panel-col" span={24} sm={12}>
             <Segmented
-              value={panel}
-              onChange={(value) => setPanel(value as 'dev' | 'admin')}
+              value={panelMode}
+              onChange={(value) => setPanelMode(value as 'dev' | 'admin')}
               options={[
                 {
                   label: '개발자 패널',
@@ -65,7 +66,7 @@ export default () => {
               onChange={setFilter}
               placeholder={
                 '특정 ' +
-                (panel === 'dev'
+                (panelMode === 'dev'
                   ? '파드 또는 디플로이먼트'
                   : '노드 또는 클러스터') +
                 ' 필터링...'
@@ -93,18 +94,14 @@ export default () => {
       </header>
       <main>
         <UncloudyGraph
+          panelMode={panelMode}
           nodes={SAMPLE_NODES}
           pods={SAMPLE_PODS}
-          showGrids={showGrids}
-          showPoints={showPoints}
+          options={debuggingOptions}
         />
         <DevelopmentOnlyAlert
-          showGrids={showGrids}
-          showPoints={showPoints}
-          level={level}
-          onChangeShowGrids={setShowGrids}
-          onChangeShowPoints={setShowPoints}
-          onChangeLevel={setLevel}
+          data={debuggingOptions}
+          onChangeData={setDebuggingOptions}
         />
       </main>
     </MainBlock>

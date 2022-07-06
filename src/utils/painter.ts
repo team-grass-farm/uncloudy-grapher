@@ -1,6 +1,5 @@
-import { DAYS, POS_ZANDIS, SPACING } from '~constants';
+import { DAYS, GRID_SIZE, POS_ZANDIS, SPACING } from '~constants';
 
-const GRID_SIZE = 10;
 const DX = 2 * (GRID_SIZE + SPACING);
 const DY = GRID_SIZE + SPACING;
 const c = (l: number, u: number) =>
