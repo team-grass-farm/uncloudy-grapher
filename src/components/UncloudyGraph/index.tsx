@@ -8,8 +8,14 @@ import type { Props } from './types';
 
 type View = 'numPods' | 'CPUUsage' | 'memoryUsage' | 'nodeId';
 
+const sampleChunks = [
+  [1, 2, 3],
+  [4, 5, 6],
+];
+
 export default ({
   id,
+  panelMode,
   clusters,
   nodes,
   deployments,
@@ -19,22 +25,28 @@ export default ({
 }: Props) => {
   const [isDevMode] = useState(process.env.NODE_ENV === 'development');
 
-  const [resourceRef, updateResourcePainter] = usePainter('box');
+  const [sampleRef, updateSamplePainter] = usePainter('box');
+  const [nodeRef, updateNodePainter] = usePainter('node');
+  const [podRef, updatePodPainter] = usePainter('pod');
   const [pointRef, _p, setPointRefVisible] = usePainter('point');
   const [gridRef, _g, setGridRefVisible] = usePainter('grid');
-  const [debugBoxRef, _d, setDebugBoxRefVisible] = usePainter('grid');
 
   useEffect(() => {
-    const chunks = [
-      [1, 2, 3],
-      [4, 5, 6],
-    ];
-    updateResourcePainter(chunks);
-  }, []);
+    if (panelMode === 'admin') {
+      updateNodePainter(sampleChunks);
+      updatePodPainter([]);
+    } else {
+      updateNodePainter([]);
+      updatePodPainter(sampleChunks);
+    }
+  }, [panelMode]);
 
   useEffect(() => {
-    const { showBlocks, showGrids, showPoints } = options;
-    showBlocks !== undefined && setDebugBoxRefVisible(showBlocks);
+    updateSamplePainter(!!options.showBlocks ? sampleChunks : []);
+  }, [options.showBlocks]);
+
+  useEffect(() => {
+    const { showGrids, showPoints } = options;
     showPoints !== undefined && setPointRefVisible(showPoints);
     showGrids !== undefined && setGridRefVisible(showGrids);
   }, [options]);
@@ -62,12 +74,24 @@ export default ({
         </>
       )}
       <canvas
-        ref={resourceRef}
-        id="resources"
+        ref={sampleRef}
+        id="samples"
         style={{
-          marginBottom: resourceRef.current
-            ? -resourceRef.current.clientHeight
-            : 0,
+          marginBottom: nodeRef.current ? -nodeRef.current.clientHeight : 0,
+        }}
+      />
+      <canvas
+        ref={nodeRef}
+        id="nodes"
+        style={{
+          marginBottom: nodeRef.current ? -nodeRef.current.clientHeight : 0,
+        }}
+      />
+      <canvas
+        ref={podRef}
+        id="pods"
+        style={{
+          marginBottom: podRef.current ? -podRef.current.clientHeight : 0,
         }}
       />
 

@@ -17,7 +17,7 @@ export default ({ id, data, onChangeData, ...otherProps }: Props) => {
           <Space direction="vertical">
             <Row gutter={[10, 10]} style={{ textAlign: 'right' }}>
               {data.showGrids !== undefined && (
-                <Col span={12}>
+                <Col span={8}>
                   <label htmlFor="s1">격자 보기 </label>
                   <Switch
                     id="s1"
@@ -30,7 +30,7 @@ export default ({ id, data, onChangeData, ...otherProps }: Props) => {
                 </Col>
               )}
               {data.showPoints !== undefined && (
-                <Col span={12}>
+                <Col span={8}>
                   <label htmlFor="s2">좌표 보기 </label>
                   <Switch
                     id="s2"
@@ -38,6 +38,19 @@ export default ({ id, data, onChangeData, ...otherProps }: Props) => {
                     checked={data.showPoints}
                     onChange={(showPoints) =>
                       onChangeData({ ...data, showPoints })
+                    }
+                  />
+                </Col>
+              )}
+              {data.showBlocks !== undefined && (
+                <Col span={8}>
+                  <label htmlFor="s3">샘플 블럭 보기 </label>
+                  <Switch
+                    id="s3"
+                    size="small"
+                    checked={data.showBlocks}
+                    onChange={(showBlocks) =>
+                      onChangeData({ ...data, showBlocks })
                     }
                   />
                 </Col>

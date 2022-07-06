@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { renderGrids, renderLegend, renderObjects, renderPoints } from '~utils/painter';
 
 export default (
-  drawingType: 'grid' | 'point' | 'legend' | 'box' | 'grass'
+  drawingType: 'grid' | 'point' | 'legend' | 'box' | 'grass' | 'node' | 'pod'
 ): [
   React.RefObject<HTMLCanvasElement>,
   React.Dispatch<React.SetStateAction<number[][]>>,
