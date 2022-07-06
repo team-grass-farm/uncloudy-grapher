@@ -3,8 +3,11 @@ import { Deployment, Node, Pod } from '~models';
 export const MAX_WIDTH = 1000;
 // NOTE 86400000 === 1 day
 export const REFRESH_PERIOD = 86400000;
+
+export const GRID_SIZE = 10;
 export const SPACING = 5;
 
+// ! Deprecated, just for an example from grass-grapher
 export const POS_ZANDIS: Array<Array<[number, number]>> = [
   [
     [-5, -5],

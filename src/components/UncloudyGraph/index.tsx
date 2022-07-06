@@ -14,15 +14,15 @@ export default ({
   nodes,
   deployments,
   pods,
-  showGrids,
-  showPoints,
+  options,
   ...otherProps
 }: Props) => {
   const [isDevMode] = useState(process.env.NODE_ENV === 'development');
 
-  const [resourceRef, updateResourcePainter] = usePainter('grid');
+  const [resourceRef, updateResourcePainter] = usePainter('box');
   const [pointRef, _p, setPointRefVisible] = usePainter('point');
   const [gridRef, _g, setGridRefVisible] = usePainter('grid');
+  const [debugBoxRef, _d, setDebugBoxRefVisible] = usePainter('grid');
 
   useEffect(() => {
     const chunks = [
@@ -33,12 +33,11 @@ export default ({
   }, []);
 
   useEffect(() => {
+    const { showBlocks, showGrids, showPoints } = options;
+    showBlocks !== undefined && setDebugBoxRefVisible(showBlocks);
     showPoints !== undefined && setPointRefVisible(showPoints);
-  }, [showPoints]);
-
-  useEffect(() => {
     showGrids !== undefined && setGridRefVisible(showGrids);
-  }, [showGrids]);
+  }, [options]);
 
   return (
     <MainBlock id={id} {...otherProps}>

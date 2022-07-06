@@ -1,6 +1,5 @@
-import { SPACING } from '~constants';
+import { GRID_SIZE, SPACING } from '~constants';
 
-const GRID_SIZE = 10;
 const DX = 2 * (GRID_SIZE + SPACING);
 const DY = GRID_SIZE + SPACING;
 
