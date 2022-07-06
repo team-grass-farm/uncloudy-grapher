@@ -50,6 +50,64 @@ export const paintCube: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   },
 ];
 
+/**
+ * 노드 블럭을 렌더링합니다.
+ * @author 김민정
+ * @param ctx: 캔버스 포인터
+ * @param x: 노드 블럭의 x 시작점
+ * @param y: 노드 블럭의 y 시작점
+ * @param dx: 노드 블럭의 x 크기
+ * @param dy: 노드 블럭의 y 크기
+ * @param h: 노드 블럭의 높이
+ * @returns () => void
+ */
+export const paintNode: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
+  () => {
+    ctx.save();
+
+    ctx.fillStyle = 'green';
+    ctx.beginPath();
+    ctx.moveTo(75, 50);
+    ctx.lineTo(100, 75);
+    ctx.lineTo(125, 50);
+    ctx.lineTo(100, 25);
+    ctx.fill();
+
+    ctx.fillStyle = 'brown';
+    ctx.beginPath();
+    ctx.moveTo(125, 50);
+    ctx.lineTo(125, 75);
+    ctx.lineTo(100, 100);
+    ctx.lineTo(75, 75);
+    ctx.lineTo(75, 50);
+    ctx.lineTo(100, 75);
+    ctx.fill();
+
+    ctx.restore();
+  },
+];
+
+/**
+ * 파드 블럭을 렌더링합니다.
+ * @author 백명상
+ * @param ctx: 캔버스 포인터
+ * @param x: 파드 블럭의 x 시작점
+ * @param y: 파드 블럭의 y 시작점
+ * @param dx: 파드 블럭의 x 크기
+ * @param dy: 파드 블럭의 y 크기
+ * @param h: 파드 블럭의 높이
+ * @returns () => void
+ */
+export const paintPod: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
+  () => {
+    ctx.save();
+
+    // TODO 코드 작성
+
+    ctx.restore();
+  },
+];
+
 export const paintPoint: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   () => {
     ctx.save();
@@ -314,13 +372,28 @@ export const renderObjects = (
   ctx: CanvasRenderingContext2D,
   currentRef: HTMLCanvasElement,
   dataChunks: number[][],
-  paintingType: 'box' | 'grass'
+  paintingType: 'box' | 'grass' | 'node' | 'pod'
 ) => {
   const stackPaintingObject: any[] = [];
-  const paintObject = paintingType === 'box' ? paintCube : paintGrasses;
   const x0 = currentRef.width / 2 + 6 * DX;
   const y0 = currentRef.height / 4 + 6 * DY;
   const height = paintingType === 'box' ? 5 : 15;
+
+  let paintObject: Painter.PaintObject;
+  switch (paintingType) {
+    case 'box':
+      paintObject = paintCube;
+      break;
+    case 'grass':
+      paintObject = paintGrasses;
+      break;
+    case 'node':
+      paintObject = paintNode;
+      break;
+    case 'pod':
+      paintObject = paintPod;
+      break;
+  }
 
   ctx.lineJoin = 'round';
   ctx.fillStyle = 'transparent';
@@ -344,7 +417,7 @@ export const renderObjects = (
   const render = () => {
     ctx.clearRect(0, 0, currentRef.width, currentRef.height);
     ctx.fillRect(0, 0, currentRef.width, currentRef.height);
-    stackPaintingObject.forEach((paintObject) => paintObject());
+    stackPaintingObject.forEach((paint) => paint());
 
     paintingType === 'grass' && requestAnimationFrame(render);
   };
