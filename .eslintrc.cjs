@@ -1,9 +1,8 @@
 module.exports = {
   root: true,
   parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint', 'react-hooks', 'prettier'],
+  plugins: ['@typescript-eslint', 'react-hooks'],
   rules: {
-    'react-hooks/exhaustive-deps': 'warn',
-    'prettier/prettier': 'warn',
+    'react-hooks/exhaustive-deps': 'off',
   },
 };
