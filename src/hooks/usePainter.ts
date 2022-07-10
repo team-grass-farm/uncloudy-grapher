@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { renderGrids, renderLegend, renderObjects, renderPoints } from '~utils/painter';
+import { getGridPositions, resetGridPositions } from '~utils/positioner';
 
 export default (
   drawingType: 'grid' | 'point' | 'legend' | 'box' | 'grass' | 'node' | 'pod'
 ): [
   React.RefObject<HTMLCanvasElement>,
+  React.Dispatch<SelectedPosition | null>,
   React.Dispatch<React.SetStateAction<number[][]>>,
   React.Dispatch<React.SetStateAction<boolean>>
 ] => {
@@ -17,6 +19,9 @@ export default (
     width: 0,
     height: 0,
   });
+  const [objectPositions, setObjectPositions] = useState<Position[]>([]);
+  const [boundedObjectPosition, setBoundedObjectPosition] =
+    useState<SelectedPosition | null>(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -35,6 +40,17 @@ export default (
   }, []);
 
   useEffect(() => {
+    switch (drawingType) {
+      case 'point':
+        resetGridPositions();
+        setObjectPositions(
+          getGridPositions(dimensions.width, dimensions.height, 2)
+        );
+        break;
+    }
+  }, [dimensions]);
+
+  useEffect(() => {
     const ctx = ref.current && ref.current.getContext('2d');
     if (ctx === null || ref.current === null) return;
 
@@ -46,13 +62,24 @@ export default (
         renderGrids(ctx, ref.current, visible);
         return;
       case 'point':
-        renderPoints(ctx, ref.current, visible);
+        renderPoints(
+          ctx,
+          ref.current,
+          objectPositions,
+          boundedObjectPosition,
+          visible
+        );
         return;
       default:
         renderObjects(ctx, ref.current, dataChunks, drawingType);
         return;
     }
-  }, [dataChunks, visible, dimensions]);
+  }, [boundedObjectPosition, dataChunks, objectPositions, visible]);
 
-  return [ref, updatePainter, setVisible];
+  useEffect(() => {
+    !!boundedObjectPosition &&
+      console.debug(`bounded ${drawingType}: `, boundedObjectPosition);
+  }, [boundedObjectPosition]);
+
+  return [ref, setBoundedObjectPosition, updatePainter, setVisible];
 };

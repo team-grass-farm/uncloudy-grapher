@@ -112,18 +112,28 @@ export const paintPoint: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   () => {
     ctx.save();
     ctx.fillStyle = '#dd5555';
-    ctx.fillRect(x - 1.5, y - 1.5, 3, 3);
+    const valX = !!dx ? dx : 1.5,
+      valY = !!dy ? dy : 1.5;
+    ctx.fillRect(x - valX, y - valY, 2 * valX, 2 * valY);
     ctx.restore();
   },
 ];
 
-export const paintLine: Painter.PaintObject = (ctx, x, y, dx, dy, _, val) => [
+export const paintLine: Painter.PaintObject = (
+  ctx,
+  x,
+  y,
+  dx,
+  dy,
+  _,
+  option
+) => [
   () => {
     ctx.save();
 
     ctx.beginPath();
     ctx.moveTo(x, y);
-    ctx.lineTo(x + (val && val.reversed ? -dx : dx), y + dy);
+    ctx.lineTo(x + (option && option.reversed ? -dx : dx), y + dy);
     ctx.strokeStyle = '#ddd';
     ctx.closePath();
     ctx.stroke();
@@ -334,30 +344,32 @@ export const renderGrids = (
 export const renderPoints = (
   ctx: CanvasRenderingContext2D,
   currentRef: HTMLCanvasElement,
+  positions: Position[],
+  boundedPosition: SelectedPosition | null,
   visible: boolean
 ) => {
-  const stackPaintingObject: any[] = [];
-  const x0 = parseInt('' + currentRef.width / 2, 10),
-    y0 = 0;
+  const stackPaintingObject: (() => void)[] = [];
 
   ctx.lineJoin = 'round';
   ctx.fillStyle = 'transparent';
   ctx.scale(1, 1);
 
   if (visible) {
-    Array.from(Array(parseInt('' + currentRef.height / DY, 10) + 1).keys()).map(
-      (py) => {
-        Array.from(
-          Array(parseInt('' + currentRef.width / (4 * DX), 10)).keys()
-        ).map((px) => {
-          const pad = py % 2 ? DX : 0;
-          stackPaintingObject.push(
-            ...paintPoint(ctx, pad + px * (2 * DX), y0 + py * DY, 0, 0, 0),
-            ...paintPoint(ctx, x0 + pad + px * (2 * DX), y0 + py * DY, 0, 0, 0)
-          );
-        });
+    positions.forEach((position) => {
+      if (
+        !!boundedPosition &&
+        position.row === boundedPosition.row &&
+        position.column === boundedPosition.column
+      ) {
+        stackPaintingObject.push(
+          ...paintPoint(ctx, position.x, position.y, 5, 5, 0)
+        );
+      } else {
+        stackPaintingObject.push(
+          ...paintPoint(ctx, position.x, position.y, 0, 0, 0)
+        );
       }
-    );
+    });
   }
 
   const render = () => {

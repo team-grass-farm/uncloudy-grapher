@@ -1,6 +1,6 @@
 import { Col, Row, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { usePainter } from '~hooks';
+import { usePainter, usePainterEvent } from '~hooks';
 
 import { MainBlock } from './styles';
 
@@ -25,11 +25,12 @@ export default ({
 }: Props) => {
   const [isDevMode] = useState(process.env.NODE_ENV === 'development');
 
-  const [sampleRef, updateSamplePainter] = usePainter('box');
-  const [nodeRef, updateNodePainter] = usePainter('node');
-  const [podRef, updatePodPainter] = usePainter('pod');
-  const [pointRef, _p, setPointRefVisible] = usePainter('point');
-  const [gridRef, _g, setGridRefVisible] = usePainter('grid');
+  const [sampleRef, _b1, updateSamplePainter] = usePainter('box');
+  const [nodeRef, b2, updateNodePainter] = usePainter('node');
+  const [podRef, b3, updatePodPainter] = usePainter('pod');
+  const [pointRef, b4, _p, setPointRefVisible] = usePainter('point');
+  const [gridRef, _bg, _g, setGridRefVisible] = usePainter('grid');
+  const [eventRef] = usePainterEvent({ node: b2, pod: b3, point: b4 });
 
   useEffect(() => {
     if (panelMode === 'admin') {
@@ -73,31 +74,22 @@ export default ({
           />
         </>
       )}
-      <canvas
-        ref={sampleRef}
-        id="samples"
-        style={{
-          marginBottom: nodeRef.current ? -nodeRef.current.clientHeight : 0,
-        }}
-      />
-      <canvas
-        ref={nodeRef}
-        id="nodes"
-        style={{
-          marginBottom: nodeRef.current ? -nodeRef.current.clientHeight : 0,
-        }}
-      />
-      <canvas
-        ref={podRef}
-        id="pods"
-        style={{
-          marginBottom: podRef.current ? -podRef.current.clientHeight : 0,
-        }}
-      />
+      {[sampleRef, nodeRef, podRef, eventRef].map((ref, index) => (
+        <canvas
+          ref={ref}
+          key={'c' + index}
+          id={'c' + index}
+          style={{ marginBottom: ref.current ? -ref.current.clientHeight : 0 }}
+        />
+      ))}
 
       <aside>
-        <Row id="tool-row">
-          <Col span={18}></Col>
+        <Row
+          id="tool-row"
+          style={{
+            flexDirection: 'row-reverse',
+          }}
+        >
           <Col span={6}>
             <Select
               mode="multiple"
