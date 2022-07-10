@@ -6,6 +6,8 @@ const DY = 2 * GRID_SIZE + SPACING;
 let savedPositions: Record<number, Position[]> = {};
 let x0: number = 0,
   y0: number = 0;
+let row0: number = 0,
+  column0: number = 0;
 
 /**
  * Grid 레벨에 따른 렌더링 위치를 정의합니다.
@@ -21,36 +23,37 @@ export const getGridPositions: Positioner.GetGridPositions = (
   level
 ) => {
   const ret: Position[] = [];
-  x0 = parseInt('' + (width % DX) / 2, 10);
+  x0 = parseInt('' + (width % DX) / 2);
 
   switch (level) {
     case 1:
       // TODO 1레벨 Grid 뷰 코드 완성하기
       break;
     case 2:
-      Array.from(Array(parseInt('' + height / DY, 10) + 1).keys()).map(
-        (py, row) => {
-          Array.from(Array(parseInt('' + width / DX, 10) + 1).keys()).map(
-            (px, column) => {
-              const pos: Position = {
-                x: x0 + px * DX,
-                y: y0 + py * DY,
-                row,
-                column,
-                type: 'point',
-              };
-              let saved = savedPositions[py * MAX_COLUMN_OBJECT + px];
+      const numRows = parseInt('' + height / DY) + 1;
+      const numColumns = parseInt('' + width / DX) + 1;
+      row0 = -parseInt('' + numRows / 2);
+      column0 = -parseInt('' + numColumns / 2);
 
-              ret.push(pos);
-              if (!!!saved) {
-                saved = [pos];
-              } else {
-                saved.push(pos);
-              }
-            }
-          );
-        }
-      );
+      Array.from(Array(numRows).keys()).map((py, row) => {
+        Array.from(Array(numColumns).keys()).map((px, column) => {
+          const pos: Position = {
+            x: x0 + px * DX,
+            y: y0 + py * DY,
+            row: row0 + row,
+            column: column0 + column,
+            type: 'point',
+          };
+          let saved = savedPositions[py * MAX_COLUMN_OBJECT + px];
+
+          ret.push(pos);
+          if (!!!saved) {
+            saved = [pos];
+          } else {
+            saved.push(pos);
+          }
+        });
+      });
       break;
     case 3:
       // TODO 3레벨 Grid 뷰 코드 완성하기
@@ -76,8 +79,8 @@ export const getBoundedObject: Positioner.GetBoundedObject = (px, py) => {
     return {
       x,
       y,
-      row: parseInt('' + (y - y0) / DY, 10),
-      column: parseInt('' + (x - x0) / DX, 10),
+      row: row0 + parseInt('' + (y - y0) / DY),
+      column: column0 + parseInt('' + (x - x0) / DX),
       type: 'point',
     };
   }
