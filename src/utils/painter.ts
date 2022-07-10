@@ -65,23 +65,45 @@ export const paintNode: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   () => {
     ctx.save();
 
-    ctx.fillStyle = 'green';
-    ctx.beginPath();
-    ctx.moveTo(75, 50);
-    ctx.lineTo(100, 75);
-    ctx.lineTo(125, 50);
-    ctx.lineTo(100, 25);
-    ctx.fill();
+  //            D
+  //          (ry)
+  //  A (rx) [sx,sy] (rx) C  
+  //          (ry)
+  //            B
 
-    ctx.fillStyle = 'brown';
-    ctx.beginPath();
-    ctx.moveTo(125, 50);
-    ctx.lineTo(125, 75);
-    ctx.lineTo(100, 100);
-    ctx.lineTo(75, 75);
-    ctx.lineTo(75, 50);
-    ctx.lineTo(100, 75);
-    ctx.fill();
+
+  // 잔디부
+  ctx.fillStyle = 'green';
+  ctx.beginPath();
+  ctx.moveTo(x-dx, y-h);   //A
+  ctx.lineTo(x, y-dy-h);  //B
+  ctx.lineTo(x+dx, y-h);  //C
+  ctx.lineTo(x, y+dy-h);  //D
+  ctx.fill();
+
+
+  
+
+  //높이부
+  ctx.fillStyle = '#964b00';
+  ctx.beginPath();
+  ctx.moveTo(x-dx, y-h);
+  ctx.lineTo(x, y+dy-h);
+  ctx.lineTo(x+dx, y-h);
+  ctx.lineTo(x+dx, y);
+  ctx.lineTo(x, y+dy);
+  ctx.lineTo(x-dx, y);
+  ctx.fill();
+
+  // 바닥부
+  ctx.fillStyle = 'pink';
+  ctx.beginPath();
+  ctx.moveTo(x-dx, y);   //A
+  ctx.lineTo(x, y+dy);  //B
+  ctx.lineTo(x+dx, y);  //C
+  ctx.lineTo(x, y-dy);  //D
+  ctx.fill();
+
 
     ctx.restore();
   },
