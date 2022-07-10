@@ -30,7 +30,11 @@ export default ({
   const [podRef, b3, updatePodPainter] = usePainter('pod');
   const [pointRef, b4, _p, setPointRefVisible] = usePainter('point');
   const [gridRef, _bg, _g, setGridRefVisible] = usePainter('grid');
-  const [eventRef] = usePainterEvent({ node: b2, pod: b3, point: b4 });
+  const [eventRef, selected] = usePainterEvent({
+    node: b2,
+    pod: b3,
+    point: b4,
+  });
 
   useEffect(() => {
     if (panelMode === 'admin') {
@@ -82,6 +86,17 @@ export default ({
           style={{ marginBottom: ref.current ? -ref.current.clientHeight : 0 }}
         />
       ))}
+      {!!options.showPoints && !!selected && (
+        <div
+          id="tooltip-pos"
+          style={{
+            marginTop: selected.y + 'px',
+            marginLeft: selected.x + 'px',
+          }}
+        >
+          <span>{`row: ${selected.row}, col: ${selected.column}`}</span>
+        </div>
+      )}
 
       <aside>
         <Row
