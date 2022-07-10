@@ -84,15 +84,22 @@ export const paintNode: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
 
   
 
-  //높이부
-  ctx.fillStyle = '#964b00';
+  //높이부 왼쪽
+  ctx.fillStyle = 'brown';
   ctx.beginPath();
-  ctx.moveTo(x-dx, y-h);
+  ctx.moveTo(x - dx, y-h);
   ctx.lineTo(x, y+dy-h);
-  ctx.lineTo(x+dx, y-h);
-  ctx.lineTo(x+dx, y);
   ctx.lineTo(x, y+dy);
   ctx.lineTo(x-dx, y);
+  ctx.fill();
+
+  //높이부 오른쪽
+  ctx.fillStyle = '#964b00';
+  ctx.beginPath();
+  ctx.lineTo(x, y+dy-h);
+  ctx.lineTo(x+dx, y-h);
+  ctx.lineTo(x+dx,y );
+  ctx.lineTo(x, y+dy);
   ctx.fill();
 
   // 바닥부
