@@ -52,6 +52,11 @@ export const paintCube: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
 
 /**
  * 노드 블럭을 렌더링합니다.
+ *            D
+ *          (ry)
+ *  A (rx) [sx,sy] (rx) C
+ *          (ry)
+ *            B
  * @author 김민정
  * @param ctx: 캔버스 포인터
  * @param x: 노드 블럭의 x 시작점
@@ -65,53 +70,41 @@ export const paintNode: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   () => {
     ctx.save();
 
-  //            D
-  //          (ry)
-  //  A (rx) [sx,sy] (rx) C  
-  //          (ry)
-  //            B
+    // 잔디부
+    ctx.fillStyle = 'green';
+    ctx.beginPath();
+    ctx.moveTo(x - dx, y - h); //A
+    ctx.lineTo(x, y - dy - h); //B
+    ctx.lineTo(x + dx, y - h); //C
+    ctx.lineTo(x, y + dy - h); //D
+    ctx.fill();
 
+    //높이부 왼쪽
+    ctx.fillStyle = 'brown';
+    ctx.beginPath();
+    ctx.moveTo(x - dx, y - h);
+    ctx.lineTo(x, y + dy - h);
+    ctx.lineTo(x, y + dy);
+    ctx.lineTo(x - dx, y);
+    ctx.fill();
 
-  // 잔디부
-  ctx.fillStyle = 'green';
-  ctx.beginPath();
-  ctx.moveTo(x-dx, y-h);   //A
-  ctx.lineTo(x, y-dy-h);  //B
-  ctx.lineTo(x+dx, y-h);  //C
-  ctx.lineTo(x, y+dy-h);  //D
-  ctx.fill();
+    //높이부 오른쪽
+    ctx.fillStyle = '#964b00';
+    ctx.beginPath();
+    ctx.lineTo(x, y + dy - h);
+    ctx.lineTo(x + dx, y - h);
+    ctx.lineTo(x + dx, y);
+    ctx.lineTo(x, y + dy);
+    ctx.fill();
 
-
-  
-
-  //높이부 왼쪽
-  ctx.fillStyle = 'brown';
-  ctx.beginPath();
-  ctx.moveTo(x - dx, y-h);
-  ctx.lineTo(x, y+dy-h);
-  ctx.lineTo(x, y+dy);
-  ctx.lineTo(x-dx, y);
-  ctx.fill();
-
-  //높이부 오른쪽
-  ctx.fillStyle = '#964b00';
-  ctx.beginPath();
-  ctx.lineTo(x, y+dy-h);
-  ctx.lineTo(x+dx, y-h);
-  ctx.lineTo(x+dx,y );
-  ctx.lineTo(x, y+dy);
-  ctx.fill();
-
-  // 바닥부
-  ctx.fillStyle = 'pink';
-  ctx.beginPath();
-  ctx.moveTo(x-dx, y);   //A
-  ctx.lineTo(x, y+dy);  //B
-  ctx.lineTo(x+dx, y);  //C
-  ctx.lineTo(x, y-dy);  //D
-  ctx.fill();
-
-
+    // 바닥부
+    ctx.fillStyle = 'pink';
+    ctx.beginPath();
+    ctx.moveTo(x - dx, y); //A
+    ctx.lineTo(x, y + dy); //B
+    ctx.lineTo(x + dx, y); //C
+    ctx.lineTo(x, y - dy); //D
+    ctx.fill();
     ctx.restore();
   },
 ];
@@ -418,7 +411,7 @@ export const renderObjects = (
   const stackPaintingObject: any[] = [];
   const x0 = currentRef.width / 2 + 6 * DX;
   const y0 = currentRef.height / 4 + 6 * DY;
-  const height = paintingType === 'box' ? 5 : 15;
+  const height = paintingType === 'box' ? 5 : paintingType === 'node' ? 35 : 15;
 
   let paintObject: Painter.PaintObject;
   switch (paintingType) {
