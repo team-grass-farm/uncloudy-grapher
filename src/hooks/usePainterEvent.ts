@@ -3,7 +3,7 @@ import { getBoundedObject, getGridPositions, resetGridPositions } from '~utils/p
 
 export default (
   setBoundedObject: Record<ObjectType, React.Dispatch<SelectedPosition | null>>
-): [React.RefObject<HTMLCanvasElement>] => {
+): [React.RefObject<HTMLCanvasElement>, SelectedPosition | null] => {
   const ref = useRef<HTMLCanvasElement>(null);
   const [dimensions, setDimensions] = useState<
     Record<'width' | 'height', number>
@@ -11,16 +11,18 @@ export default (
     width: 0,
     height: 0,
   });
-  const [positions, setPositions] = useState<Position[]>([]);
+  const [boundedObjectPosition, setBoundedObjectPosition] =
+    useState<SelectedPosition | null>(null);
+  // const [positions, setPositions] = useState<Position[]>([]);
 
-  useEffect(() => {
-    // console.debug(
-    //   'gridVals: ',
-    //   getGridPositions(dimensions.width, dimensions.height, 2)
-    // );
-    resetGridPositions();
-    setPositions(getGridPositions(dimensions.width, dimensions.height, 2));
-  }, [dimensions]);
+  // useEffect(() => {
+  //   // console.debug(
+  //   //   'gridVals: ',
+  //   //   getGridPositions(dimensions.width, dimensions.height, 2)
+  //   // );
+  //   resetGridPositions();
+  //   setPositions(getGridPositions(dimensions.width, dimensions.height, 2));
+  // }, [dimensions]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -49,6 +51,7 @@ export default (
       // TODO Optimize getBoundedObject which varies depending on row/columns only
       const bounded = getBoundedObject(x, y);
 
+      setBoundedObjectPosition(bounded);
       setBoundedObject['point'](bounded);
     };
     ref.current.addEventListener('mousemove', handler);
@@ -56,7 +59,7 @@ export default (
       ref.current
         ? ref.current.removeEventListener('mousemove', handler)
         : undefined;
-  }, [positions]);
+  }, [dimensions]);
 
-  return [ref];
+  return [ref, boundedObjectPosition];
 };
