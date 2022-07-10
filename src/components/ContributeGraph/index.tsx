@@ -8,9 +8,9 @@ import { Props } from './types';
 
 export default ({ id, data, ...otherProps }: Props) => {
   const test = useTheme();
-  const [legendRef, updateLegendPainter] = usePainter('legend');
-  const [boxRef, updateBoxPainter] = usePainter('box');
-  const [grassRef, updateGrassPainter] = usePainter('grass');
+  const [legendRef, _b1, updateLegendPainter] = usePainter('legend');
+  const [boxRef, _b2, updateBoxPainter] = usePainter('box');
+  const [grassRef, _b3, updateGrassPainter] = usePainter('grass');
 
   useEffect(() => {
     console.log('test theme: ', test);
