@@ -19,7 +19,7 @@ export default () => {
   const [debuggingOptions, setDebuggingOptions] =
     useState<Page.DebuggingOptions>({
       showBlocks: false,
-      showPoints: false,
+      showPoints: true,
       showGrids: true,
       level: 1,
     });

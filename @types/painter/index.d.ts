@@ -1,19 +1,28 @@
 declare namespace Painter {
-  type Value =
+  type Option =
     | {
         text: string;
         color?: never;
         reversed?: never;
+        selected?: never;
       }
     | {
         text?: never;
         color: string;
         reversed?: never;
+        selected?: never;
       }
     | {
         text?: never;
         color?: never;
         reversed: boolean;
+        selected?: never;
+      }
+    | {
+        text?: never;
+        color?: never;
+        reversed?: never;
+        selected: boolean;
       };
 
   type PaintObject = (
@@ -23,7 +32,7 @@ declare namespace Painter {
     dx: number,
     dy: number,
     h: number,
-    value?: Value
+    option?: Option
   ) => (() => void)[];
 
   type PaintCallback = (
@@ -33,6 +42,6 @@ declare namespace Painter {
     dx: number,
     dy: number,
     h: number,
-    value?: Value
+    option?: Option
   ) => () => void;
 }

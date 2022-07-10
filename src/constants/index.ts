@@ -6,6 +6,7 @@ export const REFRESH_PERIOD = 86400000;
 
 export const GRID_SIZE = 10;
 export const SPACING = 5;
+export const MAX_COLUMN_OBJECT = 1000;
 
 // ! Deprecated, just for an example from grass-grapher
 export const POS_ZANDIS: Array<Array<[number, number]>> = [
