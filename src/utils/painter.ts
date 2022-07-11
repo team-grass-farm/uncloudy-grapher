@@ -52,11 +52,6 @@ export const paintCube: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
 
 /**
  * 노드 블럭을 렌더링합니다.
- *            D
- *          (ry)
- *  A (rx) [sx,sy] (rx) C
- *          (ry)
- *            B
  * @author 김민정
  * @param ctx: 캔버스 포인터
  * @param x: 노드 블럭의 x 시작점
@@ -73,10 +68,10 @@ export const paintNode: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
     // 잔디부
     ctx.fillStyle = 'green';
     ctx.beginPath();
-    ctx.moveTo(x - dx, y - h); //A
-    ctx.lineTo(x, y - dy - h); //B
-    ctx.lineTo(x + dx, y - h); //C
-    ctx.lineTo(x, y + dy - h); //D
+    ctx.moveTo(x - dx, y - h);
+    ctx.lineTo(x, y - dy - h);
+    ctx.lineTo(x + dx, y - h);
+    ctx.lineTo(x, y + dy - h);
     ctx.fill();
 
     //높이부 왼쪽
@@ -100,10 +95,10 @@ export const paintNode: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
     // 바닥부
     ctx.fillStyle = 'pink';
     ctx.beginPath();
-    ctx.moveTo(x - dx, y); //A
-    ctx.lineTo(x, y + dy); //B
-    ctx.lineTo(x + dx, y); //C
-    ctx.lineTo(x, y - dy); //D
+    ctx.moveTo(x - dx, y);
+    ctx.lineTo(x, y + dy);
+    ctx.lineTo(x + dx, y);
+    ctx.lineTo(x, y - dy);
     ctx.fill();
     ctx.restore();
   },
