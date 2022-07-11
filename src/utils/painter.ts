@@ -106,6 +106,7 @@ export const paintNode: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
 
 /**
  * 파드 블럭을 렌더링합니다.
+ * 타원 사용법: ellipse (x, y, radiusX, radiusY, rotation, startAngle, endAngle, 반 시계 방향)
  * @author 김민정
  * @param ctx: 캔버스 포인터
  * @param x: 파드 블럭의 x 시작점
@@ -119,21 +120,19 @@ export const paintPod: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   () => {
     ctx.save();
 
-    // TODO 코드 작성
     //기둥부
     ctx.fillStyle = 'beige';
     ctx.beginPath();
-    ctx.moveTo(x-dx, y);
-    ctx.lineTo(x+dx, y);
-    ctx.lineTo(x+dx, y-h);
-    ctx.lineTo(x-dx, y-h);
+    ctx.moveTo(x - dx, y);
+    ctx.lineTo(x + dx, y);
+    ctx.lineTo(x + dx, y - h);
+    ctx.lineTo(x - dx, y - h);
     ctx.fill();
 
     // 윗면부
-    //ellipse (x, y, radiusX, radiusY, rotation, startAngle, endAngle, 반 시계 방향)
     ctx.fillStyle = 'skyblue';
     ctx.beginPath();
-    ctx.ellipse(x, y-h, dx, dy, 0, 0, Math.PI*2);
+    ctx.ellipse(x, y - h, dx, dy, 0, 0, Math.PI*2);
     ctx.fill();
 
     // 바닥부
@@ -141,7 +140,6 @@ export const paintPod: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
     ctx.beginPath();
     ctx.ellipse(x, y, dx, dy, 0, 0, Math.PI*2);
     ctx.fill();
-
 
     ctx.restore();
   },
