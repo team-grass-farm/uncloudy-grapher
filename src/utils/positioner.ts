@@ -56,7 +56,34 @@ export const getGridPositions: Positioner.GetGridPositions = (
       });
       break;
     case 3:
-      // TODO 3레벨 Grid 뷰 코드 완성하기
+      const numRows: number = parseInt('' + height / DY) + 1;
+      const numColumns: number = parseInt('' + width / DY) + 1;
+      row0 = -parseInt('' + numRows / 2);
+      column0 = -parseInt('' + numColumns / 2);
+
+      Array.from(Array(numRows).keys()).map((py, row) => {
+        const bucket: [] = [];
+        Array.from(Array(numColumns).keys()).map((px, column) => {
+          const pos = {
+            x: x0 + px * DY + DY / 2,
+            y: y0 + py * DY + DY / 2,
+            row: row0 + row,
+            column: column0 + column,
+            type: 'point',
+          };
+          let saved = savedPositions[py * 1000 + px];
+
+          bucket.push(pos);
+          if (!!!saved) {
+            saved = [pos];
+          } else {
+            saved.push(pos);
+          }
+        });
+        ret.push(bucket.reverse()); //우상단 ~ 좌하단 배치
+
+        return ret.flatMap((el) => el);
+      });
       break;
   }
 
