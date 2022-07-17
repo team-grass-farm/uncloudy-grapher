@@ -23,6 +23,7 @@ export const getGridPositions: Positioner.GetGridPositions = (
   level
 ) => {
   const ret: Position[] = [];
+  let numRows: number, numColumns: number;
   x0 = parseInt('' + (width % DX) / 2);
 
   switch (level) {
@@ -30,8 +31,8 @@ export const getGridPositions: Positioner.GetGridPositions = (
       // TODO 1레벨 Grid 뷰 코드 완성하기
       break;
     case 2:
-      const numRows = parseInt('' + height / DY) + 1;
-      const numColumns = parseInt('' + width / DX) + 1;
+      numRows = parseInt('' + height / DY) + 1;
+      numColumns = parseInt('' + width / DX) + 1;
       row0 = -parseInt('' + numRows / 2);
       column0 = -parseInt('' + numColumns / 2);
 
@@ -56,15 +57,15 @@ export const getGridPositions: Positioner.GetGridPositions = (
       });
       break;
     case 3:
-      const numRows: number = parseInt('' + height / DY) + 1;
-      const numColumns: number = parseInt('' + width / DY) + 1;
+      numRows = parseInt('' + height / DY) + 1;
+      numColumns = parseInt('' + width / DY) + 1;
       row0 = -parseInt('' + numRows / 2);
       column0 = -parseInt('' + numColumns / 2);
 
       Array.from(Array(numRows).keys()).map((py, row) => {
-        const bucket: [] = [];
+        const bucket: Position[] = [];
         Array.from(Array(numColumns).keys()).map((px, column) => {
-          const pos = {
+          const pos: Position = {
             x: x0 + px * DY + DY / 2,
             y: y0 + py * DY + DY / 2,
             row: row0 + row,
@@ -80,9 +81,9 @@ export const getGridPositions: Positioner.GetGridPositions = (
             saved.push(pos);
           }
         });
-        ret.push(bucket.reverse()); //우상단 ~ 좌하단 배치
+        ret.push(...bucket.reverse()); //우상단 ~ 좌하단 배치
 
-        return ret.flatMap((el) => el);
+        return ret;
       });
       break;
   }
