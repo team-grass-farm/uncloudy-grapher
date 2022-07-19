@@ -1,6 +1,8 @@
 import { SAMPLE_NODES, SAMPLE_PODS } from '~constants';
 
-import type { Page } from '~models';
+import type { Page, Pod, Node } from '~models';
+
+const API_URL = 'http://133.186.222.196:9090/api/v1/';
 
 export const getFilteringOptions = (mode: 'admin' | 'dev'): Page.Option[] => {
   if (mode === 'admin') {
@@ -39,4 +41,76 @@ export const getFilteringOptions = (mode: 'admin' | 'dev'): Page.Option[] => {
     });
     return [...Object.values(candidates)];
   }
+};
+
+export const fetchPodRelatedResources: Fetcher.FetchPodRelatedResources =
+  async () => {
+    //developer.mozilla.org/ko/docs/Web/API/Fetch_API/Using_Fetch
+    const queries: string[] = ['custom_pod_cpu_usage[1m]'];
+
+    // await Promise.all([
+    //   fetch('a'),
+    //   fetch('b'),
+    //   fetch('c')
+    // ]);
+    const res = await Promise.all(queries.map((query) => fetch(query)));
+    return new Promise((resolve, reject) => {
+      try {
+        resolve({
+          // pods: [{
+          //   id: 'string',
+          //   shortId: 'string',
+          //   deploymentId: 'string',
+          //   namespace: 'string',
+          //   metrics: []
+          // }],
+          pods: [],
+          nodes: [],
+          deployments: [],
+          namespaces: [],
+        });
+      } catch (e) {
+        reject('error: ' + e);
+      }
+    });
+  };
+
+export const fechNodeRelatedResources: Fetcher.FetchNodeRelatedResources =
+  async () => {
+    const queries: string[] = ['custom_node_cpu_usage[1m]'];
+    const res = await Promise.all(
+      queries.map((query) => fetch(API_URL + 'query?query=' + query))
+    );
+    return new Promise((resolve, reject) => {
+      try {
+        resolve({
+          nodes: [],
+          clusters: [],
+        });
+      } catch (e) {
+        reject('error: ' + e);
+      }
+    });
+  };
+
+export const fetchPodMetrics: Fetcher.FetchPodMetrics = async (
+  data: Pod.Metric[],
+  timeRange: string
+) => {
+  return new Promise((resolve, reject) => {
+    try {
+      resolve([{}]);
+    } catch (e) {
+      reject('error: ' + e);
+    }
+  });
+};
+
+export const fetchNodeMetrics: Fetcher.FetchNodeMetrics = async (
+  data: Node.Metric[],
+  timeRange: string
+) => {
+  return new Promise((resolve) => {
+    resolve([]);
+  });
 };
