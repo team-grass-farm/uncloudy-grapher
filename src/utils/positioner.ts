@@ -82,8 +82,6 @@ export const getGridPositions: Positioner.GetGridPositions = (
           }
         });
         ret.push(...bucket.reverse()); //우상단 ~ 좌하단 배치
-
-        return ret;
       });
       break;
   }
