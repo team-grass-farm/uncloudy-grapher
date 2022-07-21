@@ -2,8 +2,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { getBoundedObject } from '~utils/positioner';
 
 export default (
-  setBoundedObject: Record<ObjectType, React.Dispatch<SelectedPosition | null>>
-): [React.RefObject<HTMLCanvasElement>, SelectedPosition | null] => {
+  setBoundedObject: Record<
+    PointType,
+    React.Dispatch<SelectedPointPosition | null>
+  >
+): [React.RefObject<HTMLCanvasElement>, SelectedPointPosition | null] => {
   const ref = useRef<HTMLCanvasElement>(null);
   const [dimensions, setDimensions] = useState<
     Record<'width' | 'height', number>
@@ -12,7 +15,7 @@ export default (
     height: 0,
   });
   const [boundedObjectPosition, setBoundedObjectPosition] =
-    useState<SelectedPosition | null>(null);
+    useState<SelectedPointPosition | null>(null);
   // const [positions, setPositions] = useState<Position[]>([]);
 
   // useEffect(() => {

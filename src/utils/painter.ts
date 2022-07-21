@@ -132,13 +132,13 @@ export const paintPod: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
     // 윗면부
     ctx.fillStyle = 'skyblue';
     ctx.beginPath();
-    ctx.ellipse(x, y - h, dx, dy, 0, 0, Math.PI*2);
+    ctx.ellipse(x, y - h, dx, dy, 0, 0, Math.PI * 2);
     ctx.fill();
 
     // 바닥부
     ctx.fillStyle = 'pink';
     ctx.beginPath();
-    ctx.ellipse(x, y, dx, dy, 0, 0, Math.PI*2);
+    ctx.ellipse(x, y, dx, dy, 0, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.restore();
@@ -381,8 +381,8 @@ export const renderGrids = (
 export const renderPoints = (
   ctx: CanvasRenderingContext2D,
   currentRef: HTMLCanvasElement,
-  positions: Position[],
-  boundedPosition: SelectedPosition | null,
+  positions: PointPosition[],
+  boundedPosition: SelectedPointPosition | null,
   visible: boolean
 ) => {
   const stackPaintingObject: (() => void)[] = [];

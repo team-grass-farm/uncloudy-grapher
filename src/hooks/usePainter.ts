@@ -11,7 +11,7 @@ export default (
   drawingType: 'grid' | 'point' | 'legend' | 'box' | 'grass' | 'node' | 'pod'
 ): [
   React.RefObject<HTMLCanvasElement>,
-  React.Dispatch<SelectedPosition | null>,
+  React.Dispatch<SelectedPointPosition | null>,
   React.Dispatch<React.SetStateAction<number[][]>>,
   React.Dispatch<React.SetStateAction<boolean>>
 ] => {
@@ -24,9 +24,9 @@ export default (
     width: 0,
     height: 0,
   });
-  const [objectPositions, setObjectPositions] = useState<Position[]>([]);
+  const [objectPositions, setObjectPositions] = useState<PointPosition[]>([]);
   const [boundedObjectPosition, setBoundedObjectPosition] =
-    useState<SelectedPosition | null>(null);
+    useState<SelectedPointPosition | null>(null);
 
   useEffect(() => {
     const handleResize = () => {
