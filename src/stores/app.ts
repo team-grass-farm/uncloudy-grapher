@@ -1,7 +1,7 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import config from '~config';
-import { REFRESH_PERIOD } from '~constants';
-import { AppStore, Simple } from '~models';
+import { AppStore } from '~models';
+
+import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = new AppStore();
 
@@ -14,5 +14,5 @@ export default createSlice({
       storedVersion: config.VERSION,
     }),
   },
-  extraReducers(builder) {},
+  extraReducers() {},
 });
