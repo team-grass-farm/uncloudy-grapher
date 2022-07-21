@@ -7,6 +7,8 @@ export class AppStore {
   nodes: Node[] = [];
   clusters: Cluster[] = [];
   deployments: Deployment[] = [];
+  podMetrics: Pod.Metric[] = [];
+  nodeMetrics: Node.Metric[] = [];
 
   constructor() {
     this.isPageLoading = false;
