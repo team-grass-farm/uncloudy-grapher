@@ -1,5 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { renderGrids, renderLegend, renderObjects, renderPoints } from '~utils/painter';
+import {
+  renderGrids,
+  renderLegend,
+  renderObjects,
+  renderPoints,
+} from '~utils/painter';
 import { getGridPositions, resetGridPositions } from '~utils/positioner';
 
 export default (
