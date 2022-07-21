@@ -1,4 +1,5 @@
 import { GRID_SIZE, MAX_COLUMN_OBJECT, SPACING } from '~constants';
+import { Pod } from '~models';
 
 const DX = 4 * (GRID_SIZE + SPACING);
 const DY = 2 * GRID_SIZE + SPACING;
@@ -17,7 +18,7 @@ let row0: number = 0,
  * @returns {Position[]}: 렌더링 가능한 모든 포지션
  * @see @types/positioner/index.d.ts
  */
-export const getGridPositions: Positioner.GetGridPositions = (
+export const getPointPositions: Positioner.GetPointPositions = (
   width,
   height,
   level
@@ -110,4 +111,79 @@ export const getBoundedObject: Positioner.GetBoundedObject = (px, py) => {
       type: 'point',
     };
   }
+};
+
+/**
+ * Grid 레벨에 따른 Deployment 의 시작점, 끝점 위치를 정합니다.
+ * @param datas : fetcher 에서 받는 deployment들의 정보 (SAMPLE_DEPLOYMENTS);
+ * @param width : 브라우저 내 렌더링된 canvas 너비;
+ * @param height : 브라우저 내 렌더링 된 canvas 높이;
+ * @param level : Grid View
+ * @returns {GroupPositions[]}: 캔버스 안에 존재하는 deployment 들의 위치
+ * @see @types/positioner/index.d.ts
+ */
+
+export const getDeploymentPositions: Positioner.GetGroupPositions = (
+  width,
+  height,
+  level,
+  data: Pod[]
+) => {
+  const ret: GroupPosition[] = [];
+  const counts: Record<string, number> = {};
+
+  data.map((pod) => {
+    if (!!counts[pod.deploymentId]) {
+      counts[pod.deploymentId]++;
+    } else {
+      counts[pod.deploymentId] = 1;
+    }
+  });
+
+  // 하위 요소들을 가져와서 같은 부모인 애들만 묶는 로직, 개수 파악해서 리턴값에 필요한 애들 채우기
+  return ret;
+};
+
+export const getNamespacePositions: Positioner.GetGroupPositions = (
+  width,
+  height,
+  level,
+  data: Pod[],
+  showDeploymentGroup
+) => {
+  const ret: GroupPosition[] = [];
+  const namespaceCounts: Record<string, number> = {};
+
+  let podCounts: number;
+  if (showDeploymentGroup) {
+    const deploymentPositions = getDeploymentPositions(
+      width,
+      height,
+      level,
+      data
+    );
+
+    // TODO ....
+  } else {
+    data.map((pod) => {
+      if (!!namespaceCounts[pod.deploymentId]) {
+        namespaceCounts[pod.deploymentId]++;
+      } else {
+        namespaceCounts[pod.deploymentId] = 1;
+      }
+    });
+  }
+
+  return ret;
+};
+
+export const getClusterPositions: Positioner.GetGroupPositions = (
+  width,
+  height,
+  level,
+  data: Node[]
+) => {
+  const ret: GroupPosition[] = [];
+
+  return ret;
 };
