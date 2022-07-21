@@ -1,11 +1,21 @@
-declare type ObjectType = 'pod' | 'node' | 'point';
+declare type PointType = 'pod' | 'node' | 'point';
+declare type GroupType = 'deployment' | 'namespace' | 'cluster' | 'node';
 
-declare interface Position {
+declare interface PointPosition {
   x: number;
   y: number;
   row: number;
   column: number;
-  type: ObjectType;
+  type: PointType;
 }
 
-declare interface SelectedPosition extends Position {}
+declare interface GroupPosition {
+  start: PointPosition;
+  end: PointPosition;
+  width: number;
+  height: number;
+  zIndex: number;
+  type: GroupType;
+}
+
+declare interface SelectedPointPosition extends PointPosition {}

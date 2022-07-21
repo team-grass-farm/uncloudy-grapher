@@ -3,7 +3,7 @@ import { GRID_SIZE, MAX_COLUMN_OBJECT, SPACING } from '~constants';
 const DX = 4 * (GRID_SIZE + SPACING);
 const DY = 2 * GRID_SIZE + SPACING;
 
-let savedPositions: Record<number, Position[]> = {};
+let savedPointPositions: Record<number, PointPosition[]> = {};
 let x0: number = 0,
   y0: number = 0;
 let row0: number = 0,
@@ -22,7 +22,7 @@ export const getGridPositions: Positioner.GetGridPositions = (
   height,
   level
 ) => {
-  const ret: Position[] = [];
+  const ret: PointPosition[] = [];
   let numRows: number, numColumns: number;
   x0 = parseInt('' + (width % DX) / 2);
 
@@ -38,14 +38,14 @@ export const getGridPositions: Positioner.GetGridPositions = (
 
       Array.from(Array(numRows).keys()).map((py, row) => {
         Array.from(Array(numColumns).keys()).map((px, column) => {
-          const pos: Position = {
+          const pos: PointPosition = {
             x: x0 + px * DX,
             y: y0 + py * DY,
             row: row0 + row,
             column: column0 + column,
             type: 'point',
           };
-          let saved = savedPositions[py * MAX_COLUMN_OBJECT + px];
+          let saved = savedPointPositions[py * MAX_COLUMN_OBJECT + px];
 
           ret.push(pos);
           if (!!!saved) {
@@ -63,16 +63,16 @@ export const getGridPositions: Positioner.GetGridPositions = (
       column0 = -parseInt('' + numColumns / 2);
 
       Array.from(Array(numRows).keys()).map((py, row) => {
-        const bucket: Position[] = [];
+        const bucket: PointPosition[] = [];
         Array.from(Array(numColumns).keys()).map((px, column) => {
-          const pos: Position = {
+          const pos: PointPosition = {
             x: x0 + px * DY + DY / 2,
             y: y0 + py * DY + DY / 2,
             row: row0 + row,
             column: column0 + column,
             type: 'point',
           };
-          let saved = savedPositions[py * 1000 + px];
+          let saved = savedPointPositions[py * 1000 + px];
 
           bucket.push(pos);
           if (!!!saved) {
@@ -90,7 +90,7 @@ export const getGridPositions: Positioner.GetGridPositions = (
 };
 
 export const resetGridPositions = () => {
-  savedPositions = {};
+  savedPointPositions = {};
 };
 
 export const getBoundedObject: Positioner.GetBoundedObject = (px, py) => {
