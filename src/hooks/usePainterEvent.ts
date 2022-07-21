@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { getBoundedObject, getGridPositions, resetGridPositions } from '~utils/positioner';
+import { getBoundedObject } from '~utils/positioner';
 
 export default (
   setBoundedObject: Record<ObjectType, React.Dispatch<SelectedPosition | null>>
