@@ -23,6 +23,7 @@ export const MainBlock = styled.div`
     color: white;
     font-size: 0.8rem;
     height: 1.5rem;
+    white-space: nowrap;
     padding: 0.35rem;
   }
 
