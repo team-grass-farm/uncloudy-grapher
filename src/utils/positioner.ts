@@ -1,29 +1,24 @@
-import { GRID_SIZE, MAX_COLUMN_OBJECT, SPACING } from '~constants';
+import { DELTA, MAX_COLUMN_OBJECT } from '~constants';
 import { Pod } from '~models';
 
-const DELTA: Array<Record<'DX' | 'DY', number>> = [
-  { DX: 0, DY: 0 },
-  { DX: 2 * GRID_SIZE + SPACING, DY: GRID_SIZE + SPACING },
-  { DX: 4 * GRID_SIZE + SPACING, DY: 2 * GRID_SIZE + SPACING },
-  { DX: 2 * GRID_SIZE + SPACING, DY: 2 * GRID_SIZE + SPACING },
-];
-
 let savedPointPositions: Record<number, PointPosition[]> = {};
-let x0: number = 0,
-  y0: number = 0;
+let savedLinePositions: Record<number, LinePosition[]> = {};
 
 const getCanvasValues = (width: number, height: number, level: 1 | 2 | 3) => {
-  const { DX, DY } = DELTA[level];
-  const numRows = parseInt('' + height / DY) + 1;
+  const { DX, DY, A } = DELTA[level];
+  const numRows = parseInt('' + height / (DY * (level === 3 ? 1 : 2))) + 1;
   const numColumns = parseInt('' + width / DX) + 1;
 
   return {
     DX,
     DY,
+    A,
     numRows,
     numColumns,
-    row0: -parseInt('', numRows / 2),
-    column0: -parseInt('', +numColumns / 2),
+    x0: parseInt('' + (width % (DX * 2)) / 2),
+    y0: 0,
+    row0: -parseInt('' + numRows / 2),
+    column0: -parseInt('' + numColumns / 2),
   };
 };
 
@@ -41,30 +36,25 @@ export const getPointPositions: Positioner.GetPointPositions = (
   level
 ) => {
   const ret: PointPosition[] = [];
-  const { DX, DY, numRows, numColumns, row0, column0 } = getCanvasValues(
-    width,
-    height,
-    level
-  );
-  x0 = parseInt('' + (width % DX) / 2);
+  const { DX, DY, numRows, numColumns, x0, y0, row0, column0 } =
+    getCanvasValues(width, height, level);
 
   switch (level) {
     case 1:
-      // TODO 1레벨 Grid 뷰 코드 완성하기
-      break;
     case 2:
-      Array.from(Array(numRows).keys()).map((py, row) => {
+      Array.from(Array(parseInt('' + numRows) + 1).keys()).map((py, row) => {
         Array.from(Array(numColumns).keys()).map((px, column) => {
           const pos: PointPosition = {
             x: x0 + px * DX,
-            y: y0 + py * DY,
+            y: y0 + py * 2 * DY + (column % 2 ? DY : 0),
             row: row0 + row,
             column: column0 + column,
             type: 'point',
           };
-          let saved = savedPointPositions[py * MAX_COLUMN_OBJECT + px];
 
           ret.push(pos);
+
+          let saved = savedPointPositions[py * MAX_COLUMN_OBJECT + px];
           if (!!!saved) {
             saved = [pos];
           } else {
@@ -75,34 +65,29 @@ export const getPointPositions: Positioner.GetPointPositions = (
       break;
     case 3:
       Array.from(Array(numRows).keys()).map((py, row) => {
-        const bucket: PointPosition[] = [];
-        Array.from(Array(numColumns).keys()).map((px, column) => {
+        Array.from(Array(numColumns).reverse().keys()).map((px, column) => {
           const pos: PointPosition = {
-            x: x0 + px * DX + DX / 2,
-            y: y0 + py * DY + DY / 2,
+            x: x0 + px * DX,
+            y: y0 + py * DY,
             row: row0 + row,
             column: column0 + column,
             type: 'point',
           };
-          let saved = savedPointPositions[py * 1000 + px];
 
-          bucket.push(pos);
+          ret.push(pos);
+
+          let saved = savedPointPositions[py * MAX_COLUMN_OBJECT + px];
           if (!!!saved) {
             saved = [pos];
           } else {
             saved.push(pos);
           }
         });
-        ret.push(...bucket.reverse()); //우상단 ~ 좌하단 배치
       });
       break;
   }
 
   return ret;
-};
-
-export const resetPointPositions = () => {
-  savedPointPositions = {};
 };
 
 /**
@@ -114,46 +99,139 @@ export const resetPointPositions = () => {
  */
 export const getHighlightedPointPosition: Positioner.GetHighlightedPointPosition =
   (width, height, level, px, py) => {
-    const { DX, DY, row0, column0 } = getCanvasValues(width, height, level);
+    const { DX, DY, x0, y0, row0, column0 } = getCanvasValues(
+      width,
+      height,
+      level
+    );
     const hitboxX = 15,
       hitboxY = 15;
     const x = px + 7,
       y = py + 7;
 
-    if ((x - x0) % DX > hitboxX || (y - y0) % DY > hitboxY) {
-      return null;
-    } else {
-      return {
-        x,
-        y,
-        row: row0 + parseInt('' + (y - y0) / DY),
-        column: column0 + parseInt('' + (x - x0) / DX),
-        type: 'point',
-      };
+    switch (level) {
+      case 1:
+      case 2:
+        if ((x - x0) % DX < hitboxX) {
+          const column = column0 + parseInt('' + (x - x0) / DX);
+          if (column % 2) {
+            if ((y - y0) % (2 * DY) < hitboxY) {
+              return {
+                x,
+                y,
+                row: row0 + parseInt('' + (y - y0) / (2 * DY)),
+                column: column,
+                type: 'point',
+              };
+            } else return null;
+          } else {
+            if ((y - DY - y0) % (2 * DY) < hitboxY) {
+              return {
+                x,
+                y,
+                row: row0 + parseInt('' + (y - y0) / (2 * DY)),
+                column: column,
+                type: 'point',
+              };
+            } else return null;
+          }
+        } else {
+          return null;
+        }
+      // if ((x - x0) % DX > hitboxX || (y - y0) % (2 * DY) > hitboxY) {
+      //   return null;
+      // } else {
+      //   return {
+      //     x,
+      //     y,
+      //     row: row0 + parseInt('' + (y - y0) / (2 * DY)),
+      //     column: column0 + parseInt('' + (x - x0) / DX),
+      //     type: 'point',
+      //   };
+      // }
+      case 3:
+        if ((x - x0) % DX > hitboxX || (y - y0) % DY > hitboxY) {
+          return null;
+        } else {
+          return {
+            x,
+            y,
+            row: row0 + parseInt('' + (y - y0) / DY),
+            column: column0 + parseInt('' + (x - x0) / DX),
+            type: 'point',
+          };
+        }
     }
   };
 
-export const getGridPosition: Positioner.GetLinePositions = (
+export const getGridPositions: Positioner.GetLinePositions = (
   width,
   height,
   level
 ) => {
   const ret: LinePosition[] = [];
-  const { DX, DY } = DELTA[level];
-  let row0: number = 0,
-    column0: number = 0;
-  let numRows: number, numColumns: number;
-  x0 = parseInt('' + (width % DX) / 2);
+  const { DX, DY, A, numRows, numColumns, x0, y0 } = getCanvasValues(
+    width,
+    height,
+    level
+  );
 
   switch (level) {
     case 1:
-      break;
     case 2:
-      numRows = parseInt('' + height / DY) + 1;
-      numColumns = parseInt('' + width / DX) + 1;
-      row0 = -parseInt;
+      Array.from(Array(numRows + numColumns).keys()).map((px) => {
+        const x3 = x0 - DX + (px - numRows) * 2 * DX,
+          y3 = y0,
+          x4 = x0 - DX + px * 2 * DX,
+          y4 = y0;
+
+        const pos1: LinePosition = {
+          x1: -y3 / A + x3,
+          y1: 0,
+          x2: (height - y3) / A + x3,
+          y2: height,
+          type: 'grid',
+        };
+        const pos2: LinePosition = {
+          x1: y4 / A + x4,
+          y1: 0,
+          x2: -(height - y4) / A + x4,
+          y2: height,
+          type: 'grid',
+        };
+
+        ret.push(pos1);
+        ret.push(pos2);
+      });
       break;
     case 3:
+      Array.from(Array(numColumns).keys()).map((px) => {
+        const x3 = x0 - DX / 2 + px * DX;
+
+        const pos: LinePosition = {
+          x1: x3,
+          y1: 0,
+          x2: x3,
+          y2: height,
+          type: 'grid',
+        };
+
+        ret.push(pos);
+      });
+
+      Array.from(Array(numRows).keys()).map((py) => {
+        const y3 = y0 - DY / 2 + py * DY;
+
+        const pos: LinePosition = {
+          x1: 0,
+          y1: y3,
+          x2: width,
+          y2: y3,
+          type: 'grid',
+        };
+
+        ret.push(pos);
+      });
       break;
   }
 

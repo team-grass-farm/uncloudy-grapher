@@ -35,6 +35,14 @@ declare namespace Painter {
     option?: Option
   ) => (() => void)[];
 
+  type PaintArea = (
+    ctx: CanvasRenderingContext2D,
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number
+  ) => (() => void)[];
+
   type PaintCallback = (
     ctx: CanvasRenderingContext2D,
     x: number,

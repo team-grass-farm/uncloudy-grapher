@@ -11,10 +11,10 @@ declare interface PointPosition {
 }
 
 declare interface LinePosition {
-  x: number;
-  y: number;
-  dx: number;
-  dy: number;
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
   type: LineType;
 }
 
@@ -28,3 +28,5 @@ declare interface GroupPosition {
 }
 
 declare interface SelectedPointPosition extends PointPosition {}
+
+declare interface SelectedLinePosition extends LinePosition {}
