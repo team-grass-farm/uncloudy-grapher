@@ -1,14 +1,31 @@
 import { GRID_SIZE, MAX_COLUMN_OBJECT, SPACING } from '~constants';
 import { Pod } from '~models';
 
-const DX = 4 * (GRID_SIZE + SPACING);
-const DY = 2 * GRID_SIZE + SPACING;
+const DELTA: Array<Record<'DX' | 'DY', number>> = [
+  { DX: 0, DY: 0 },
+  { DX: 2 * GRID_SIZE + SPACING, DY: GRID_SIZE + SPACING },
+  { DX: 4 * GRID_SIZE + SPACING, DY: 2 * GRID_SIZE + SPACING },
+  { DX: 2 * GRID_SIZE + SPACING, DY: 2 * GRID_SIZE + SPACING },
+];
 
 let savedPointPositions: Record<number, PointPosition[]> = {};
 let x0: number = 0,
   y0: number = 0;
-let row0: number = 0,
-  column0: number = 0;
+
+const getCanvasValues = (width: number, height: number, level: 1 | 2 | 3) => {
+  const { DX, DY } = DELTA[level];
+  const numRows = parseInt('' + height / DY) + 1;
+  const numColumns = parseInt('' + width / DX) + 1;
+
+  return {
+    DX,
+    DY,
+    numRows,
+    numColumns,
+    row0: -parseInt('', numRows / 2),
+    column0: -parseInt('', +numColumns / 2),
+  };
+};
 
 /**
  * Grid 레벨에 따른 렌더링 위치를 정의합니다.
@@ -24,7 +41,11 @@ export const getPointPositions: Positioner.GetPointPositions = (
   level
 ) => {
   const ret: PointPosition[] = [];
-  let numRows: number, numColumns: number;
+  const { DX, DY, numRows, numColumns, row0, column0 } = getCanvasValues(
+    width,
+    height,
+    level
+  );
   x0 = parseInt('' + (width % DX) / 2);
 
   switch (level) {
@@ -32,11 +53,6 @@ export const getPointPositions: Positioner.GetPointPositions = (
       // TODO 1레벨 Grid 뷰 코드 완성하기
       break;
     case 2:
-      numRows = parseInt('' + height / DY) + 1;
-      numColumns = parseInt('' + width / DX) + 1;
-      row0 = -parseInt('' + numRows / 2);
-      column0 = -parseInt('' + numColumns / 2);
-
       Array.from(Array(numRows).keys()).map((py, row) => {
         Array.from(Array(numColumns).keys()).map((px, column) => {
           const pos: PointPosition = {
@@ -58,16 +74,11 @@ export const getPointPositions: Positioner.GetPointPositions = (
       });
       break;
     case 3:
-      numRows = parseInt('' + height / DY) + 1;
-      numColumns = parseInt('' + width / DY) + 1;
-      row0 = -parseInt('' + numRows / 2);
-      column0 = -parseInt('' + numColumns / 2);
-
       Array.from(Array(numRows).keys()).map((py, row) => {
         const bucket: PointPosition[] = [];
         Array.from(Array(numColumns).keys()).map((px, column) => {
           const pos: PointPosition = {
-            x: x0 + px * DY + DY / 2,
+            x: x0 + px * DX + DX / 2,
             y: y0 + py * DY + DY / 2,
             row: row0 + row,
             column: column0 + column,
@@ -90,27 +101,63 @@ export const getPointPositions: Positioner.GetPointPositions = (
   return ret;
 };
 
-export const resetGridPositions = () => {
+export const resetPointPositions = () => {
   savedPointPositions = {};
 };
 
-export const getBoundedObject: Positioner.GetBoundedObject = (px, py) => {
-  const hitboxX = 15,
-    hitboxY = 15;
-  const x = px + 7,
-    y = py + 7;
+/**
+ * 선택된 항목의 포지션을 반환합니다.
+ * @param px : 마우스 커서 x의 위치
+ * @param py : 마우스 커서 y의 위치
+ * @param level : 현재 Grid 레벨
+ * @returns {SelectedPointPosition}
+ */
+export const getHighlightedPointPosition: Positioner.GetHighlightedPointPosition =
+  (width, height, level, px, py) => {
+    const { DX, DY, row0, column0 } = getCanvasValues(width, height, level);
+    const hitboxX = 15,
+      hitboxY = 15;
+    const x = px + 7,
+      y = py + 7;
 
-  if ((x - x0) % DX > hitboxX || (y - y0) % DY > hitboxY) {
-    return null;
-  } else {
-    return {
-      x,
-      y,
-      row: row0 + parseInt('' + (y - y0) / DY),
-      column: column0 + parseInt('' + (x - x0) / DX),
-      type: 'point',
-    };
+    if ((x - x0) % DX > hitboxX || (y - y0) % DY > hitboxY) {
+      return null;
+    } else {
+      return {
+        x,
+        y,
+        row: row0 + parseInt('' + (y - y0) / DY),
+        column: column0 + parseInt('' + (x - x0) / DX),
+        type: 'point',
+      };
+    }
+  };
+
+export const getGridPosition: Positioner.GetLinePositions = (
+  width,
+  height,
+  level
+) => {
+  const ret: LinePosition[] = [];
+  const { DX, DY } = DELTA[level];
+  let row0: number = 0,
+    column0: number = 0;
+  let numRows: number, numColumns: number;
+  x0 = parseInt('' + (width % DX) / 2);
+
+  switch (level) {
+    case 1:
+      break;
+    case 2:
+      numRows = parseInt('' + height / DY) + 1;
+      numColumns = parseInt('' + width / DX) + 1;
+      row0 = -parseInt;
+      break;
+    case 3:
+      break;
   }
+
+  return ret;
 };
 
 /**
@@ -122,7 +169,6 @@ export const getBoundedObject: Positioner.GetBoundedObject = (px, py) => {
  * @returns {GroupPositions[]}: 캔버스 안에 존재하는 deployment 들의 위치
  * @see @types/positioner/index.d.ts
  */
-
 export const getDeploymentPositions: Positioner.GetGroupPositions = (
   width,
   height,
