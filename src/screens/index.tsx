@@ -21,7 +21,7 @@ export default () => {
       showBlocks: false,
       showPoints: true,
       showGrids: true,
-      level: 1,
+      level: 2,
     });
 
   useEffect(() => {

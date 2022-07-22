@@ -1,14 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  renderGrids,
-  renderLegend,
-  renderObjects,
-  renderPoints,
-} from '~utils/painter';
-import { getGridPositions, resetGridPositions } from '~utils/positioner';
+import { renderGrids, renderLegend, renderObjects, renderPoints } from '~utils/painter';
+import { getPointPositions, resetPointPositions } from '~utils/positioner';
 
 export default (
-  drawingType: 'grid' | 'point' | 'legend' | 'box' | 'grass' | 'node' | 'pod'
+  drawingType: 'grid' | 'point' | 'legend' | 'box' | 'grass' | 'node' | 'pod',
+  level?: 1 | 2 | 3
 ): [
   React.RefObject<HTMLCanvasElement>,
   React.Dispatch<SelectedPointPosition | null>,
@@ -16,7 +12,7 @@ export default (
   React.Dispatch<React.SetStateAction<boolean>>
 ] => {
   const ref = useRef<HTMLCanvasElement>(null);
-  const [dataChunks, updatePainter] = useState<number[][]>([]);
+  const [dataChunks, setDataChunks] = useState<number[][]>([]);
   const [visible, setVisible] = useState<boolean>(false);
   const [dimensions, setDimensions] = useState<
     Record<'width' | 'height', number>
@@ -24,8 +20,8 @@ export default (
     width: 0,
     height: 0,
   });
-  const [objectPositions, setObjectPositions] = useState<PointPosition[]>([]);
-  const [boundedObjectPosition, setBoundedObjectPosition] =
+  const [pointPositions, setPointPositions] = useState<PointPosition[]>([]);
+  const [highlightedPointPosition, setHighlightedPointPosition] =
     useState<SelectedPointPosition | null>(null);
 
   useEffect(() => {
@@ -47,9 +43,9 @@ export default (
   useEffect(() => {
     switch (drawingType) {
       case 'point':
-        resetGridPositions();
-        setObjectPositions(
-          getGridPositions(dimensions.width, dimensions.height, 2)
+        resetPointPositions();
+        setPointPositions(
+          getPointPositions(dimensions.width, dimensions.height, level ?? 2)
         );
         break;
     }
@@ -70,8 +66,8 @@ export default (
         renderPoints(
           ctx,
           ref.current,
-          objectPositions,
-          boundedObjectPosition,
+          pointPositions,
+          highlightedPointPosition,
           visible
         );
         return;
@@ -79,12 +75,12 @@ export default (
         renderObjects(ctx, ref.current, dataChunks, drawingType);
         return;
     }
-  }, [boundedObjectPosition, dataChunks, objectPositions, visible]);
+  }, [highlightedPointPosition, dataChunks, pointPositions, visible]);
 
   useEffect(() => {
-    !!boundedObjectPosition &&
-      console.debug(`bounded ${drawingType}: `, boundedObjectPosition);
-  }, [boundedObjectPosition]);
+    !!highlightedPointPosition &&
+      console.debug(`bounded ${drawingType}: `, highlightedPointPosition);
+  }, [highlightedPointPosition]);
 
-  return [ref, setBoundedObjectPosition, updatePainter, setVisible];
+  return [ref, setHighlightedPointPosition, setDataChunks, setVisible];
 };

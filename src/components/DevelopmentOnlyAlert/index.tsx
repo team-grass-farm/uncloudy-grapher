@@ -1,4 +1,4 @@
-import { Alert, Button, Col, Row, Slider, Space, Switch } from 'antd';
+import { Alert, Col, Row, Slider, Space, Switch } from 'antd';
 import React from 'react';
 
 import { MainBlock } from './styles';
@@ -66,7 +66,9 @@ export default ({ id, data, onChangeData, ...otherProps }: Props) => {
                       value={data.level}
                       min={1}
                       max={3}
-                      onChange={(level) => onChangeData({ ...data, level })}
+                      onChange={(level: 1 | 2 | 3) =>
+                        onChangeData({ ...data, level })
+                      }
                     />
                   </Col>
                 </>

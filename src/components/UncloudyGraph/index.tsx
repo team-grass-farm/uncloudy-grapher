@@ -6,8 +6,6 @@ import { MainBlock } from './styles';
 
 import type { Props } from './types';
 
-type View = 'numPods' | 'CPUUsage' | 'memoryUsage' | 'nodeId';
-
 const sampleChunks = [
   [1, 2, 3],
   [4, 5, 6],
@@ -28,13 +26,19 @@ export default ({
   const [sampleRef, _b1, updateSamplePainter] = usePainter('box');
   const [nodeRef, b2, updateNodePainter] = usePainter('node');
   const [podRef, b3, updatePodPainter] = usePainter('pod');
-  const [pointRef, b4, _p, setPointRefVisible] = usePainter('point');
-  const [gridRef, _bg, _g, setGridRefVisible] = usePainter('grid');
-  const [eventRef, selected] = usePainterEvent({
-    node: b2,
-    pod: b3,
-    point: b4,
-  });
+  const [pointRef, b4, _p, setPointRefVisible] = usePainter(
+    'point',
+    options.level
+  );
+  const [gridRef, _b5, _g, setGridRefVisible] = usePainter('grid');
+  const [eventRef, selected] = usePainterEvent(
+    {
+      node: b2,
+      pod: b3,
+      point: b4,
+    },
+    (options && options.level) ?? 2
+  );
 
   useEffect(() => {
     if (panelMode === 'admin') {
@@ -51,9 +55,10 @@ export default ({
   }, [options.showBlocks]);
 
   useEffect(() => {
-    const { showGrids, showPoints } = options;
+    const { showGrids, showPoints, level } = options;
     showPoints !== undefined && setPointRefVisible(showPoints);
     showGrids !== undefined && setGridRefVisible(showGrids);
+    // level !== undefined &&
   }, [options]);
 
   return (

@@ -1,4 +1,5 @@
 declare type PointType = 'pod' | 'node' | 'point';
+declare type LineType = 'grid';
 declare type GroupType = 'deployment' | 'namespace' | 'cluster' | 'node';
 
 declare interface PointPosition {
@@ -7,6 +8,14 @@ declare interface PointPosition {
   row: number;
   column: number;
   type: PointType;
+}
+
+declare interface LinePosition {
+  x: number;
+  y: number;
+  dx: number;
+  dy: number;
+  type: LineType;
 }
 
 declare interface GroupPosition {
