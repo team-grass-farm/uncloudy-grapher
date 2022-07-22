@@ -253,21 +253,13 @@ export const paintPoint: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   },
 ];
 
-export const paintLine: Painter.PaintObject = (
-  ctx,
-  x,
-  y,
-  dx,
-  dy,
-  _,
-  option
-) => [
+export const paintLine: Painter.PaintArea = (ctx, x1, y1, x2, y2) => [
   () => {
     ctx.save();
 
     ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x + (option && option.reversed ? -dx : dx), y + dy);
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
     ctx.strokeStyle = '#ddd';
     ctx.closePath();
     ctx.stroke();
@@ -430,40 +422,22 @@ export const renderLegend = (
 export const renderGrids = (
   ctx: CanvasRenderingContext2D,
   currentRef: HTMLCanvasElement,
+  positions: LinePosition[],
+  selectedPosition: SelectedLinePosition | null,
   visible: boolean
 ) => {
   const stackPaintingObject: any[] = [];
-  const x0 = parseInt('' + (currentRef.width % DX), 10);
 
   ctx.lineJoin = 'round';
   ctx.fillStyle = 'transparent';
   ctx.scale(1, 1);
 
   if (visible) {
-    Array.from(Array(parseInt('' + currentRef.width / DX, 10) + 1).keys()).map(
-      (px) => {
-        stackPaintingObject.push(
-          ...paintLine(
-            ctx,
-            x0 + 2 * DX * px,
-            0,
-            currentRef.height * 2,
-            currentRef.height,
-            0,
-            { reversed: true }
-          )
-          // ...paintLine(
-          //   ctx,
-          //   x0 + 2 * DX * px,
-          //   0,
-          //   currentRef.height * 2,
-          //   currentRef.height,
-          //   0,
-          //   { reversed: false }
-          // )
-        );
-      }
-    );
+    positions.forEach((position) => {
+      stackPaintingObject.push(
+        ...paintLine(ctx, position.x1, position.y1, position.x2, position.y2)
+      );
+    });
   }
 
   const render = () => {
@@ -479,7 +453,7 @@ export const renderPoints = (
   ctx: CanvasRenderingContext2D,
   currentRef: HTMLCanvasElement,
   positions: PointPosition[],
-  boundedPosition: SelectedPointPosition | null,
+  selectedPosition: SelectedPointPosition | null,
   visible: boolean
 ) => {
   const stackPaintingObject: (() => void)[] = [];
@@ -491,9 +465,9 @@ export const renderPoints = (
   if (visible) {
     positions.forEach((position) => {
       if (
-        !!boundedPosition &&
-        position.row === boundedPosition.row &&
-        position.column === boundedPosition.column
+        !!selectedPosition &&
+        position.row === selectedPosition.row &&
+        position.column === selectedPosition.column
       ) {
         stackPaintingObject.push(
           ...paintPoint(ctx, position.x, position.y, 5, 5, 0)

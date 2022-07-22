@@ -8,6 +8,26 @@ export const GRID_SIZE = 10;
 export const SPACING = 5;
 export const MAX_COLUMN_OBJECT = 1000;
 
+export const GRID_SIZE1 = 20;
+export const GRID_SIZE2 = 14;
+export const GRID_SIZE3 = 10;
+
+// TODO Pre-calculate this:
+export const DELTA: Array<Record<'DX' | 'DY' | 'A', number>> = [
+  { DX: 0, DY: 0, A: 0 },
+  {
+    DX: 2 * GRID_SIZE1 + SPACING,
+    DY: GRID_SIZE1 + SPACING,
+    A: (GRID_SIZE1 + SPACING) / (2 * GRID_SIZE1 + SPACING),
+  },
+  {
+    DX: 2 * GRID_SIZE2 + SPACING,
+    DY: GRID_SIZE2 + SPACING,
+    A: (GRID_SIZE2 + SPACING) / (2 * GRID_SIZE2 + SPACING),
+  },
+  { DX: 2 * GRID_SIZE3 + SPACING, DY: 2 * GRID_SIZE3 + SPACING, A: 1 },
+];
+
 // ! Deprecated, just for an example from grass-grapher
 export const POS_ZANDIS: Array<Array<[number, number]>> = [
   [
