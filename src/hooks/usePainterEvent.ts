@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { getHighlightedPointPosition } from '~utils/positioner';
 
 export default (
-  setter: Record<PointType, React.Dispatch<SelectedPointPosition | null>>,
   level: 1 | 2 | 3
 ): [React.RefObject<HTMLCanvasElement>, SelectedPointPosition | null] => {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -46,7 +45,6 @@ export default (
       );
 
       setHighlightedPointPosition(bounded);
-      setter.point(bounded);
     },
     [dimensions]
   );

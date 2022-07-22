@@ -1,38 +1,74 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { renderGrids, renderLegend, renderObjects, renderPoints } from '~utils/painter';
+import React, { RefObject, useEffect, useRef, useState } from 'react';
+import { usePainterEvent } from '~hooks';
+import { renderGrids, renderObjects, renderPoints } from '~utils/painter';
 import { getPointPositions, resetPointPositions } from '~utils/positioner';
 
+type Layer = 'group2' | 'group1' | 'block';
+type ResourceMap = Partial<Record<PointType | GroupType, any>>;
+
+// NOTE grid & point is skippable because these are just for debugging.
+interface RefMap extends Record<Layer, RefObject<HTMLCanvasElement>> {
+  grid?: RefObject<HTMLCanvasElement>;
+  point?: RefObject<HTMLCanvasElement>;
+  event: RefObject<HTMLCanvasElement>;
+}
+interface FlagMap extends Record<Layer, boolean> {
+  grid?: boolean;
+  point?: boolean;
+}
+
 export default (
-  drawingType: 'grid' | 'point' | 'legend' | 'box' | 'grass' | 'node' | 'pod',
-  level?: 1 | 2 | 3
+  _level: 1 | 2 | 3
 ): [
-  React.RefObject<HTMLCanvasElement>,
-  React.Dispatch<SelectedPointPosition | null>,
-  React.Dispatch<React.SetStateAction<number[][]>>,
-  React.Dispatch<React.SetStateAction<boolean>>
+  RefMap,
+  React.Dispatch<1 | 2 | 3>,
+  React.Dispatch<React.SetStateAction<ResourceMap>>,
+  React.Dispatch<React.SetStateAction<FlagMap>>,
+  SelectedPointPosition | null
 ] => {
-  const ref = useRef<HTMLCanvasElement>(null);
-  const [dataChunks, setDataChunks] = useState<number[][]>([]);
-  const [visible, setVisible] = useState<boolean>(false);
+  const [isDevMode] = useState(process.env.NODE_ENV === 'development');
+  const [level, setLevel] = useState<1 | 2 | 3>(_level);
+  const [resources, setResources] = useState<ResourceMap>({});
   const [dimensions, setDimensions] = useState<
     Record<'width' | 'height', number>
-  >({
-    width: 0,
-    height: 0,
-  });
+  >({ width: 0, height: 0 });
   const [pointPositions, setPointPositions] = useState<PointPosition[]>([]);
-  const [highlightedPointPosition, setHighlightedPointPosition] =
-    useState<SelectedPointPosition | null>(null);
+
+  const [eventRef, highlightedPointPosition] = usePainterEvent(level);
+  const refMap: RefMap = {
+    ...(isDevMode && {
+      grid: useRef<HTMLCanvasElement>(null),
+      point: useRef<HTMLCanvasElement>(null),
+    }),
+    group2: useRef<HTMLCanvasElement>(null),
+    group1: useRef<HTMLCanvasElement>(null),
+    block: useRef<HTMLCanvasElement>(null),
+    event: eventRef,
+  };
+  const [visible, setVisible] = useState<FlagMap>({
+    ...(isDevMode && {
+      grid: true,
+      point: true,
+    }),
+    group2: true,
+    group1: true,
+    block: true,
+  });
 
   useEffect(() => {
     const handleResize = () => {
-      if (ref.current === null) return;
+      if (refMap.block.current === null) return;
       setDimensions({
-        width: ref.current.clientWidth,
-        height: ref.current.clientHeight,
+        width: refMap.block.current.clientWidth,
+        height: refMap.block.current.clientHeight,
       });
-      ref.current.width = ref.current.clientWidth;
-      ref.current.height = ref.current.clientHeight;
+
+      Object.values(refMap).forEach((ref) => {
+        if (ref.current) {
+          ref.current.width = ref.current.clientWidth;
+          ref.current.height = ref.current.clientHeight;
+        }
+      });
     };
 
     window.addEventListener('resize', handleResize);
@@ -41,46 +77,41 @@ export default (
   }, []);
 
   useEffect(() => {
-    switch (drawingType) {
-      case 'point':
-        resetPointPositions();
-        setPointPositions(
-          getPointPositions(dimensions.width, dimensions.height, level ?? 2)
-        );
-        break;
-    }
+    resetPointPositions();
+    setPointPositions(
+      getPointPositions(dimensions.width, dimensions.height, level ?? 2)
+    );
   }, [dimensions]);
 
   useEffect(() => {
-    const ctx = ref.current && ref.current.getContext('2d');
-    if (ctx === null || ref.current === null) return;
-
-    switch (drawingType) {
-      case 'legend':
-        renderLegend(ctx, ref.current, dataChunks, ['day', 'month']);
-        return;
-      case 'grid':
-        renderGrids(ctx, ref.current, visible);
-        return;
-      case 'point':
-        renderPoints(
-          ctx,
-          ref.current,
-          pointPositions,
-          highlightedPointPosition,
-          visible
-        );
-        return;
-      default:
-        renderObjects(ctx, ref.current, dataChunks, drawingType);
-        return;
-    }
-  }, [highlightedPointPosition, dataChunks, pointPositions, visible]);
+    Object.entries(refMap).map(([refName, ref]) => {
+      const ctx = ref.current && ref.current.getContext('2d');
+      if (ctx === null || ref.current === null) return;
+      switch (refName) {
+        case 'grid':
+          renderGrids(ctx, ref.current, visible.grid ?? false);
+          break;
+        case 'point':
+          renderPoints(
+            ctx,
+            ref.current,
+            pointPositions,
+            highlightedPointPosition,
+            visible.point ?? false
+          );
+          return;
+        default:
+          // TODO render by resources
+          // renderObjects(ctx, ref.current, dataChunks, refName);
+          return;
+      }
+    });
+  }, [highlightedPointPosition, resources, pointPositions, visible]);
 
   useEffect(() => {
     !!highlightedPointPosition &&
-      console.debug(`bounded ${drawingType}: `, highlightedPointPosition);
+      console.debug(`bounded event: `, highlightedPointPosition);
   }, [highlightedPointPosition]);
 
-  return [ref, setHighlightedPointPosition, setDataChunks, setVisible];
+  return [refMap, setLevel, setResources, setVisible, highlightedPointPosition];
 };

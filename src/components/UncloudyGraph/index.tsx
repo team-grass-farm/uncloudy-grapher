@@ -1,6 +1,6 @@
 import { Col, Row, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { usePainter, usePainterEvent } from '~hooks';
+import { usePainter } from '~hooks';
 
 import { MainBlock } from './styles';
 
@@ -21,74 +21,44 @@ export default ({
   options,
   ...otherProps
 }: Props) => {
-  const [isDevMode] = useState(process.env.NODE_ENV === 'development');
-
-  const [sampleRef, _b1, updateSamplePainter] = usePainter('box');
-  const [nodeRef, b2, updateNodePainter] = usePainter('node');
-  const [podRef, b3, updatePodPainter] = usePainter('pod');
-  const [pointRef, b4, _p, setPointRefVisible] = usePainter(
-    'point',
-    options.level
-  );
-  const [gridRef, _b5, _g, setGridRefVisible] = usePainter('grid');
-  const [eventRef, selected] = usePainterEvent(
-    {
-      node: b2,
-      pod: b3,
-      point: b4,
-    },
-    (options && options.level) ?? 2
+  const [refMap, setLevel, setResources, setVisible, selected] = usePainter(
+    options.level ?? 2
   );
 
   useEffect(() => {
     if (panelMode === 'admin') {
-      updateNodePainter(sampleChunks);
-      updatePodPainter([]);
+      setResources({
+        node: sampleChunks,
+      });
     } else {
-      updateNodePainter([]);
-      updatePodPainter(sampleChunks);
+      setResources({
+        pod: sampleChunks,
+      });
     }
   }, [panelMode]);
 
   useEffect(() => {
-    updateSamplePainter(!!options.showBlocks ? sampleChunks : []);
-  }, [options.showBlocks]);
-
-  useEffect(() => {
-    const { showGrids, showPoints, level } = options;
-    showPoints !== undefined && setPointRefVisible(showPoints);
-    showGrids !== undefined && setGridRefVisible(showGrids);
-    // level !== undefined &&
+    const { showGrids, showPoints, showBlocks, level } = options;
+    setVisible({
+      grid: showGrids ?? true,
+      point: showPoints ?? true,
+      block: showBlocks ?? true,
+      group1: true,
+      group2: true,
+    });
+    level !== undefined && setLevel(level);
   }, [options]);
 
   return (
     <MainBlock id={id} {...otherProps}>
-      {isDevMode && (
-        <>
-          <canvas
-            ref={gridRef}
-            id="grids"
-            style={{
-              marginBottom: gridRef.current ? -gridRef.current.clientHeight : 0,
-            }}
-          />
-          <canvas
-            ref={pointRef}
-            id="points"
-            style={{
-              marginBottom: pointRef.current
-                ? -pointRef.current.clientHeight
-                : 0,
-            }}
-          />
-        </>
-      )}
-      {[sampleRef, nodeRef, podRef, eventRef].map((ref, index) => (
+      {Object.entries(refMap).map(([refName, ref]) => (
         <canvas
           ref={ref}
-          key={'c' + index}
-          id={'c' + index}
-          style={{ marginBottom: ref.current ? -ref.current.clientHeight : 0 }}
+          id={refName}
+          key={'c-' + refName}
+          style={{
+            marginBottom: ref.current ? -ref.current.clientHeight : 0,
+          }}
         />
       ))}
       {!!options.showPoints && !!selected && (
