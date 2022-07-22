@@ -1,11 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { getBoundedObject } from '~utils/positioner';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { getHighlightedPointPosition } from '~utils/positioner';
 
 export default (
-  setBoundedObject: Record<
-    PointType,
-    React.Dispatch<SelectedPointPosition | null>
-  >
+  setter: Record<PointType, React.Dispatch<SelectedPointPosition | null>>,
+  level: 1 | 2 | 3
 ): [React.RefObject<HTMLCanvasElement>, SelectedPointPosition | null] => {
   const ref = useRef<HTMLCanvasElement>(null);
   const [dimensions, setDimensions] = useState<
@@ -14,18 +12,8 @@ export default (
     width: 0,
     height: 0,
   });
-  const [boundedObjectPosition, setBoundedObjectPosition] =
+  const [highlightedPointPosition, setHighlightedPointPosition] =
     useState<SelectedPointPosition | null>(null);
-  // const [positions, setPositions] = useState<Position[]>([]);
-
-  // useEffect(() => {
-  //   // console.debug(
-  //   //   'gridVals: ',
-  //   //   getGridPositions(dimensions.width, dimensions.height, 2)
-  //   // );
-  //   resetGridPositions();
-  //   setPositions(getGridPositions(dimensions.width, dimensions.height, 2));
-  // }, [dimensions]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -43,20 +31,30 @@ export default (
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const handler = useCallback(
+    (el: MouseEvent) => {
+      const x = el.offsetX,
+        y = el.offsetY;
+
+      // TODO Optimize getHighlightedPointPosition which varies depending on row/columns only
+      const bounded = getHighlightedPointPosition(
+        dimensions.width,
+        dimensions.height,
+        level,
+        x,
+        y
+      );
+
+      setHighlightedPointPosition(bounded);
+      setter.point(bounded);
+    },
+    [dimensions]
+  );
+
   useEffect(() => {
     const ctx = ref.current && ref.current.getContext('2d');
     if (ctx === null || ref.current === null) return;
 
-    const handler = (el: MouseEvent) => {
-      const x = el.offsetX,
-        y = el.offsetY;
-
-      // TODO Optimize getBoundedObject which varies depending on row/columns only
-      const bounded = getBoundedObject(x, y);
-
-      setBoundedObjectPosition(bounded);
-      setBoundedObject['point'](bounded);
-    };
     ref.current.addEventListener('mousemove', handler);
     return () =>
       ref.current
@@ -64,5 +62,5 @@ export default (
         : undefined;
   }, [dimensions]);
 
-  return [ref, boundedObjectPosition];
+  return [ref, highlightedPointPosition];
 };

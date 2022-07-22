@@ -11,6 +11,6 @@ export interface Props extends Page.ComponentProps<'div'> {
     showBlocks?: boolean;
     showGrids?: boolean;
     showPoints?: boolean;
-    level?: number;
+    level?: 1 | 2 | 3;
   };
 }

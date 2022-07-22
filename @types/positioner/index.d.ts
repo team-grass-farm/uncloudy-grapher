@@ -5,6 +5,12 @@ declare namespace Positioner {
     level: 1 | 2 | 3
   ) => PointPosition[];
 
+  type GetLinePositions = (
+    width: number,
+    height: number,
+    level: 1 | 2 | 3
+  ) => LinePosition[];
+
   type GetGroupPositions = (
     width: number,
     height: number,
@@ -13,5 +19,11 @@ declare namespace Positioner {
     showSubGroup?: boolean
   ) => GroupPositions[];
 
-  type GetBoundedObject = (x: number, y: number) => SelectedPosition | null;
+  type GetHighlightedPointPosition = (
+    width: number,
+    height: number,
+    level: 1 | 2 | 3,
+    px: number,
+    py: number
+  ) => SelectedPointPosition | null;
 }

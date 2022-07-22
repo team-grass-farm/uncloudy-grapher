@@ -29,7 +29,7 @@ namespace Page {
     showGrids?: boolean;
     showPoints?: boolean;
     showBlocks?: boolean;
-    level?: number;
+    level?: 1 | 2 | 3;
   }
 }
 
