@@ -209,27 +209,80 @@ export const paintNode: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
 export const paintPod: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   () => {
     ctx.save();
+    var body_h = h - HEAD_H - HEAD_MARGIN;
 
-    //기둥부
-    ctx.fillStyle = 'beige';
+    var lingrad = ctx.createLinearGradient(x - dx, y, x + dx, y);
+    lingrad.addColorStop(0, '#A3E8E9');
+    lingrad.addColorStop(1, '#009596');
+
+    //=========================기둥부=================
+    ctx.fillStyle = lingrad;
     ctx.beginPath();
     ctx.moveTo(x - dx, y);
     ctx.lineTo(x + dx, y);
-    ctx.lineTo(x + dx, y - h);
-    ctx.lineTo(x - dx, y - h);
+    ctx.lineTo(x + dx, y - body_h);
+    ctx.lineTo(x - dx, y - body_h);
     ctx.fill();
 
-    // 윗면부
-    ctx.fillStyle = 'skyblue';
+    // 바닥부
+    ctx.fillStyle = lingrad;
+    ctx.beginPath();
+    ctx.ellipse(x, y, dx, dy, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    //몸통의 맨위
+    ctx.fillStyle = '#08A8A9';
+    ctx.beginPath();
+    ctx.ellipse(x, y - body_h, dx, dy, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.lineWidth = LINE_LIGHT;
+    ctx.strokeStyle = 'white';
+    ctx.beginPath();
+    ctx.ellipse(x, y - body_h, dx, dy, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // ======================머리부======================
+    //ellipse (x, y, radiusX, radiusY, rotation, startAngle, endAngle, 반 시계 방향)
+
+    // 머리의 몸통
+    ctx.fillStyle = lingrad;
+    ctx.beginPath();
+    ctx.ellipse(x, y - h + HEAD_H, dx, dy, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = lingrad;
+    ctx.beginPath();
+    ctx.moveTo(x - dx, y - h);
+    ctx.lineTo(x + dx, y - h);
+    ctx.lineTo(x + dx, y - h + HEAD_H);
+    ctx.lineTo(x - dx, y - h + HEAD_H);
+    ctx.fill();
+
+    //머리 큰 뚜껑
+    ctx.fillStyle = '#B7E8E9';
     ctx.beginPath();
     ctx.ellipse(x, y - h, dx, dy, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // 바닥부
-    ctx.fillStyle = 'pink';
+    //머리 작은 뚜껑
+    ctx.fillStyle = '#16BFC0';
     ctx.beginPath();
-    ctx.ellipse(x, y, dx, dy, 0, 0, Math.PI * 2);
+    ctx.ellipse(x, y - h, 0.75 * dx, 0.6 * dy, 0, 0, Math.PI * 2);
     ctx.fill();
+
+    //===================흰색 음영 라인==================
+
+    ctx.lineWidth = LINE_LIGHT;
+    ctx.strokeStyle = 'white';
+    ctx.beginPath();
+    ctx.ellipse(x, y - h, 0.75 * dx, 0.6 * dy, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.lineWidth = LINE_LIGHT;
+    ctx.strokeStyle = 'white';
+    ctx.beginPath();
+    ctx.ellipse(x, y - h, dx, dy, 0, 0, Math.PI * 2);
+    ctx.stroke();
 
     ctx.restore();
   },
