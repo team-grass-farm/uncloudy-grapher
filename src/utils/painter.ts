@@ -5,12 +5,12 @@ const DY = GRID_SIZE + SPACING;
 const c = (l: number, u: number) =>
   Math.round(Math.random() * (u || 255) + l || 0);
 
-const HEAD_H = 10 //노드 헤드 두께
-const HEAD_MARGIN = 2 //노드 헤드 마진
-const LINE_BOLD = 2
-const LINE_LIGHT = 1
-const BAR_H = 2
-const BAR_STEP = 6
+const HEAD_H = 10; //노드 헤드 두께
+const HEAD_MARGIN = 2; //노드 헤드 마진
+const LINE_BOLD = 2;
+const LINE_LIGHT = 1;
+const BAR_H = 2;
+const BAR_STEP = 6;
 
 export const paintCube: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   () => {
@@ -72,13 +72,10 @@ export const paintNode: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   () => {
     ctx.save();
 
+    var body_h = h - HEAD_H - HEAD_MARGIN;
+    var head_s = HEAD_MARGIN + HEAD_H;
 
-    var body_h = h - HEAD_H - HEAD_MARGIN; 
-  var head_s = HEAD_MARGIN + HEAD_H;
-
-
-
-  //===================몸통부==================
+    //===================몸통부==================
     //몸통 맨위
     ctx.fillStyle = '#BCBEFF';
     ctx.beginPath();
@@ -116,21 +113,18 @@ export const paintNode: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
     ctx.fill();
 
     //================왼쪽몸통 BAR 부 ==========
-    const count =(body_h - BAR_STEP) / (BAR_STEP + BAR_H);
-    var ratio = 0.8
-    for (var i = 1; i < count+1 ; i++){
-
+    const count = (body_h - BAR_STEP) / (BAR_STEP + BAR_H);
+    var ratio = 0.8;
+    for (var i = 1; i < count + 1; i++) {
       ctx.fillStyle = '#453C9E';
       ctx.beginPath();
-      ctx.moveTo(x - ratio * dx, y + (1 - ratio) * dy - i * BAR_STEP ); //1
-      ctx.lineTo(x - (1 - ratio) * dx, y + ratio * dy - i * BAR_STEP ); //2
-      ctx.lineTo(x -(1 - ratio) * dx, y + ratio * dy - i * BAR_STEP - BAR_H ); //3 
+      ctx.moveTo(x - ratio * dx, y + (1 - ratio) * dy - i * BAR_STEP); //1
+      ctx.lineTo(x - (1 - ratio) * dx, y + ratio * dy - i * BAR_STEP); //2
+      ctx.lineTo(x - (1 - ratio) * dx, y + ratio * dy - i * BAR_STEP - BAR_H); //3
       ctx.lineTo(x - ratio * dx, y + (1 - ratio) * dy - i * BAR_STEP - BAR_H); //4
       ctx.fill();
-
     }
 
-  
     //===================머리부==================
     //머리 맨위
     ctx.fillStyle = '#BCBEFF';
@@ -144,13 +138,12 @@ export const paintNode: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
     //머리 작은마름모
     ctx.fillStyle = '#453C9E';
     ctx.beginPath();
-    ctx.moveTo(x - (0.75 * dx), y - body_h - head_s);
-    ctx.lineTo(x, y - (0.75 * dy) - body_h - head_s);
-    ctx.lineTo(x + (0.75*dx), y - body_h - head_s);
-    ctx.lineTo(x, y + (0.75 * dy) - body_h - head_s);
+    ctx.moveTo(x - 0.75 * dx, y - body_h - head_s);
+    ctx.lineTo(x, y - 0.75 * dy - body_h - head_s);
+    ctx.lineTo(x + 0.75 * dx, y - body_h - head_s);
+    ctx.lineTo(x, y + 0.75 * dy - body_h - head_s);
     ctx.fill();
 
-    
     //머리 왼쪽
     ctx.fillStyle = '#BCBEFF';
     ctx.beginPath();
@@ -183,12 +176,12 @@ export const paintNode: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
     ctx.lineWidth = LINE_BOLD;
     ctx.strokeStyle = 'white';
     ctx.beginPath();
-    ctx.moveTo(x - (0.75 * dx), y - body_h - head_s);
-    ctx.lineTo(x, y - (0.75 * dy) - body_h - head_s);
-    ctx.lineTo(x + (0.75*dx), y - body_h - head_s);
+    ctx.moveTo(x - 0.75 * dx, y - body_h - head_s);
+    ctx.lineTo(x, y - 0.75 * dy - body_h - head_s);
+    ctx.lineTo(x + 0.75 * dx, y - body_h - head_s);
     ctx.stroke();
 
-    //몸통 상단의 흰색 빛 
+    //몸통 상단의 흰색 빛
     ctx.lineWidth = LINE_LIGHT;
     ctx.strokeStyle = 'white';
     ctx.beginPath();
@@ -216,27 +209,80 @@ export const paintNode: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
 export const paintPod: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   () => {
     ctx.save();
+    var body_h = h - HEAD_H - HEAD_MARGIN;
 
-    //기둥부
-    ctx.fillStyle = 'beige';
+    var lingrad = ctx.createLinearGradient(x - dx, y, x + dx, y);
+    lingrad.addColorStop(0, '#A3E8E9');
+    lingrad.addColorStop(1, '#009596');
+
+    //=========================기둥부=================
+    ctx.fillStyle = lingrad;
     ctx.beginPath();
     ctx.moveTo(x - dx, y);
     ctx.lineTo(x + dx, y);
-    ctx.lineTo(x + dx, y - h);
-    ctx.lineTo(x - dx, y - h);
+    ctx.lineTo(x + dx, y - body_h);
+    ctx.lineTo(x - dx, y - body_h);
     ctx.fill();
 
-    // 윗면부
-    ctx.fillStyle = 'skyblue';
+    // 바닥부
+    ctx.fillStyle = lingrad;
+    ctx.beginPath();
+    ctx.ellipse(x, y, dx, dy, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    //몸통의 맨위
+    ctx.fillStyle = '#08A8A9';
+    ctx.beginPath();
+    ctx.ellipse(x, y - body_h, dx, dy, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.lineWidth = LINE_LIGHT;
+    ctx.strokeStyle = 'white';
+    ctx.beginPath();
+    ctx.ellipse(x, y - body_h, dx, dy, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // ======================머리부======================
+    //ellipse (x, y, radiusX, radiusY, rotation, startAngle, endAngle, 반 시계 방향)
+
+    // 머리의 몸통
+    ctx.fillStyle = lingrad;
+    ctx.beginPath();
+    ctx.ellipse(x, y - h + HEAD_H, dx, dy, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = lingrad;
+    ctx.beginPath();
+    ctx.moveTo(x - dx, y - h);
+    ctx.lineTo(x + dx, y - h);
+    ctx.lineTo(x + dx, y - h + HEAD_H);
+    ctx.lineTo(x - dx, y - h + HEAD_H);
+    ctx.fill();
+
+    //머리 큰 뚜껑
+    ctx.fillStyle = '#B7E8E9';
     ctx.beginPath();
     ctx.ellipse(x, y - h, dx, dy, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // 바닥부
-    ctx.fillStyle = 'pink';
+    //머리 작은 뚜껑
+    ctx.fillStyle = '#16BFC0';
     ctx.beginPath();
-    ctx.ellipse(x, y, dx, dy, 0, 0, Math.PI * 2);
+    ctx.ellipse(x, y - h, 0.75 * dx, 0.6 * dy, 0, 0, Math.PI * 2);
     ctx.fill();
+
+    //===================흰색 음영 라인==================
+
+    ctx.lineWidth = LINE_LIGHT;
+    ctx.strokeStyle = 'white';
+    ctx.beginPath();
+    ctx.ellipse(x, y - h, 0.75 * dx, 0.6 * dy, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.lineWidth = LINE_LIGHT;
+    ctx.strokeStyle = 'white';
+    ctx.beginPath();
+    ctx.ellipse(x, y - h, dx, dy, 0, 0, Math.PI * 2);
+    ctx.stroke();
 
     ctx.restore();
   },
