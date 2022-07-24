@@ -75,7 +75,7 @@ export const fetchPodRelatedResources: Fetcher.FetchPodRelatedResources =
     });
   };
 
-export const fechNodeRelatedResources: Fetcher.FetchNodeRelatedResources =
+export const fetchNodeRelatedResources: Fetcher.FetchNodeRelatedResources =
   async () => {
     const queries: string[] = ['custom_node_cpu_usage[1m]'];
     const res = await Promise.all(
