@@ -22,25 +22,6 @@ namespace Node {
       memorySpec: number;
     };
   }
-  /** Prometheus HTTP API Response
-   * @see https://prometheus.io/docs/prometheus/latest/querying/api/
-   */
-  // interface Response {
-  //   status: 'success';
-  //   data: {
-  //     resultType: 'vector';
-  //     result: [
-  //       {
-  //         metric: {
-  //           __name__: string;
-  //           job: string;
-  //           instance: string;
-  //         };
-  //         value: [number, string];
-  //       }
-  //     ];
-  //   };
-  // }
 }
 
 export default Node;

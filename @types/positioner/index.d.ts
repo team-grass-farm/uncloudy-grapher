@@ -1,9 +1,65 @@
 declare namespace Positioner {
+  interface SavedViews {
+    admin: Partial<
+      Record<
+        1 | 2 | 3,
+        {
+          pods: Pod[];
+          nodes: Node[];
+          clusters: Cluster[];
+        }
+      >
+    >;
+    developer: Partial<
+      Record<
+        1 | 2 | 3,
+        {
+          pods: Pod[];
+          deployments: Deployment[];
+          namespaces: string[];
+        }
+      >
+    >;
+  }
+
+  type GetCursorPosition = (
+    cx: number,
+    cy: number,
+    level: 1 | 2 | 3,
+    offsetX: number,
+    offsetY: number
+  ) => PointPosition | null;
+
+  type GetCanvasValues = (
+    width: number,
+    height: number,
+    level: 1 | 2 | 3
+  ) => Record<
+    | 'DX'
+    | 'DY'
+    | 'A'
+    | 'numRows'
+    | 'numColumns'
+    | 'x0'
+    | 'y0'
+    | 'row0'
+    | 'column0',
+    number
+  >;
+
   type GetPointPositions = (
     width: number,
     height: number,
     level: 1 | 2 | 3
   ) => PointPosition[];
+
+  type GetHighlightedPointPosition = (
+    width: number,
+    height: number,
+    level: 1 | 2 | 3,
+    cx: number,
+    cy: number
+  ) => PointPosition | null;
 
   type GetLinePositions = (
     width: number,
@@ -11,19 +67,43 @@ declare namespace Positioner {
     level: 1 | 2 | 3
   ) => LinePosition[];
 
-  type GetGroupPositions = (
-    width: number,
-    height: number,
+  type GetBlockPositions = (
+    matrixes: Matrix[] | null,
     level: 1 | 2 | 3,
-    data: any[],
-    showSubGroup?: boolean
-  ) => GroupPositions[];
+    type: PointType & ('node' | 'pod')
+  ) => PointPosition[];
 
-  type GetHighlightedPointPosition = (
-    width: number,
-    height: number,
+  type GetGroupPositions = (
+    matrixes: [Matrix, Matrix][] | null,
     level: 1 | 2 | 3,
-    px: number,
-    py: number
-  ) => SelectedPointPosition | null;
+    type: GroupType
+  ) => GroupPosition[];
+
+  type GetDeveloperViewPositions = (
+    level: 1 | 2 | 3,
+    maxRow: number,
+    canvasColumn: number,
+    options: {
+      showDeployments: boolean;
+      showNamespaces: boolean;
+    }
+  ) => {
+    pods: PointPosition[];
+    deployments: GroupPosition[] | null;
+    namesaces: GroupPoisition[] | null;
+  };
+
+  type GetAdminViewPositions = (
+    level: 1 | 2 | 3,
+    maxRow: number,
+    canvasColumn: number,
+    options: {
+      showPods: boolean;
+      showClusters: boolean;
+    }
+  ) => {
+    pods: PointPosition[] | null;
+    nodes: GroupPosition[] | PointPosition[];
+    clusters: GroupPoisition[] | null;
+  };
 }
