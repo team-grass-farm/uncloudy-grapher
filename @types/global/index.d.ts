@@ -2,6 +2,11 @@ declare type PointType = 'pod' | 'node' | 'point';
 declare type LineType = 'grid';
 declare type GroupType = 'deployment' | 'namespace' | 'cluster' | 'node';
 
+declare interface Matrix {
+  row: number;
+  column: number;
+}
+
 declare interface PointPosition {
   x: number;
   y: number;
@@ -26,7 +31,3 @@ declare interface GroupPosition {
   zIndex: number;
   type: GroupType;
 }
-
-declare interface SelectedPointPosition extends PointPosition {}
-
-declare interface SelectedLinePosition extends LinePosition {}
