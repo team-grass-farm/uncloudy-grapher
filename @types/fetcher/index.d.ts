@@ -1,3 +1,4 @@
+// @see https://prometheus.io/docs/prometheus/latest/querying/api/
 declare namespace Fetcher {
   interface PromResponse {
     status: 'success';
