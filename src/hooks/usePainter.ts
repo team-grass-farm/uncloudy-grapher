@@ -24,7 +24,7 @@ export default (
   React.Dispatch<1 | 2 | 3>,
   React.Dispatch<React.SetStateAction<ResourceMap>>,
   React.Dispatch<React.SetStateAction<FlagMap>>,
-  SelectedPointPosition | null
+  PointPosition | null
 ] => {
   const [isDevMode] = useState(process.env.NODE_ENV === 'development');
   const [paused, setPaused] = useState<boolean>(true);
