@@ -7,11 +7,11 @@ export default (
 ): [
   React.RefObject<HTMLCanvasElement>,
   React.Dispatch<1 | 2 | 3>,
-  SelectedPointPosition | null
+  PointPosition | null
 ] => {
   const [level, setLevel] = useState<1 | 2 | 3>(_level);
   const [highlightedPointPosition, setHighlightedPointPosition] =
-    useState<SelectedPointPosition | null>(null);
+    useState<PointPosition | null>(null);
 
   const ref = useRef<HTMLCanvasElement>(null);
 

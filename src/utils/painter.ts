@@ -5,12 +5,12 @@ const DY = GRID_SIZE + SPACING;
 const c = (l: number, u: number) =>
   Math.round(Math.random() * (u || 255) + l || 0);
 
-const HEAD_H = 10 //노드 헤드 두께
-const HEAD_MARGIN = 2 //노드 헤드 마진
-const LINE_BOLD = 2
-const LINE_LIGHT = 1
-const BAR_H = 2
-const BAR_STEP = 6
+const HEAD_H = 10; //노드 헤드 두께
+const HEAD_MARGIN = 2; //노드 헤드 마진
+const LINE_BOLD = 2;
+const LINE_LIGHT = 1;
+const BAR_H = 2;
+const BAR_STEP = 6;
 
 export const paintCube: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   () => {
@@ -72,13 +72,10 @@ export const paintNode: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   () => {
     ctx.save();
 
+    var body_h = h - HEAD_H - HEAD_MARGIN;
+    var head_s = HEAD_MARGIN + HEAD_H;
 
-    var body_h = h - HEAD_H - HEAD_MARGIN; 
-  var head_s = HEAD_MARGIN + HEAD_H;
-
-
-
-  //===================몸통부==================
+    //===================몸통부==================
     //몸통 맨위
     ctx.fillStyle = '#BCBEFF';
     ctx.beginPath();
@@ -116,21 +113,18 @@ export const paintNode: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
     ctx.fill();
 
     //================왼쪽몸통 BAR 부 ==========
-    const count =(body_h - BAR_STEP) / (BAR_STEP + BAR_H);
-    var ratio = 0.8
-    for (var i = 1; i < count+1 ; i++){
-
+    const count = (body_h - BAR_STEP) / (BAR_STEP + BAR_H);
+    var ratio = 0.8;
+    for (var i = 1; i < count + 1; i++) {
       ctx.fillStyle = '#453C9E';
       ctx.beginPath();
-      ctx.moveTo(x - ratio * dx, y + (1 - ratio) * dy - i * BAR_STEP ); //1
-      ctx.lineTo(x - (1 - ratio) * dx, y + ratio * dy - i * BAR_STEP ); //2
-      ctx.lineTo(x -(1 - ratio) * dx, y + ratio * dy - i * BAR_STEP - BAR_H ); //3 
+      ctx.moveTo(x - ratio * dx, y + (1 - ratio) * dy - i * BAR_STEP); //1
+      ctx.lineTo(x - (1 - ratio) * dx, y + ratio * dy - i * BAR_STEP); //2
+      ctx.lineTo(x - (1 - ratio) * dx, y + ratio * dy - i * BAR_STEP - BAR_H); //3
       ctx.lineTo(x - ratio * dx, y + (1 - ratio) * dy - i * BAR_STEP - BAR_H); //4
       ctx.fill();
-
     }
 
-  
     //===================머리부==================
     //머리 맨위
     ctx.fillStyle = '#BCBEFF';
@@ -144,13 +138,12 @@ export const paintNode: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
     //머리 작은마름모
     ctx.fillStyle = '#453C9E';
     ctx.beginPath();
-    ctx.moveTo(x - (0.75 * dx), y - body_h - head_s);
-    ctx.lineTo(x, y - (0.75 * dy) - body_h - head_s);
-    ctx.lineTo(x + (0.75*dx), y - body_h - head_s);
-    ctx.lineTo(x, y + (0.75 * dy) - body_h - head_s);
+    ctx.moveTo(x - 0.75 * dx, y - body_h - head_s);
+    ctx.lineTo(x, y - 0.75 * dy - body_h - head_s);
+    ctx.lineTo(x + 0.75 * dx, y - body_h - head_s);
+    ctx.lineTo(x, y + 0.75 * dy - body_h - head_s);
     ctx.fill();
 
-    
     //머리 왼쪽
     ctx.fillStyle = '#BCBEFF';
     ctx.beginPath();
@@ -183,12 +176,12 @@ export const paintNode: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
     ctx.lineWidth = LINE_BOLD;
     ctx.strokeStyle = 'white';
     ctx.beginPath();
-    ctx.moveTo(x - (0.75 * dx), y - body_h - head_s);
-    ctx.lineTo(x, y - (0.75 * dy) - body_h - head_s);
-    ctx.lineTo(x + (0.75*dx), y - body_h - head_s);
+    ctx.moveTo(x - 0.75 * dx, y - body_h - head_s);
+    ctx.lineTo(x, y - 0.75 * dy - body_h - head_s);
+    ctx.lineTo(x + 0.75 * dx, y - body_h - head_s);
     ctx.stroke();
 
-    //몸통 상단의 흰색 빛 
+    //몸통 상단의 흰색 빛
     ctx.lineWidth = LINE_LIGHT;
     ctx.strokeStyle = 'white';
     ctx.beginPath();
@@ -423,7 +416,7 @@ export const renderGrids = (
   ctx: CanvasRenderingContext2D,
   currentRef: HTMLCanvasElement,
   positions: LinePosition[],
-  selectedPosition: SelectedLinePosition | null,
+  selectedPosition: LinePosition | null,
   visible: boolean
 ) => {
   const stackPaintingObject: any[] = [];
@@ -453,7 +446,7 @@ export const renderPoints = (
   ctx: CanvasRenderingContext2D,
   currentRef: HTMLCanvasElement,
   positions: PointPosition[],
-  selectedPosition: SelectedPointPosition | null,
+  selectedPosition: PointPosition | null,
   visible: boolean
 ) => {
   const stackPaintingObject: (() => void)[] = [];
