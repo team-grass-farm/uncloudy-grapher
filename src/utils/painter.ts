@@ -12,6 +12,12 @@ const LINE_LIGHT = 1;
 const BAR_H = 2;
 const BAR_STEP = 6;
 
+const NAMESAPCE_H = 10;
+const NAMESPACE_X = 300;
+const NAMESPACE_Y = 300;
+const NAMESAPCE_DX = 200;
+const NAMESAPCE_DY = 100;
+
 export const paintCube: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   () => {
     ctx.save();
@@ -282,6 +288,70 @@ export const paintPod: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
     ctx.strokeStyle = 'white';
     ctx.beginPath();
     ctx.ellipse(x, y - h, dx, dy, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.restore();
+  },
+];
+
+/**
+ * 네임스페이스 그룹을 렌더링합니다.
+ * @author 김민정
+ * @param ctx: 캔버스 포인터
+ * @param NAMESAPCE_X: 네임스페이스 그룹의 x 시작점
+ * @param NAMESAPCE_Y: 네임스페이스 그룹의 y 시작점
+ * @param NAMESAPCE_DX: 네임스페이스 그룹의 x 크기
+ * @param NAMESAPCE_DY: 네임스페이스 그룹의 y 크기
+ * @param NAMESAPCE_H: 네임스페이스 그룹의 높이
+ * @returns () => void
+ */
+export const paintNamesapce: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
+  () => {
+    ctx.save();
+
+    //네임스페이스 맨위
+    ctx.fillStyle = '#F3F4FF';
+    ctx.beginPath();
+    ctx.moveTo(NAMESPACE_X - NAMESAPCE_DX, NAMESPACE_Y - NAMESAPCE_H);
+    ctx.lineTo(NAMESPACE_X, NAMESPACE_Y - NAMESAPCE_DY - NAMESAPCE_H);
+    ctx.lineTo(NAMESPACE_X + NAMESAPCE_DX, NAMESPACE_Y - NAMESAPCE_H);
+    ctx.lineTo(NAMESPACE_X, NAMESPACE_Y + NAMESAPCE_DY - NAMESAPCE_H);
+    ctx.fill();
+
+    //네임스페이스 바닥
+    ctx.fillStyle = '#F3F4FF';
+    ctx.beginPath();
+    ctx.moveTo(NAMESPACE_X - NAMESAPCE_DX, NAMESPACE_Y);
+    ctx.lineTo(NAMESPACE_X, NAMESPACE_Y + NAMESAPCE_DY);
+    ctx.lineTo(NAMESPACE_X + NAMESAPCE_DX, NAMESPACE_Y);
+    ctx.lineTo(NAMESPACE_X, NAMESPACE_Y - NAMESAPCE_DY);
+    ctx.fill();
+
+    //네임스페이스 왼쪽
+    ctx.fillStyle = '#DBDDFC';
+    ctx.beginPath();
+    ctx.moveTo(NAMESPACE_X - NAMESAPCE_DX, NAMESPACE_Y - NAMESAPCE_H);
+    ctx.lineTo(NAMESPACE_X, NAMESPACE_Y + NAMESAPCE_DY - NAMESAPCE_H);
+    ctx.lineTo(NAMESPACE_X, NAMESPACE_Y + NAMESAPCE_DY);
+    ctx.lineTo(NAMESPACE_X - NAMESAPCE_DX, NAMESPACE_Y);
+    ctx.fill();
+
+    //네임스페이스 오른쪽
+    ctx.fillStyle = '#DBDDFC';
+    ctx.beginPath();
+    ctx.lineTo(NAMESPACE_X, NAMESPACE_Y + NAMESAPCE_DY - NAMESAPCE_H);
+    ctx.lineTo(NAMESPACE_X + NAMESAPCE_DX, NAMESPACE_Y - NAMESAPCE_H);
+    ctx.lineTo(NAMESPACE_X + NAMESAPCE_DX, NAMESPACE_Y);
+    ctx.lineTo(NAMESPACE_X, NAMESPACE_Y + NAMESAPCE_DY);
+    ctx.fill();
+
+    //네임스페이스 상단의 흰색 빛
+    ctx.lineWidth = LINE_BOLD;
+    ctx.strokeStyle = 'white';
+    ctx.beginPath();
+    ctx.moveTo(NAMESPACE_X - NAMESAPCE_DX, NAMESPACE_Y - NAMESAPCE_H);
+    ctx.lineTo(NAMESPACE_X, NAMESPACE_Y + NAMESAPCE_DY - NAMESAPCE_H);
+    ctx.lineTo(NAMESPACE_X + NAMESAPCE_DX, NAMESPACE_Y - NAMESAPCE_H);
     ctx.stroke();
 
     ctx.restore();
