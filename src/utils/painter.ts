@@ -1,10 +1,22 @@
-import { DAYS, POS_ZANDIS, SPACING } from '~constants';
+import { DAYS, GRID_SIZE, POS_ZANDIS, SPACING } from '~constants';
 
-const GRID_SIZE = 10;
 const DX = 2 * (GRID_SIZE + SPACING);
 const DY = GRID_SIZE + SPACING;
 const c = (l: number, u: number) =>
   Math.round(Math.random() * (u || 255) + l || 0);
+
+const HEAD_H = 10; //노드 헤드 두께
+const HEAD_MARGIN = 2; //노드 헤드 마진
+const LINE_BOLD = 2;
+const LINE_LIGHT = 1;
+const BAR_H = 2;
+const BAR_STEP = 6;
+
+const CLUSTER_H = 10;
+const CLUSTER_X = 300;
+const CLUSTER_Y = 300;
+const CLUSTER_DX = 200;
+const CLUSTER_DY = 100;
 
 export const paintCube: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   () => {
@@ -51,22 +63,283 @@ export const paintCube: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   },
 ];
 
-export const paintPoint: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
+/**
+ * 노드 블럭을 렌더링합니다.
+ * @author 김민정
+ * @param ctx: 캔버스 포인터
+ * @param x: 노드 블럭의 x 시작점
+ * @param y: 노드 블럭의 y 시작점
+ * @param dx: 노드 블럭의 x 크기
+ * @param dy: 노드 블럭의 y 크기
+ * @param h: 노드 블럭의 높이
+ * @returns () => void
+ */
+export const paintNode: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   () => {
     ctx.save();
-    ctx.fillStyle = '#dd5555';
-    ctx.fillRect(x - 1.5, y - 1.5, 3, 3);
+
+    var body_h = h - HEAD_H - HEAD_MARGIN;
+    var head_s = HEAD_MARGIN + HEAD_H;
+
+    //===================몸통부==================
+    //몸통 맨위
+    ctx.fillStyle = '#BCBEFF';
+    ctx.beginPath();
+    ctx.moveTo(x - dx, y - body_h);
+    ctx.lineTo(x, y - dy - body_h);
+    ctx.lineTo(x + dx, y - body_h);
+    ctx.lineTo(x, y + dy - body_h);
+    ctx.fill();
+
+    //몸통 바닥
+    ctx.fillStyle = '#BCBEFF';
+    ctx.beginPath();
+    ctx.moveTo(x - dx, y);
+    ctx.lineTo(x, y + dy);
+    ctx.lineTo(x + dx, y);
+    ctx.lineTo(x, y - dy);
+    ctx.fill();
+
+    //몸통 왼쪽
+    ctx.fillStyle = '#BCBEFF';
+    ctx.beginPath();
+    ctx.moveTo(x - dx, y - body_h);
+    ctx.lineTo(x, y + dy - body_h);
+    ctx.lineTo(x, y + dy);
+    ctx.lineTo(x - dx, y);
+    ctx.fill();
+
+    //몸통 오른쪽
+    ctx.fillStyle = '#453C9E';
+    ctx.beginPath();
+    ctx.lineTo(x, y + dy - body_h);
+    ctx.lineTo(x + dx, y - body_h);
+    ctx.lineTo(x + dx, y);
+    ctx.lineTo(x, y + dy);
+    ctx.fill();
+
+    //================왼쪽몸통 BAR 부 ==========
+    const count = (body_h - BAR_STEP) / (BAR_STEP + BAR_H);
+    var ratio = 0.8;
+    for (var i = 1; i < count + 1; i++) {
+      ctx.fillStyle = '#453C9E';
+      ctx.beginPath();
+      ctx.moveTo(x - ratio * dx, y + (1 - ratio) * dy - i * BAR_STEP); //1
+      ctx.lineTo(x - (1 - ratio) * dx, y + ratio * dy - i * BAR_STEP); //2
+      ctx.lineTo(x - (1 - ratio) * dx, y + ratio * dy - i * BAR_STEP - BAR_H); //3
+      ctx.lineTo(x - ratio * dx, y + (1 - ratio) * dy - i * BAR_STEP - BAR_H); //4
+      ctx.fill();
+    }
+
+    //===================머리부==================
+    //머리 맨위
+    ctx.fillStyle = '#BCBEFF';
+    ctx.beginPath();
+    ctx.moveTo(x - dx, y - body_h - head_s);
+    ctx.lineTo(x, y - dy - body_h - head_s);
+    ctx.lineTo(x + dx, y - body_h - head_s);
+    ctx.lineTo(x, y + dy - body_h - head_s);
+    ctx.fill();
+
+    //머리 작은마름모
+    ctx.fillStyle = '#453C9E';
+    ctx.beginPath();
+    ctx.moveTo(x - 0.75 * dx, y - body_h - head_s);
+    ctx.lineTo(x, y - 0.75 * dy - body_h - head_s);
+    ctx.lineTo(x + 0.75 * dx, y - body_h - head_s);
+    ctx.lineTo(x, y + 0.75 * dy - body_h - head_s);
+    ctx.fill();
+
+    //머리 왼쪽
+    ctx.fillStyle = '#BCBEFF';
+    ctx.beginPath();
+    ctx.moveTo(x - dx, y - body_h - head_s);
+    ctx.lineTo(x, y + dy - body_h - head_s);
+    ctx.lineTo(x, y + dy - body_h - HEAD_MARGIN);
+    ctx.lineTo(x - dx, y - body_h - HEAD_MARGIN);
+    ctx.fill();
+
+    // //머리 오른쪽
+    ctx.fillStyle = '#453C9E';
+    ctx.beginPath();
+    ctx.lineTo(x, y + dy - body_h - head_s);
+    ctx.lineTo(x + dx, y - body_h - head_s);
+    ctx.lineTo(x + dx, y - body_h - HEAD_MARGIN);
+    ctx.lineTo(x, y + dy - body_h - HEAD_MARGIN);
+    ctx.fill();
+
+    ////==================흰색 음영 띠들=====================
+    //머리 맨위 하단의 흰색 빛
+    ctx.lineWidth = LINE_LIGHT;
+    ctx.strokeStyle = 'white';
+    ctx.beginPath();
+    ctx.moveTo(x - dx, y - body_h - head_s);
+    ctx.lineTo(x, y + dy - body_h - head_s);
+    ctx.lineTo(x + dx, y - body_h - head_s);
+    ctx.stroke();
+
+    //머리 작은마름모의 흰색 빛
+    ctx.lineWidth = LINE_BOLD;
+    ctx.strokeStyle = 'white';
+    ctx.beginPath();
+    ctx.moveTo(x - 0.75 * dx, y - body_h - head_s);
+    ctx.lineTo(x, y - 0.75 * dy - body_h - head_s);
+    ctx.lineTo(x + 0.75 * dx, y - body_h - head_s);
+    ctx.stroke();
+
+    //몸통 상단의 흰색 빛
+    ctx.lineWidth = LINE_LIGHT;
+    ctx.strokeStyle = 'white';
+    ctx.beginPath();
+    ctx.moveTo(x - dx, y - body_h);
+    ctx.lineTo(x, y + dy - body_h);
+    ctx.lineTo(x + dx, y - body_h);
+    ctx.stroke();
+
     ctx.restore();
   },
 ];
 
-export const paintLine: Painter.PaintObject = (ctx, x, y, dx, dy, _, val) => [
+/**
+ * 클러스터 그룹을 렌더링합니다.
+ * @author 김민정
+ * @param ctx: 캔버스 포인터
+ * @param CLUSTER_X: 클러스터 그룹의 x 시작점
+ * @param CLUSTER_Y: 클러스터 그룹의 y 시작점
+ * @param CLUSTER_DX: 클러스터 그룹의 x 크기
+ * @param CLUSTER_DY: 클러스터 그룹의 y 크기
+ * @param CLUSTER_Y: 클러스터 그룹의 높이
+ * @returns () => void
+ */
+export const paintCluster: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
+  () => {
+    ctx.save();
+
+    //클러스터 맨위
+    ctx.fillStyle = '#BCBEFF';
+    ctx.beginPath();
+    ctx.moveTo(CLUSTER_X - CLUSTER_DX, CLUSTER_Y - CLUSTER_H);
+    ctx.lineTo(CLUSTER_X, CLUSTER_Y - CLUSTER_DY - CLUSTER_H);
+    ctx.lineTo(CLUSTER_X + CLUSTER_DX, CLUSTER_Y - CLUSTER_H);
+    ctx.lineTo(CLUSTER_X, CLUSTER_Y + CLUSTER_DY - CLUSTER_H);
+    ctx.fill();
+
+    //클러스터 바닥
+    ctx.fillStyle = '#BCBEFF';
+    ctx.beginPath();
+    ctx.moveTo(CLUSTER_X - CLUSTER_DX, CLUSTER_Y);
+    ctx.lineTo(CLUSTER_X, CLUSTER_Y + CLUSTER_DY);
+    ctx.lineTo(CLUSTER_X + CLUSTER_DX, CLUSTER_Y);
+    ctx.lineTo(CLUSTER_X, CLUSTER_Y - CLUSTER_DY);
+    ctx.fill();
+
+    //클러스터 왼쪽
+    ctx.fillStyle = '#BCBEFF';
+    ctx.beginPath();
+    ctx.moveTo(CLUSTER_X - CLUSTER_DX, CLUSTER_Y - CLUSTER_H);
+    ctx.lineTo(CLUSTER_X, CLUSTER_Y + CLUSTER_DY - CLUSTER_H);
+    ctx.lineTo(CLUSTER_X, CLUSTER_Y + CLUSTER_DY);
+    ctx.lineTo(CLUSTER_X - CLUSTER_DX, CLUSTER_Y);
+    ctx.fill();
+
+    //클러스터 오른쪽
+    ctx.fillStyle = '#8E91E3';
+    ctx.beginPath();
+    ctx.lineTo(CLUSTER_X, CLUSTER_Y + CLUSTER_DY - CLUSTER_H);
+    ctx.lineTo(CLUSTER_X + CLUSTER_DX, CLUSTER_Y - CLUSTER_H);
+    ctx.lineTo(CLUSTER_X + CLUSTER_DX, CLUSTER_Y);
+    ctx.lineTo(CLUSTER_X, CLUSTER_Y + CLUSTER_DY);
+    ctx.fill();
+
+    //클러스터 맨위 작은 마름모
+    ctx.fillStyle = '#8C82F0';
+    ctx.beginPath();
+    ctx.moveTo(CLUSTER_X - 0.92 * CLUSTER_DX, CLUSTER_Y - CLUSTER_H);
+    ctx.lineTo(CLUSTER_X, CLUSTER_Y - 0.93 * CLUSTER_DY - CLUSTER_H);
+    ctx.lineTo(CLUSTER_X + 0.92 * CLUSTER_DX, CLUSTER_Y - CLUSTER_H);
+    ctx.lineTo(CLUSTER_X, CLUSTER_Y + 0.9 * CLUSTER_DY - CLUSTER_H);
+    ctx.fill();
+
+    //클러스터 상단의 흰색 빛
+    ctx.lineWidth = LINE_LIGHT;
+    ctx.strokeStyle = 'white';
+    ctx.beginPath();
+    ctx.moveTo(CLUSTER_X - CLUSTER_DX, CLUSTER_Y - CLUSTER_H);
+    ctx.lineTo(CLUSTER_X, CLUSTER_Y + CLUSTER_DY - CLUSTER_H);
+    ctx.lineTo(CLUSTER_X + CLUSTER_DX, CLUSTER_Y - CLUSTER_H);
+    ctx.stroke();
+
+    ctx.restore();
+  },
+];
+
+/**
+ * 파드 블럭을 렌더링합니다.
+ * 타원 사용법: ellipse (x, y, radiusX, radiusY, rotation, startAngle, endAngle, 반 시계 방향)
+ * @author 김민정
+ * @param ctx: 캔버스 포인터
+ * @param x: 파드 블럭의 x 시작점
+ * @param y: 파드 블럭의 y 시작점
+ * @param dx: 파드 블럭의 x 크기
+ * @param dy: 파드 블럭의 y 크기
+ * @param h: 파드 블럭의 높이
+ * @returns () => void
+ */
+export const paintPod: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
+  () => {
+    ctx.save();
+
+    //기둥부
+    ctx.fillStyle = 'beige';
+    ctx.beginPath();
+    ctx.moveTo(x - dx, y);
+    ctx.lineTo(x + dx, y);
+    ctx.lineTo(x + dx, y - h);
+    ctx.lineTo(x - dx, y - h);
+    ctx.fill();
+
+    // 윗면부
+    ctx.fillStyle = 'skyblue';
+    ctx.beginPath();
+    ctx.ellipse(x, y - h, dx, dy, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 바닥부
+    ctx.fillStyle = 'pink';
+    ctx.beginPath();
+    ctx.ellipse(x, y, dx, dy, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  },
+];
+
+export const paintPoint: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
+  () => {
+    ctx.save();
+    ctx.fillStyle = '#dd5555';
+    const valX = !!dx ? dx : 1.5,
+      valY = !!dy ? dy : 1.5;
+    ctx.fillRect(x - valX, y - valY, 2 * valX, 2 * valY);
+    ctx.restore();
+  },
+];
+
+export const paintLine: Painter.PaintObject = (
+  ctx,
+  x,
+  y,
+  dx,
+  dy,
+  _,
+  option
+) => [
   () => {
     ctx.save();
 
     ctx.beginPath();
     ctx.moveTo(x, y);
-    ctx.lineTo(x + (val && val.reversed ? -dx : dx), y + dy);
+    ctx.lineTo(x + (option && option.reversed ? -dx : dx), y + dy);
     ctx.strokeStyle = '#ddd';
     ctx.closePath();
     ctx.stroke();
@@ -232,40 +505,37 @@ export const renderGrids = (
   visible: boolean
 ) => {
   const stackPaintingObject: any[] = [];
+  const x0 = parseInt('' + (currentRef.width % DX), 10);
 
   ctx.lineJoin = 'round';
   ctx.fillStyle = 'transparent';
   ctx.scale(1, 1);
 
   if (visible) {
-    Array.from(
-      Array(parseInt('' + (2 * currentRef.width) / DX, 10)).keys()
-    ).map((px) => {
-      stackPaintingObject.push(
-        ...paintLine(
-          ctx,
-          px * DX,
-          0,
-          currentRef.height * 2,
-          currentRef.height,
-          0,
-          {
-            reversed: true,
-          }
-        ),
-        ...paintLine(
-          ctx,
-          -currentRef.width + px * DX,
-          0,
-          currentRef.height * 2,
-          currentRef.height,
-          0,
-          {
-            reversed: false,
-          }
-        )
-      );
-    });
+    Array.from(Array(parseInt('' + currentRef.width / DX, 10) + 1).keys()).map(
+      (px) => {
+        stackPaintingObject.push(
+          ...paintLine(
+            ctx,
+            x0 + 2 * DX * px,
+            0,
+            currentRef.height * 2,
+            currentRef.height,
+            0,
+            { reversed: true }
+          )
+          // ...paintLine(
+          //   ctx,
+          //   x0 + 2 * DX * px,
+          //   0,
+          //   currentRef.height * 2,
+          //   currentRef.height,
+          //   0,
+          //   { reversed: false }
+          // )
+        );
+      }
+    );
   }
 
   const render = () => {
@@ -280,28 +550,32 @@ export const renderGrids = (
 export const renderPoints = (
   ctx: CanvasRenderingContext2D,
   currentRef: HTMLCanvasElement,
+  positions: PointPosition[],
+  boundedPosition: SelectedPointPosition | null,
   visible: boolean
 ) => {
-  const stackPaintingObject: any[] = [];
-  const x0 = 0,
-    y0 = 0;
+  const stackPaintingObject: (() => void)[] = [];
 
   ctx.lineJoin = 'round';
   ctx.fillStyle = 'transparent';
   ctx.scale(1, 1);
 
   if (visible) {
-    Array.from(Array(parseInt('' + currentRef.height / DY, 10) + 1).keys()).map(
-      (py) => {
-        Array.from(
-          Array(parseInt('' + currentRef.width / DX, 10) + 1).keys()
-        ).map((px) => {
-          stackPaintingObject.push(
-            ...paintPoint(ctx, x0 + px * DX, y0 + py * DY, 0, 0, 0)
-          );
-        });
+    positions.forEach((position) => {
+      if (
+        !!boundedPosition &&
+        position.row === boundedPosition.row &&
+        position.column === boundedPosition.column
+      ) {
+        stackPaintingObject.push(
+          ...paintPoint(ctx, position.x, position.y, 5, 5, 0)
+        );
+      } else {
+        stackPaintingObject.push(
+          ...paintPoint(ctx, position.x, position.y, 0, 0, 0)
+        );
       }
-    );
+    });
   }
 
   const render = () => {
@@ -316,13 +590,28 @@ export const renderObjects = (
   ctx: CanvasRenderingContext2D,
   currentRef: HTMLCanvasElement,
   dataChunks: number[][],
-  paintingType: 'box' | 'grass'
+  paintingType: 'box' | 'grass' | 'node' | 'pod'
 ) => {
   const stackPaintingObject: any[] = [];
-  const paintObject = paintingType === 'box' ? paintCube : paintGrasses;
   const x0 = currentRef.width / 2 + 6 * DX;
   const y0 = currentRef.height / 4 + 6 * DY;
-  const height = paintingType === 'box' ? 5 : 15;
+  const height = paintingType === 'box' ? 5 : paintingType === 'node' ? 35 : 15;
+
+  let paintObject: Painter.PaintObject;
+  switch (paintingType) {
+    case 'box':
+      paintObject = paintCube;
+      break;
+    case 'grass':
+      paintObject = paintGrasses;
+      break;
+    case 'node':
+      paintObject = paintNode;
+      break;
+    case 'pod':
+      paintObject = paintPod;
+      break;
+  }
 
   ctx.lineJoin = 'round';
   ctx.fillStyle = 'transparent';
@@ -346,7 +635,7 @@ export const renderObjects = (
   const render = () => {
     ctx.clearRect(0, 0, currentRef.width, currentRef.height);
     ctx.fillRect(0, 0, currentRef.width, currentRef.height);
-    stackPaintingObject.forEach((paintObject) => paintObject());
+    stackPaintingObject.forEach((paint) => paint());
 
     paintingType === 'grass' && requestAnimationFrame(render);
   };

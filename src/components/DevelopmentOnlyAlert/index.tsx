@@ -5,16 +5,7 @@ import { MainBlock } from './styles';
 
 import type { Props } from './types';
 
-export default ({
-  id,
-  showGrids,
-  showPoints,
-  level,
-  onChangeShowGrids,
-  onChangeShowPoints,
-  onChangeLevel,
-  ...otherProps
-}: Props) => {
+export default ({ id, data, onChangeData, ...otherProps }: Props) => {
   return (
     <MainBlock id={id} {...otherProps}>
       <Alert
@@ -22,43 +13,49 @@ export default ({
         message="디버깅을 위한 옵션"
         description="이 옵션들은 배포 시 보이지 않습니다."
         closable={true}
-        // showIcon
-        // closeIcon={
-        //   <div>
-        //     <Button
-        //       type="ghost"
-        //       style={{ marginTop: '0.55rem', marginLeft: '2rem' }}
-        //     >
-        //       닫기
-        //     </Button>
-        //   </div>
-        // }
         action={
           <Space direction="vertical">
             <Row gutter={[10, 10]} style={{ textAlign: 'right' }}>
-              {showGrids !== undefined && (
-                <Col span={12}>
+              {data.showGrids !== undefined && (
+                <Col span={8}>
                   <label htmlFor="s1">격자 보기 </label>
                   <Switch
                     id="s1"
                     size="small"
-                    checked={showGrids}
-                    onChange={onChangeShowGrids}
+                    checked={data.showGrids}
+                    onChange={(showGrids) =>
+                      onChangeData({ ...data, showGrids })
+                    }
                   />
                 </Col>
               )}
-              {showPoints !== undefined && (
-                <Col span={12}>
+              {data.showPoints !== undefined && (
+                <Col span={8}>
                   <label htmlFor="s2">좌표 보기 </label>
                   <Switch
                     id="s2"
                     size="small"
-                    checked={showPoints}
-                    onChange={onChangeShowPoints}
+                    checked={data.showPoints}
+                    onChange={(showPoints) =>
+                      onChangeData({ ...data, showPoints })
+                    }
                   />
                 </Col>
               )}
-              {level !== undefined && (
+              {data.showBlocks !== undefined && (
+                <Col span={8}>
+                  <label htmlFor="s3">샘플 블럭 보기 </label>
+                  <Switch
+                    id="s3"
+                    size="small"
+                    checked={data.showBlocks}
+                    onChange={(showBlocks) =>
+                      onChangeData({ ...data, showBlocks })
+                    }
+                  />
+                </Col>
+              )}
+              {data.level !== undefined && (
                 <>
                   <Col span={9}>
                     <label htmlFor="s3">보기 레벨</label>
@@ -66,10 +63,10 @@ export default ({
                   <Col span={15}>
                     <Slider
                       id="s3"
-                      value={level}
+                      value={data.level}
                       min={1}
                       max={3}
-                      onChange={onChangeLevel}
+                      onChange={(level) => onChangeData({ ...data, level })}
                     />
                   </Col>
                 </>

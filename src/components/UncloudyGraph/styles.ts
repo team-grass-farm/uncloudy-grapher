@@ -17,6 +17,15 @@ export const MainBlock = styled.div`
     margin-bottom: -16rem;
   }
 
+  #tooltip-pos {
+    position: absolute;
+    background: #dd5555;
+    color: white;
+    font-size: 0.8rem;
+    height: 1.5rem;
+    padding: 0.35rem;
+  }
+
   aside {
     width: 100%;
     margin-top: 12.75rem;

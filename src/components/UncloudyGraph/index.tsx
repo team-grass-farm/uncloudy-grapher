@@ -1,6 +1,6 @@
 import { Col, Row, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { usePainter } from '~hooks';
+import { usePainter, usePainterEvent } from '~hooks';
 
 import { MainBlock } from './styles';
 
@@ -8,37 +8,53 @@ import type { Props } from './types';
 
 type View = 'numPods' | 'CPUUsage' | 'memoryUsage' | 'nodeId';
 
+const sampleChunks = [
+  [1, 2, 3],
+  [4, 5, 6],
+];
+
 export default ({
   id,
+  panelMode,
   clusters,
   nodes,
   deployments,
   pods,
-  showGrids,
-  showPoints,
+  options,
   ...otherProps
 }: Props) => {
   const [isDevMode] = useState(process.env.NODE_ENV === 'development');
 
-  const [resourceRef, updateResourcePainter] = usePainter('grid');
-  const [pointRef, _p, setPointRefVisible] = usePainter('point');
-  const [gridRef, _g, setGridRefVisible] = usePainter('grid');
+  const [sampleRef, _b1, updateSamplePainter] = usePainter('box');
+  const [nodeRef, b2, updateNodePainter] = usePainter('node');
+  const [podRef, b3, updatePodPainter] = usePainter('pod');
+  const [pointRef, b4, _p, setPointRefVisible] = usePainter('point');
+  const [gridRef, _bg, _g, setGridRefVisible] = usePainter('grid');
+  const [eventRef, selected] = usePainterEvent({
+    node: b2,
+    pod: b3,
+    point: b4,
+  });
 
   useEffect(() => {
-    const chunks = [
-      [1, 2, 3],
-      [4, 5, 6],
-    ];
-    updateResourcePainter(chunks);
-  }, []);
+    if (panelMode === 'admin') {
+      updateNodePainter(sampleChunks);
+      updatePodPainter([]);
+    } else {
+      updateNodePainter([]);
+      updatePodPainter(sampleChunks);
+    }
+  }, [panelMode]);
 
   useEffect(() => {
+    updateSamplePainter(!!options.showBlocks ? sampleChunks : []);
+  }, [options.showBlocks]);
+
+  useEffect(() => {
+    const { showGrids, showPoints } = options;
     showPoints !== undefined && setPointRefVisible(showPoints);
-  }, [showPoints]);
-
-  useEffect(() => {
     showGrids !== undefined && setGridRefVisible(showGrids);
-  }, [showGrids]);
+  }, [options]);
 
   return (
     <MainBlock id={id} {...otherProps}>
@@ -62,19 +78,33 @@ export default ({
           />
         </>
       )}
-      <canvas
-        ref={resourceRef}
-        id="resources"
-        style={{
-          marginBottom: resourceRef.current
-            ? -resourceRef.current.clientHeight
-            : 0,
-        }}
-      />
+      {[sampleRef, nodeRef, podRef, eventRef].map((ref, index) => (
+        <canvas
+          ref={ref}
+          key={'c' + index}
+          id={'c' + index}
+          style={{ marginBottom: ref.current ? -ref.current.clientHeight : 0 }}
+        />
+      ))}
+      {!!options.showPoints && !!selected && (
+        <div
+          id="tooltip-pos"
+          style={{
+            marginTop: selected.y + 'px',
+            marginLeft: selected.x + 'px',
+          }}
+        >
+          <span>{`row: ${selected.row}, col: ${selected.column}`}</span>
+        </div>
+      )}
 
       <aside>
-        <Row id="tool-row">
-          <Col span={18}></Col>
+        <Row
+          id="tool-row"
+          style={{
+            flexDirection: 'row-reverse',
+          }}
+        >
           <Col span={6}>
             <Select
               mode="multiple"

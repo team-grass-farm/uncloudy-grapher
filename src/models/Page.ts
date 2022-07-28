@@ -24,6 +24,13 @@ namespace Page {
     label: string;
     children?: Option[];
   }
+
+  export interface DebuggingOptions {
+    showGrids?: boolean;
+    showPoints?: boolean;
+    showBlocks?: boolean;
+    level?: number;
+  }
 }
 
 export default Page;

@@ -3,13 +3,19 @@ interface Pod {
   shortId: string;
   deploymentId: string;
   namespace: string;
-  CPUUsage: number;
-  memoryUsage: number;
-  CPUSpec: number;
-  memorySpec: number;
 }
 
 namespace Pod {
+  export interface Metric {
+    time: number;
+    values: {
+      CPUUsage: number;
+      memoryUsage: number;
+      CPUSpec: number;
+      memorySpec: number;
+    };
+  }
+
   /**
    * Kube-state-metrice
    * @description kube_pod_container_info
