@@ -26,7 +26,7 @@ export default (
     Array.from(info).forEach((val) => {
       deployments.push({
         id: val[0],
-        shortId: val[0].split('-')[0],
+        shortId: val[0].split('-deployment-')[0],
         replicas: 0,
         availableReplicas: 0,
         namespace: val[1],
