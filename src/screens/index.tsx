@@ -95,8 +95,10 @@ export default () => {
       <main>
         <UncloudyGraph
           panelMode={panelMode}
-          nodes={SAMPLE_NODES}
-          pods={SAMPLE_PODS}
+          data={{
+            nodes: SAMPLE_NODES,
+            pods: SAMPLE_PODS,
+          }}
           options={debuggingOptions}
         />
         <DevelopmentOnlyAlert

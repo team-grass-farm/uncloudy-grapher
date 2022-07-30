@@ -3,8 +3,11 @@ import { usePainterEvent } from '~hooks';
 import { renderGrids, renderObjects, renderPoints } from '~utils/painter';
 import { getGridPositions, getPointPositions } from '~utils/positioner';
 
-type Layer = 'group2' | 'group1' | 'block';
-type ResourceMap = Partial<Record<PointType | GroupType, any>>;
+type Layer = 'block' | 'group1' | 'group2';
+type ResourcePositionMap = Partial<
+  Record<`${PointType}s`, PointPosition[]> &
+    Record<`${GroupType}s`, GroupPosition[]>
+>;
 
 // NOTE grid & point is skippable because these are just for debugging.
 interface RefMap extends Record<Layer, RefObject<HTMLCanvasElement>> {
@@ -22,14 +25,14 @@ export default (
 ): [
   RefMap,
   React.Dispatch<1 | 2 | 3>,
-  React.Dispatch<React.SetStateAction<ResourceMap>>,
+  React.Dispatch<React.SetStateAction<ResourcePositionMap>>,
   React.Dispatch<React.SetStateAction<FlagMap>>,
   PointPosition | null
 ] => {
   const [isDevMode] = useState(process.env.NODE_ENV === 'development');
   const [paused, setPaused] = useState<boolean>(true);
   const [level, setLevel] = useState<1 | 2 | 3>(_level);
-  const [resources, setResources] = useState<ResourceMap>({});
+  const [resources, setResources] = useState<ResourcePositionMap>({});
   const [dimensions, setDimensions] = useState<
     Record<'width' | 'height', number>
   >({ width: 0, height: 0 });

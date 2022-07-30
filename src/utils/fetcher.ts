@@ -1,6 +1,6 @@
 import { SAMPLE_NODES, SAMPLE_PODS } from '~constants';
 
-import type { Page, Pod, Node } from '~models';
+import type { Page } from '~models';
 
 const API_URL = 'http://133.186.222.196:9090/api/v1/';
 
@@ -94,7 +94,7 @@ export const fechNodeRelatedResources: Fetcher.FetchNodeRelatedResources =
   };
 
 export const fetchPodMetrics: Fetcher.FetchPodMetrics = async (
-  data: Pod.Metric[],
+  data: Resource.Pod.Metric[],
   timeRange: string
 ) => {
   return new Promise((resolve, reject) => {
@@ -107,7 +107,7 @@ export const fetchPodMetrics: Fetcher.FetchPodMetrics = async (
 };
 
 export const fetchNodeMetrics: Fetcher.FetchNodeMetrics = async (
-  data: Node.Metric[],
+  data: Resource.Node.Metric[],
   timeRange: string
 ) => {
   return new Promise((resolve) => {
