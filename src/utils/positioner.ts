@@ -359,7 +359,7 @@ export const getSampleViewPosition: Positioner.GetViewPositions<'dev'> = (
  * @param options
  * @returns {{pods: PointPosition[]; deployments: GroupPosition[] | null; namespaces: GroupPosition[] | null }} 포인트 값
  */
-export const GetDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
+export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
   width,
   height,
   level,
@@ -379,19 +379,17 @@ export const GetDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
 
   let selRow: number = 0;
   let selCol: number = 0;
-  const dataLength: number = sortedData.pods ? sortedData.pods.length : 0;
+  const dataLength: number = sortedData.pods.length;
 
-  if (sortedData.pods) {
-    sortedData.pods.forEach((el) => {
-      if (!!counts[el.deploymentId]) {
-        counts[el.deploymentId]++;
-      } else {
-        counts[el.deploymentId] = 1;
-      }
-    });
-  }
+  sortedData.pods.forEach((el) => {
+    if (!!counts[el.deploymentId]) {
+      counts[el.deploymentId]++;
+    } else {
+      counts[el.deploymentId] = 1;
+    }
+  });
 
-  if (!options.showDeployments && options.showNamespaces) {
+  if (!options.showDeployments && !options.showNamespaces) {
     if (maxRow * canvasColumn > dataLength) {
       selCol = canvasColumn - 1;
       selRow = parseInt('' + dataLength / canvasColumn) - 1;
@@ -399,16 +397,17 @@ export const GetDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
       selCol = parseInt('' + dataLength / maxRow) - 1;
       selRow = maxRow - 1;
     }
-
-    Array.from(Array(selRow).keys()).map((_, row) => {
-      Array.from(Array(selCol).keys()).map((__, column) => {
-        const pos = {
-          row,
-          column,
-        };
-        pods.push(pos);
+    if (selCol > 0 && selRow > 0) {
+      Array.from(Array(selRow).keys()).map((row) => {
+        Array.from(Array(selCol).keys()).map((column) => {
+          const pos = {
+            row,
+            column,
+          };
+          pods.push(pos);
+        });
       });
-    });
+    }
   } else if (
     options.showDeployments === true ||
     options.showNamespaces === false
@@ -417,7 +416,7 @@ export const GetDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
     options.showDeployments === false ||
     options.showNamespaces === true
   ) {
-  } else if (options.showDeployments && options.showNamespaces) {
+  } else {
   }
 
   return {
