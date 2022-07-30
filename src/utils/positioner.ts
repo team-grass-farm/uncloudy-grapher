@@ -328,7 +328,7 @@ export const GetDeveloperViewPositions: Positioner.GetDeveloperViewPositions = (
   options
 ) => {
   const sortedData = savedViews.developer;
-
+  const counts: Record<string, number> = {};
   const pods: Matrix[] = [];
   const deployments: [Matrix, Matrix][] | null = options.showDeployments
     ? []
@@ -336,6 +336,49 @@ export const GetDeveloperViewPositions: Positioner.GetDeveloperViewPositions = (
   const namespaces: [Matrix, Matrix][] | null = options.showNamespaces
     ? []
     : null;
+
+  let selRow: number = 0;
+  let selCol: number = 0;
+  const dataLength: number = sortedData.pods ? sortedData.pods.length : 0;
+
+  if (sortedData.pods) {
+    sortedData.pods.forEach((el) => {
+      if (!!counts[el.deploymentId]) {
+        counts[el.deploymentId]++;
+      } else {
+        counts[el.deploymentId] = 1;
+      }
+    });
+  }
+
+  if (!options.showDeployments && options.showNamespaces) {
+    if (maxRow * canvasColumn > dataLength) {
+      selCol = canvasColumn - 1;
+      selRow = parseInt('' + dataLength / canvasColumn) - 1;
+    } else {
+      selCol = parseInt('' + dataLength / maxRow) - 1;
+      selRow = maxRow - 1;
+    }
+
+    Array.from(Array(selRow).keys()).map((_, row) => {
+      Array.from(Array(selCol).keys()).map((__, column) => {
+        const pos = {
+          row,
+          column,
+        };
+        pods.push(pos);
+      });
+    });
+  } else if (
+    options.showDeployments === true ||
+    options.showNamespaces === false
+  ) {
+  } else if (
+    options.showDeployments === false ||
+    options.showNamespaces === true
+  ) {
+  } else if (options.showDeployments && options.showNamespaces) {
+  }
 
   return {
     pods: getBlockPositions(pods, level, 'pod'),
