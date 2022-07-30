@@ -292,12 +292,21 @@ export const getGridPositions: Positioner.GetLinePositions = (
   return ret;
 };
 
-const getBlockPositions: Positioner.GetBlockPositions = (matrixes, type) => {
+const getBlockPositions: Positioner.GetBlockPositions = (
+  matrixes,
+  level,
+  type
+) => {
   const ret: PointPosition[] = [];
+  //only Pod
   return ret;
 };
 
-const getGroupPositions: Positioner.GetGroupPositions = (matrixes, type) => {
+const getGroupPositions: Positioner.GetGroupPositions = (
+  matrixes,
+  level,
+  type
+) => {
   const ret: GroupPosition[] = [];
   return ret;
 };
@@ -318,7 +327,7 @@ export const GetDeveloperViewPositions: Positioner.GetDeveloperViewPositions = (
   canvasColumn,
   options
 ) => {
-  const sortedData = savedViews.developer[level];
+  const sortedData = savedViews.developer;
 
   const pods: Matrix[] = [];
   const deployments: [Matrix, Matrix][] | null = options.showDeployments
@@ -327,14 +336,6 @@ export const GetDeveloperViewPositions: Positioner.GetDeveloperViewPositions = (
   const namespaces: [Matrix, Matrix][] | null = options.showNamespaces
     ? []
     : null;
-
-  switch (level) {
-    case 1:
-    case 2:
-      break;
-    case 3:
-      break;
-  }
 
   return {
     pods: getBlockPositions(pods, level, 'pod'),
@@ -349,19 +350,11 @@ export const GetAdminViewPositions: Positioner.GetAdminViewPositions = (
   canvasColumn,
   options
 ) => {
-  const sortedData = savedViews.admin[level];
+  const sortedData = savedViews.admin;
 
   const pods: Matrix[] | null = options.showPods ? [] : null;
   const nodes: [Matrix, Matrix][] | Matrix[] = [];
   const clusters: [Matrix, Matrix][] | null = options.showClusters ? [] : null;
-
-  switch (level) {
-    case 1:
-    case 2:
-      break;
-    case 3:
-      break;
-  }
 
   return {
     pods: getBlockPositions(pods, level, 'pod'),
