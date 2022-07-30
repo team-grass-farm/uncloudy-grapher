@@ -1,25 +1,16 @@
 declare namespace Positioner {
   interface SavedViews {
-    admin: Partial<
-      Record<
-        1 | 2 | 3,
-        {
-          pods: Pod[];
-          nodes: Node[];
-          clusters: Cluster[];
-        }
-      >
-    >;
-    developer: Partial<
-      Record<
-        1 | 2 | 3,
-        {
-          pods: Pod[];
-          deployments: Deployment[];
-          namespaces: string[];
-        }
-      >
-    >;
+    admin: {
+      pods?: Pod[];
+      nodes?: Node[];
+      clusters?: Cluster[];
+    };
+
+    developer: {
+      pods?: Pod[];
+      deployments?: Deployment[];
+      namespaces?: string[];
+    };
   }
 
   type GetCursorPosition = (
