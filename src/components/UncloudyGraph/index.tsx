@@ -6,36 +6,22 @@ import { MainBlock } from './styles';
 
 import type { Props } from './types';
 
-const sampleChunks = [
-  [1, 2, 3],
-  [4, 5, 6],
-];
-
-export default ({
-  id,
-  panelMode,
-  clusters,
-  nodes,
-  deployments,
-  pods,
-  options,
-  ...otherProps
-}: Props) => {
+export default ({ id, panelMode, data, options, ...otherProps }: Props) => {
   const [refMap, setLevel, setResources, setVisible, selected] = usePainter(
     options.level ?? 2
   );
 
-  useEffect(() => {
-    if (panelMode === 'admin') {
-      setResources({
-        node: sampleChunks,
-      });
-    } else {
-      setResources({
-        pod: sampleChunks,
-      });
-    }
-  }, [panelMode]);
+  // useEffect(() => {
+  //   if (panelMode === 'admin') {
+  //     setResources({
+  //       node: sampleChunks,
+  //     });
+  //   } else {
+  //     setResources({
+  //       pod: sampleChunks,
+  //     });
+  //   }
+  // }, [panelMode]);
 
   useEffect(() => {
     const { showGrids, showPoints, showBlocks, level } = options;

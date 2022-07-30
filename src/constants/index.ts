@@ -1,5 +1,3 @@
-import { Deployment, Node, Pod } from '~models';
-
 export const MAX_WIDTH = 1000;
 // NOTE 86400000 === 1 day
 export const REFRESH_PERIOD = 86400000;
@@ -41,7 +39,7 @@ export const POS_ZANDIS: Array<Array<[number, number]>> = [
 
 export const DAYS = ['토', '금', '목', '수', '화', '월', '일'];
 
-export const SAMPLE_NODE_METRICS: Node.Metric[] = [
+export const SAMPLE_NODE_METRICS: Resource.Node.Metric[] = [
   {
     time: 123123123,
     values: {
@@ -260,7 +258,7 @@ export const SAMPLE_NODE_METRICS: Node.Metric[] = [
   },
 ];
 
-export const SAMPLE_NODES: Node[] = [
+export const SAMPLE_NODES: Resource.Node[] = [
   {
     id: 'seoulb01',
     region: 'seoul',
@@ -407,7 +405,7 @@ export const SAMPLE_NODES: Node[] = [
   },
 ];
 
-export const SAMPLE_POD_METRICS: Pod.Metric[] = [
+export const SAMPLE_POD_METRICS: Resource.Pod.Metric[] = [
   {
     time: 1658411385.383,
     values: {
@@ -671,7 +669,7 @@ export const SAMPLE_POD_METRICS: Pod.Metric[] = [
   },
 ];
 
-export const SAMPLE_DEPLOYMENTS: Deployment[] = [
+export const SAMPLE_DEPLOYMENTS: Resource.Deployment[] = [
   {
     id: 'swagger-deployment-1771418926',
     shortId: 'swagger',
@@ -757,7 +755,7 @@ export const SAMPLE_DEPLOYMENTS: Deployment[] = [
     namespace: 'infra',
   },
 ];
-export const SAMPLE_PODS: Pod[] = [
+export const SAMPLE_PODS: Resource.Pod[] = [
   {
     id: 'swagger-deployment-1771418926-7o5ns',
     shortId: '7o5ns',

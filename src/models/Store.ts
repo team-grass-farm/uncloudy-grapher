@@ -1,14 +1,12 @@
-import { Cluster, Deployment, Node, Pod } from '~models';
-
 export class AppStore {
   isPageLoading: boolean;
   storedVersion = '';
-  pods: Pod[] = [];
-  nodes: Node[] = [];
-  clusters: Cluster[] = [];
-  deployments: Deployment[] = [];
-  podMetrics: Pod.Metric[] = [];
-  nodeMetrics: Node.Metric[] = [];
+  pods: Resource.Pod[] = [];
+  nodes: Resource.Node[] = [];
+  clusters: Resource.Cluster[] = [];
+  deployments: Resource.Deployment[] = [];
+  podMetrics: Resource.Pod.Metric[] = [];
+  nodeMetrics: Resource.Node.Metric[] = [];
 
   constructor() {
     this.isPageLoading = false;
