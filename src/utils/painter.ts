@@ -1,4 +1,4 @@
-import { DAYS, GRID_SIZE, POS_ZANDIS, SPACING } from '~constants';
+import { DAYS, DELTA, GRID_SIZE, POS_ZANDIS, SPACING } from '~constants';
 
 const DX = 2 * (GRID_SIZE + SPACING);
 const DY = GRID_SIZE + SPACING;
@@ -534,43 +534,33 @@ export const renderPoints: Painter.Render<PointPosition> = (
   render();
 };
 
-export const renderObjects: Painter.Render<PointPosition, PointType> = (
+export const renderObjects: Painter.Render<PointPosition> = (
   ctx,
   currentRef,
   positions,
   selectedPosition,
   visible,
-  paintingType
+  level
 ) => {
   const stackPaintingObject: any[] = [];
   const x0 = currentRef.width / 2 + 6 * DX;
   const y0 = currentRef.height / 4 + 6 * DY;
-  const height = paintingType === 'node' ? 35 : 15;
-
-  let paintObject: Painter.PaintObject;
-  switch (paintingType) {
-    case 'node':
-      paintObject = paintNode;
-      break;
-    case 'pod':
-      paintObject = paintPod;
-      break;
-    default:
-      return;
-  }
+  const height = 15;
 
   ctx.lineJoin = 'round';
   ctx.fillStyle = 'transparent';
   ctx.scale(1, 1);
 
   positions.forEach((position) => {
+    const paintObject = position.type === 'pod' ? paintPod : paintNode;
+    const { DX, DY } = DELTA[level ?? 2];
     stackPaintingObject.push(
       ...paintObject(
         ctx,
         position.x,
         position.y,
-        2 * GRID_SIZE,
-        GRID_SIZE,
+        DX >> 1,
+        DY >> 1,
         position.z ?? 35
       )
     );

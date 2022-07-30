@@ -1,13 +1,12 @@
 import React, { RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { usePainterEvent } from '~hooks';
 import { renderGrids, renderObjects, renderPoints } from '~utils/painter';
-import { getGridPositions, getPointPositions } from '~utils/positioner';
+import {
+    addNodes, addPods, getAdminViewPositions, getDeveloperViewPositions, getGridPositions,
+    getPointPositions
+} from '~utils/positioner';
 
 type Layer = 'block' | 'group1' | 'group2';
-type ResourcePositionMap = Partial<
-  Record<`${PointType}s`, PointPosition[]> &
-    Record<`${GroupType}s`, GroupPosition[]>
->;
 type Paint = (panelMode: 'dev' | 'admin', data: Resource.Map) => void;
 
 // NOTE grid & point is skippable because these are just for debugging.
@@ -25,15 +24,16 @@ export default (
   _level: 1 | 2 | 3
 ): [
   RefMap,
+  1 | 2 | 3,
   Paint,
   React.Dispatch<1 | 2 | 3>,
   React.Dispatch<React.SetStateAction<FlagMap>>,
   PointPosition | null
 ] => {
+  const [data, setData] = useState<Positioner.PositionMap | null>(null);
   const [isDevMode] = useState(process.env.NODE_ENV === 'development');
   const [paused, setPaused] = useState<boolean>(true);
   const [level, setLevel] = useState<1 | 2 | 3>(_level);
-  const [resources, setResources] = useState<ResourcePositionMap>({});
   const [dimensions, setDimensions] = useState<
     Record<'width' | 'height', number>
   >({ width: 0, height: 0 });
@@ -71,22 +71,22 @@ export default (
   useEffect(() => {
     let handler: NodeJS.Timeout | undefined;
     if (paused) {
-      handler = setTimeout(() => {
-        if (refMap.block.current === null) return;
-        console.log('executed handleResize()');
-        setDimensions({
-          width: refMap.block.current.clientWidth,
-          height: refMap.block.current.clientHeight,
-        });
+      // handler = setTimeout(() => {
+      if (refMap.block.current === null) return;
+      console.log('executed handleResize()');
+      setDimensions({
+        width: refMap.block.current.clientWidth,
+        height: refMap.block.current.clientHeight,
+      });
 
-        Object.values(refMap).forEach((ref) => {
-          if (ref.current) {
-            ref.current.width = ref.current.clientWidth;
-            ref.current.height = ref.current.clientHeight;
-          }
-        });
-        setPaused(false);
-      }, 10);
+      Object.values(refMap).forEach((ref) => {
+        if (ref.current) {
+          ref.current.width = ref.current.clientWidth;
+          ref.current.height = ref.current.clientHeight;
+        }
+      });
+      setPaused(false);
+      // }, 0);
     } else {
       handler = undefined;
     }
@@ -122,33 +122,58 @@ export default (
           );
           break;
         case 'block':
+          data &&
+            renderObjects(
+              ctx,
+              ref.current,
+              data.block,
+              null,
+              visible.block ?? false,
+              level
+            );
           break;
         case 'group1':
           break;
         case 'group2':
           break;
         default:
-          // renderObjects(
-          //   ctx,
-          //   ref.current,
-          //   getObje
-          //   [],
-          //   null,
-          //   visible.block ?? false,
-          //   'node'
-          // );
           break;
       }
     });
     setLevelOnEvent(level);
-  }, [highlightedPointPosition, resources, dimensions, level, visible]);
+  }, [highlightedPointPosition, data, dimensions, level, visible]);
 
-  const paint = useCallback<Paint>((panelMode, data) => {
-    if (panelMode === 'admin') {
-      data;
-    } else {
-    }
-  }, []);
+  const paint = useCallback<Paint>(
+    (panelMode, data) => {
+      // TODO move this data fetcher to useFetcher.ts
+      if (panelMode === 'admin') {
+        data.nodes && addNodes(data.nodes);
+        setData(
+          getAdminViewPositions(
+            dimensions.width,
+            dimensions.height,
+            level,
+            5,
+            10,
+            { showClusters: false, showPods: false }
+          )
+        );
+      } else {
+        data.pods && addPods(data.pods);
+        setData(
+          getDeveloperViewPositions(
+            dimensions.width,
+            dimensions.height,
+            level,
+            5,
+            10,
+            { showDeployments: false, showNamespaces: false }
+          )
+        );
+      }
+    },
+    [dimensions, level]
+  );
 
-  return [refMap, paint, setLevel, setVisible, highlightedPointPosition];
+  return [refMap, level, paint, setLevel, setVisible, highlightedPointPosition];
 };
