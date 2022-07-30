@@ -1,6 +1,7 @@
 declare type PointType = 'pod' | 'node' | 'point';
 declare type LineType = 'grid';
 declare type GroupType = 'deployment' | 'namespace' | 'cluster' | 'node';
+declare type Layer = 'group2' | 'group1' | 'block';
 
 declare interface Matrix {
   row: number;
@@ -10,6 +11,7 @@ declare interface Matrix {
 declare interface PointPosition {
   x: number;
   y: number;
+  z?: number;
   row: number;
   column: number;
   type: PointType;
