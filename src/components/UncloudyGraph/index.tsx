@@ -1,5 +1,5 @@
 import { Col, Row, Select } from 'antd';
-import React, { useEffect } from 'react';
+import React, { useEffect, useLayoutEffect } from 'react';
 import { usePainter } from '~hooks';
 
 import { MainBlock } from './styles';
@@ -7,22 +7,10 @@ import { MainBlock } from './styles';
 import type { Props } from './types';
 
 export default ({ id, panelMode, data, options, ...otherProps }: Props) => {
-  const [refMap, paint, setLevel, setVisible, selectedPoint] = usePainter(
-    options.level ?? 2
-  );
+  const [refMap, level, paint, setLevel, setVisible, selectedPoint] =
+    usePainter(options.level ?? 2);
 
-  useEffect(() => {
-    paint(panelMode, data);
-  }, [data]);
-
-  // useEffect(() => {
-  //   const { clusters, nodes, pods, deployments, namespaces } = data;
-  //   if (panelMode === 'admin') {
-  //     setResources({ pods, nodes, clusters });
-  //   } else {
-  //     setResources({ pods, deployments, namespaces });
-  //   }
-  // }, [panelMode, data]);
+  useEffect(() => paint(panelMode, data), [panelMode, data, level]);
 
   useEffect(() => {
     const { showGrids, showPoints, showBlocks, level } = options;
