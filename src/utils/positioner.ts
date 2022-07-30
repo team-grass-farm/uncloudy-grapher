@@ -292,23 +292,61 @@ export const getGridPositions: Positioner.GetLinePositions = (
   return ret;
 };
 
-const getBlockPositions: Positioner.GetBlockPositions = (
-  matrixes,
+export const getBlockPositions: Positioner.GetBlockPositions = (
+  width,
+  height,
   level,
+  matrixes,
   type
 ) => {
   const ret: PointPosition[] = [];
-  //only Pod
+  const { DX, DY, A, numRows, numColumns, x0, y0 } = getCanvasValues(
+    width,
+    height,
+    level
+  );
   return ret;
 };
 
-const getGroupPositions: Positioner.GetGroupPositions = (
-  matrixes,
+export const getGroupPositions: Positioner.GetGroupPositions = (
+  width,
+  height,
   level,
+  matrixes,
   type
 ) => {
   const ret: GroupPosition[] = [];
+  const { DX, DY, A, numRows, numColumns, x0, y0 } = getCanvasValues(
+    width,
+    height,
+    level
+  );
   return ret;
+};
+
+export const getSampleViewPosition: Positioner.GetViewPositions<'dev'> = (
+  width,
+  height,
+  level,
+  maxRow,
+  canvasColumn,
+  options
+) => {
+  const sortedData = savedViews.developer[level];
+
+  const pods: Matrix[] = [];
+  const deployments: [Matrix, Matrix][] | null = options.showDeployments
+    ? []
+    : null;
+  const namespaces: [Matrix, Matrix][] | null = options.showNamespaces
+    ? []
+    : null;
+
+  return {
+    block: getBlockPositions(width, height, level, pods, 'pod'),
+    group1: getGroupPositions(width, height, level, deployments, 'deployment'),
+    group2: getGroupPositions(width, height, level, namespaces, 'namespace'),
+  };
 };
 
 /**
@@ -321,7 +359,9 @@ const getGroupPositions: Positioner.GetGroupPositions = (
  * @param options
  * @returns {{pods: PointPosition[]; deployments: GroupPosition[] | null; namespaces: GroupPosition[] | null }} 포인트 값
  */
-export const GetDeveloperViewPositions: Positioner.GetDeveloperViewPositions = (
+export const GetDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
+  width,
+  height,
   level,
   maxRow,
   canvasColumn,
@@ -381,13 +421,15 @@ export const GetDeveloperViewPositions: Positioner.GetDeveloperViewPositions = (
   }
 
   return {
-    pods: getBlockPositions(pods, level, 'pod'),
-    deployments: getGroupPositions(deployments, level, 'deployment'),
-    namesaces: getGroupPositions(namespaces, level, 'namespace'),
+    block: getBlockPositions(width, height, level, pods, 'pod'),
+    group1: getGroupPositions(width, height, level, deployments, 'deployment'),
+    group2: getGroupPositions(width, height, level, namespaces, 'namespace'),
   };
 };
 
-export const GetAdminViewPositions: Positioner.GetAdminViewPositions = (
+export const GetAdminViewPositions: Positioner.GetViewPositions<'admin'> = (
+  width,
+  height,
   level,
   maxRow,
   canvasColumn,
@@ -399,11 +441,29 @@ export const GetAdminViewPositions: Positioner.GetAdminViewPositions = (
   const nodes: [Matrix, Matrix][] | Matrix[] = [];
   const clusters: [Matrix, Matrix][] | null = options.showClusters ? [] : null;
 
-  return {
-    pods: getBlockPositions(pods, level, 'pod'),
-    nodes: options.showPods
-      ? getGroupPositions(nodes as [Matrix, Matrix][], level, 'node')
-      : getBlockPositions(nodes as Matrix[], level, 'node'),
-    clusters: getGroupPositions(clusters, level, 'cluster'),
-  };
+  if (options.showPods) {
+    return {
+      block: getBlockPositions(width, height, level, pods, 'pod'),
+      group1: getGroupPositions(
+        width,
+        height,
+        level,
+        nodes as [Matrix, Matrix][],
+        'node'
+      ),
+      group2: getGroupPositions(width, height, level, clusters, 'cluster'),
+    };
+  } else {
+    return {
+      block: getBlockPositions(width, height, level, nodes as Matrix[], 'node'),
+      group1: getGroupPositions(
+        width,
+        height,
+        level,
+        nodes as [Matrix, Matrix][],
+        'node'
+      ),
+      group2: null,
+    };
+  }
 };

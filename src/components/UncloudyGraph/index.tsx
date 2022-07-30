@@ -1,5 +1,5 @@
 import { Col, Row, Select } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { usePainter } from '~hooks';
 
 import { MainBlock } from './styles';
@@ -7,21 +7,22 @@ import { MainBlock } from './styles';
 import type { Props } from './types';
 
 export default ({ id, panelMode, data, options, ...otherProps }: Props) => {
-  const [refMap, setLevel, setResources, setVisible, selected] = usePainter(
+  const [refMap, paint, setLevel, setVisible, selectedPoint] = usePainter(
     options.level ?? 2
   );
 
+  useEffect(() => {
+    paint(panelMode, data);
+  }, [data]);
+
   // useEffect(() => {
+  //   const { clusters, nodes, pods, deployments, namespaces } = data;
   //   if (panelMode === 'admin') {
-  //     setResources({
-  //       node: sampleChunks,
-  //     });
+  //     setResources({ pods, nodes, clusters });
   //   } else {
-  //     setResources({
-  //       pod: sampleChunks,
-  //     });
+  //     setResources({ pods, deployments, namespaces });
   //   }
-  // }, [panelMode]);
+  // }, [panelMode, data]);
 
   useEffect(() => {
     const { showGrids, showPoints, showBlocks, level } = options;
@@ -47,15 +48,15 @@ export default ({ id, panelMode, data, options, ...otherProps }: Props) => {
           }}
         />
       ))}
-      {!!options.showPoints && !!selected && (
+      {!!options.showPoints && !!selectedPoint && (
         <div
           id="tooltip-pos"
           style={{
-            marginTop: selected.y + 'px',
-            marginLeft: selected.x + 'px',
+            marginTop: selectedPoint.y + 'px',
+            marginLeft: selectedPoint.x + 'px',
           }}
         >
-          <span>{`row: ${selected.row}, col: ${selected.column}`}</span>
+          <span>{`row: ${selectedPoint.row}, col: ${selectedPoint.column}`}</span>
         </div>
       )}
 

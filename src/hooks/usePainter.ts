@@ -1,4 +1,4 @@
-import React, { RefObject, useEffect, useRef, useState } from 'react';
+import React, { RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { usePainterEvent } from '~hooks';
 import { renderGrids, renderObjects, renderPoints } from '~utils/painter';
 import { getGridPositions, getPointPositions } from '~utils/positioner';
@@ -8,6 +8,7 @@ type ResourcePositionMap = Partial<
   Record<`${PointType}s`, PointPosition[]> &
     Record<`${GroupType}s`, GroupPosition[]>
 >;
+type Paint = (panelMode: 'dev' | 'admin', data: Resource.Map) => void;
 
 // NOTE grid & point is skippable because these are just for debugging.
 interface RefMap extends Record<Layer, RefObject<HTMLCanvasElement>> {
@@ -24,8 +25,8 @@ export default (
   _level: 1 | 2 | 3
 ): [
   RefMap,
+  Paint,
   React.Dispatch<1 | 2 | 3>,
-  React.Dispatch<React.SetStateAction<ResourcePositionMap>>,
   React.Dispatch<React.SetStateAction<FlagMap>>,
   PointPosition | null
 ] => {
@@ -90,13 +91,15 @@ export default (
       handler = undefined;
     }
     return () => {
-      console.log('cleared', paused);
       clearTimeout(handler);
+      console.debug('[usePainter] timeout cleared: ', paused);
     };
   }, [paused]);
 
   useEffect(() => {
-    Object.entries(refMap).map(([refName, ref]) => {
+    (
+      Object.entries(refMap) as [keyof RefMap, RefObject<HTMLCanvasElement>][]
+    ).map(([refName, ref]) => {
       const ctx = ref.current && ref.current.getContext('2d');
       if (ctx === null || ref.current === null) return;
       switch (refName) {
@@ -117,15 +120,35 @@ export default (
             highlightedPointPosition,
             visible.point ?? false
           );
-          return;
+          break;
+        case 'block':
+          break;
+        case 'group1':
+          break;
+        case 'group2':
+          break;
         default:
-          // TODO render by resources
-          // renderObjects(ctx, ref.current, dataChunks, refName);
-          return;
+          // renderObjects(
+          //   ctx,
+          //   ref.current,
+          //   getObje
+          //   [],
+          //   null,
+          //   visible.block ?? false,
+          //   'node'
+          // );
+          break;
       }
     });
     setLevelOnEvent(level);
   }, [highlightedPointPosition, resources, dimensions, level, visible]);
 
-  return [refMap, setLevel, setResources, setVisible, highlightedPointPosition];
+  const paint = useCallback<Paint>((panelMode, data) => {
+    if (panelMode === 'admin') {
+      data;
+    } else {
+    }
+  }, []);
+
+  return [refMap, paint, setLevel, setVisible, highlightedPointPosition];
 };

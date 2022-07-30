@@ -59,42 +59,39 @@ declare namespace Positioner {
   ) => LinePosition[];
 
   type GetBlockPositions = (
-    matrixes: Matrix[] | null,
+    width: number,
+    height: number,
     level: 1 | 2 | 3,
+    matrixes: Matrix[] | null,
     type: PointType & ('node' | 'pod')
   ) => PointPosition[];
 
   type GetGroupPositions = (
-    matrixes: [Matrix, Matrix][] | null,
+    width: number,
+    height: number,
     level: 1 | 2 | 3,
+    matrixes: [Matrix, Matrix][] | null,
     type: GroupType
   ) => GroupPosition[];
 
-  type GetDeveloperViewPositions = (
+  type GetViewPositions<T extends 'dev' | 'admin'> = (
+    width: number,
+    height: number,
     level: 1 | 2 | 3,
     maxRow: number,
     canvasColumn: number,
-    options: {
-      showDeployments: boolean;
-      showNamespaces: boolean;
-    }
+    options: T extends 'dev'
+      ? {
+          showDeployments: boolean;
+          showNamespaces: boolean;
+        }
+      : {
+          showPods: boolean;
+          showClusters: boolean;
+        }
   ) => {
-    pods: PointPosition[];
-    deployments: GroupPosition[] | null;
-    namesaces: GroupPoisition[] | null;
-  };
-
-  type GetAdminViewPositions = (
-    level: 1 | 2 | 3,
-    maxRow: number,
-    canvasColumn: number,
-    options: {
-      showPods: boolean;
-      showClusters: boolean;
-    }
-  ) => {
-    pods: PointPosition[] | null;
-    nodes: GroupPosition[] | PointPosition[];
-    clusters: GroupPoisition[] | null;
+    block: PointPosition[];
+    group1: GroupPosition[] | null;
+    group2: GroupPosition[] | null;
   };
 }
