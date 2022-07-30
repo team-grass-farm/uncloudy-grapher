@@ -52,4 +52,16 @@ declare namespace Painter {
     h: number,
     option?: Option
   ) => () => void;
+
+  type Render<
+    T = PointPosition | LinePosition | GroupPosition,
+    U extends PointType = undefined
+  > = (
+    ctx: CanvasRenderingContext2D,
+    currentRef: HTMLCanvasElement,
+    positions: T[],
+    selectedPosition: T | null,
+    visible: boolean,
+    paintingType?: U
+  ) => void;
 }

@@ -3,7 +3,7 @@ import moment from 'moment';
 import { ValueType } from 'rc-cascader/lib/Cascader';
 import React, { useEffect, useState } from 'react';
 import { DevelopmentOnlyAlert, UncloudyGraph } from '~components';
-import { SAMPLE_NODES, SAMPLE_PODS } from '~constants';
+import { useFetcher } from '~hooks';
 import { getFilteringOptions } from '~utils/fetcher';
 
 import { BarChartOutlined, CodeOutlined, ToolOutlined } from '@ant-design/icons';
@@ -12,6 +12,7 @@ import { MainBlock } from './styles';
 
 import type { Page } from '~models';
 export default () => {
+  const [resourceMap] = useFetcher('offline');
   const [panelMode, setPanelMode] = useState<'dev' | 'admin'>('dev');
   const [filterOptions, setFilterOptions] = useState<Page.Option[]>([]);
   const [filter, setFilter] = useState<ValueType>([]);
@@ -95,10 +96,7 @@ export default () => {
       <main>
         <UncloudyGraph
           panelMode={panelMode}
-          data={{
-            nodes: SAMPLE_NODES,
-            pods: SAMPLE_PODS,
-          }}
+          data={resourceMap}
           options={debuggingOptions}
         />
         <DevelopmentOnlyAlert

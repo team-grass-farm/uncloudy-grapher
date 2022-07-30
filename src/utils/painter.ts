@@ -465,12 +465,12 @@ export const renderLegend = (
   render();
 };
 
-export const renderGrids = (
-  ctx: CanvasRenderingContext2D,
-  currentRef: HTMLCanvasElement,
-  positions: LinePosition[],
-  selectedPosition: LinePosition | null,
-  visible: boolean
+export const renderGrids: Painter.Render<LinePosition> = (
+  ctx,
+  currentRef,
+  positions,
+  selectedPosition,
+  visible
 ) => {
   const stackPaintingObject: any[] = [];
 
@@ -495,12 +495,12 @@ export const renderGrids = (
   render();
 };
 
-export const renderPoints = (
-  ctx: CanvasRenderingContext2D,
-  currentRef: HTMLCanvasElement,
-  positions: PointPosition[],
-  selectedPosition: PointPosition | null,
-  visible: boolean
+export const renderPoints: Painter.Render<PointPosition> = (
+  ctx,
+  currentRef,
+  positions,
+  selectedPosition,
+  visible
 ) => {
   const stackPaintingObject: (() => void)[] = [];
 
@@ -534,58 +534,54 @@ export const renderPoints = (
   render();
 };
 
-export const renderObjects = (
-  ctx: CanvasRenderingContext2D,
-  currentRef: HTMLCanvasElement,
-  dataChunks: number[][],
-  paintingType: 'box' | 'grass' | 'node' | 'pod'
+export const renderObjects: Painter.Render<PointPosition, PointType> = (
+  ctx,
+  currentRef,
+  positions,
+  selectedPosition,
+  visible,
+  paintingType
 ) => {
   const stackPaintingObject: any[] = [];
   const x0 = currentRef.width / 2 + 6 * DX;
   const y0 = currentRef.height / 4 + 6 * DY;
-  const height = paintingType === 'box' ? 5 : paintingType === 'node' ? 35 : 15;
+  const height = paintingType === 'node' ? 35 : 15;
 
   let paintObject: Painter.PaintObject;
   switch (paintingType) {
-    case 'box':
-      paintObject = paintCube;
-      break;
-    case 'grass':
-      paintObject = paintGrasses;
-      break;
     case 'node':
       paintObject = paintNode;
       break;
     case 'pod':
       paintObject = paintPod;
       break;
+    default:
+      return;
   }
 
   ctx.lineJoin = 'round';
   ctx.fillStyle = 'transparent';
   ctx.scale(1, 1);
 
-  dataChunks.map((contributes, y) =>
-    contributes.map((_, x) =>
-      stackPaintingObject.push(
-        ...paintObject(
-          ctx,
-          x0 - (x + y) * DX,
-          y0 + (y - x) * DY,
-          2 * GRID_SIZE,
-          GRID_SIZE,
-          height
-        )
+  positions.forEach((position) => {
+    stackPaintingObject.push(
+      ...paintObject(
+        ctx,
+        position.x,
+        position.y,
+        2 * GRID_SIZE,
+        GRID_SIZE,
+        position.z ?? 35
       )
-    )
-  );
+    );
+  });
 
   const render = () => {
     ctx.clearRect(0, 0, currentRef.width, currentRef.height);
     ctx.fillRect(0, 0, currentRef.width, currentRef.height);
     stackPaintingObject.forEach((paint) => paint());
 
-    paintingType === 'grass' && requestAnimationFrame(render);
+    // requestAnimationFrame(render);
   };
 
   render();
