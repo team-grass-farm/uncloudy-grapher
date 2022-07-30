@@ -14,8 +14,8 @@ declare namespace Resource {
   interface Deployment {
     id: string;
     shortId: string;
-    replicas: number;
-    availableReplicas: number;
+    replicas: number | null;
+    availableReplicas: number | null;
     namespace: string;
   }
 
@@ -50,6 +50,7 @@ declare namespace Resource {
     shortId: string;
     deploymentId: string;
     namespace: string;
+    nodeId: string;
   }
 
   namespace Pod {

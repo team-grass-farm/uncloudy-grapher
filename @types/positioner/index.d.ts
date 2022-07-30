@@ -1,17 +1,26 @@
 declare namespace Positioner {
   interface SavedViews {
     admin: {
-      pods?: Pod[];
-      nodes?: Node[];
-      clusters?: Cluster[];
+      pods: Resource.Pod[];
+      nodes: Resource.Node[];
+      clusters: Resource.Cluster[];
     };
-
     developer: {
-      pods?: Pod[];
-      deployments?: Deployment[];
-      namespaces?: string[];
+      pods: Resource.Pod[];
+      deployments: Resource.Deployment[];
+      namespaces: string[];
     };
   }
+
+  interface PositionMap {
+    block: PointPosition[];
+    group1: GroupPosition[] | null;
+    group2: GroupPosition[] | null;
+  }
+
+  type AddResource<T extends Resource.Pod | Resource.Node> = (
+    data: T[]
+  ) => void;
 
   type GetCursorPosition = (
     cx: number,
@@ -89,9 +98,5 @@ declare namespace Positioner {
           showPods: boolean;
           showClusters: boolean;
         }
-  ) => {
-    block: PointPosition[];
-    group1: GroupPosition[] | null;
-    group2: GroupPosition[] | null;
-  };
+  ) => PositionMap;
 }
