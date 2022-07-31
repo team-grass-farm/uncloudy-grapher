@@ -305,7 +305,7 @@ export const paintPod: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
  * @param NAMESAPCE_H: 네임스페이스 그룹의 높이
  * @returns () => void
  */
-export const paintNamesapce: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
+export const paintNamespace: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   () => {
     ctx.save();
 
