@@ -52,19 +52,25 @@ export const fetchPodRelatedResources: Fetcher.FetchPodRelatedResources =
       queries.map((query) => fetch(API_URL + 'query?query=' + query))
     );
 
-    const podList: string[] = [];
-    const nodeList: string[] = [];
+    const podList: Pod[] = [];
+    const nodeList: Node[] = [];
     const namespaceList: string[] = [];
     const deploymentList: string[] = [];
 
     const getData: any = await res[0].json();
     if (getData.status === 'success') {
-      const data = getData.data;
       for (let i = 0; i < getData.data.result.length; i++) {
-        podList.push(data.result[i].metric.pod);
-        nodeList.push(data.result[i].metric.instance);
-        namespaceList.push(data.result[i].metric.namespace);
-        deploymentList.push(data.result[i].metric.deployment);
+        const data = getData.data.result[i].metric;
+        const splitShortId = data.pod.split('-').at(-1);
+        podList[i] = {
+          id: data.pod,
+          shortId: splitShortId,
+          deploymentId: data.deployment,
+          namespace: data.namespace,
+        };
+        nodeList.push(data.instance);
+        namespaceList.push(data.namespace);
+        deploymentList.push(data.deployment);
       }
     }
 
@@ -90,18 +96,24 @@ export const fetchNodeRelatedResources: Fetcher.FetchNodeRelatedResources =
       queries.map((query) => fetch(API_URL + 'query?query=' + query))
     );
 
-    const nodeList: string[] = [];
-    const clusterList: string[] = [];
+    const nodeList: Node[] = [];
+    const clusterList: Cluster[] = [];
 
     const getData: any = await res[0].json();
 
     if (getData.status === 'success') {
-      const data = getData.data;
       for (let i = 0; i < getData.data.result.length; i++) {
-        nodeList.push(data.result[i].metric.instance);
+        const data = getData.data.result[i].metric;
+        nodeList[i] = {
+          id: data.instance,
+          region: data.cluster,
+          os: 'ubuntu',
+          type: 'worker',
+        };
         clusterList.push(data.result[i].metric.cluster);
       }
     }
+
     return new Promise((resolve, reject) => {
       try {
         resolve({
@@ -115,13 +127,15 @@ export const fetchNodeRelatedResources: Fetcher.FetchNodeRelatedResources =
   };
 
 export const fetchPodMetrics: Fetcher.FetchPodMetrics = async (
-  data,
-  timeRange
+  data: any,
+  timeRange: any
 ) => {
   return new Promise((resolve, reject) => {
     try {
+      console.log('data:', data);
       const ret: Record<string, Pod.Metric[]> = {};
-      data.forEach((pod) => {
+      data.forEach((pod: any) => {
+        console.log(pod);
         // ret[pod.id] =
       });
       resolve({});
@@ -132,16 +146,14 @@ export const fetchPodMetrics: Fetcher.FetchPodMetrics = async (
 };
 
 export const fetchNodeMetrics: Fetcher.FetchNodeMetrics = async (
-  data,
-  timeRange
+  data: any,
+  timeRange: any
 ) => {
   return new Promise((resolve, reject) => {
     try {
       const ret: Record<string, Node.Metric[]> = {};
-      resolve({
-        timeRange: [timeRange],
-        data: data,
-      });
+
+      resolve({});
     } catch (e) {
       reject('error: ' + e);
     }
