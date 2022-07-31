@@ -125,13 +125,13 @@ declare namespace Fetcher {
 
   type FetchPodRelatedResources = () => Promise<{
     pods: Pod[];
-    nodes: Node[];
+    nodes: string[];
     deployments: Deployment[];
-    namespaces: string[];
+    namespaces: Namespace[];
   }>;
 
   type FetchNodeRelatedResources = () => Promise<{
-    nodes: Node[];
+    nodes: string[];
     clusters: Cluster[];
   }>;
 
