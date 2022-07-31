@@ -6,7 +6,11 @@ import { DevelopmentOnlyAlert, UncloudyGraph } from '~components';
 import { useFetcher } from '~hooks';
 import { getFilteringOptions } from '~utils/fetcher';
 
-import { BarChartOutlined, CodeOutlined, ToolOutlined } from '@ant-design/icons';
+import {
+  BarChartOutlined,
+  CodeOutlined,
+  ToolOutlined,
+} from '@ant-design/icons';
 
 import { MainBlock } from './styles';
 
