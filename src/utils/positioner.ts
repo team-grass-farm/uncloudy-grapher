@@ -8,8 +8,40 @@ const savedNamespaces: Record<number, [Matrix, Matrix]> = {};
 const savedClusters: Record<number, [Matrix, Matrix]> = {};
 
 const savedViews: Positioner.SavedViews = {
-  admin: {},
-  developer: {},
+  admin: {
+    pods: [],
+    nodes: [],
+    clusters: [],
+  },
+  developer: {
+    pods: [],
+    deployments: [],
+    namespaces: [],
+  },
+};
+
+export const addPods: Positioner.AddResource<Resource.Pod> = (pods) => {
+  savedViews.admin.pods = pods;
+  savedViews.developer.pods = pods;
+  pods.forEach((pod) => {
+    savedViews.developer.deployments.push({
+      id: pod.deploymentId,
+      shortId: pod.deploymentId.split('-deployment-')[0],
+      replicas: null,
+      availableReplicas: null,
+      namespace: pod.namespace,
+    });
+    savedViews.developer.namespaces.push(pod.namespace);
+  });
+};
+
+export const addNodes: Positioner.AddResource<Resource.Node> = (nodes) => {
+  savedViews.admin.nodes = nodes;
+  nodes.forEach((node) => {
+    savedViews.admin.clusters.push({
+      id: node.region,
+    });
+  });
 };
 
 /**
@@ -31,7 +63,7 @@ const getCursorPosition: Positioner.GetCursorPosition = (
   hitbox = 15
 ) => {
   const { DX, DY } = DELTA[level];
-  const glitch = parseInt('' + (hitbox >> 1));
+  const glitch = hitbox >> 1;
   const distX = (cx + glitch - offsetX) % DX;
   const distY = (cy + glitch - offsetY) % DY;
 
@@ -69,10 +101,10 @@ const getCanvasValues: Positioner.GetCanvasValues = (width, height, level) => {
     A,
     numRows,
     numColumns,
-    x0: parseInt('' + (width % (DX * 2)) / 2),
-    y0: 0,
-    row0: -parseInt('' + numRows / 2),
-    column0: -parseInt('' + numColumns / 2),
+    x0: width % (DX * (level === 3 ? 2 : 4)) >> 1,
+    y0: level === 3 ? DY >> 1 : DY,
+    row0: 2,
+    column0: -5,
   };
 };
 
@@ -96,35 +128,51 @@ export const getPointPositions: Positioner.GetPointPositions = (
   switch (level) {
     case 1:
     case 2:
-      Array.from(Array(parseInt('' + numRows) + 1).keys()).map((py, row) => {
-        Array.from(Array(numColumns).keys()).map((px, column) => {
-          const pos: PointPosition = {
-            x: x0 + px * DX,
-            y: y0 + py * 2 * DY + (column % 2 ? DY : 0),
-            row: row0 + row,
-            column: column0 + column,
-            type: 'point',
-          };
+      Array.from(Array(parseInt('' + numRows) + 1).keys()).map((py) => {
+        Array.from(Array(numColumns).keys()).map((px) => {
+          // const pos: PointPosition = {
+          //   x: x0 + px * DX,
+          //   y: y0 + py * 2 * DY + (px % 2 ? DY : 0),
+          //   row: row0 + py + 1 - parseInt('' + ((column0 + px) >> 1)),
+          //   column: column0 + px,
+          //   type: 'point',
+          // };
 
-          ret.push(pos);
-
-          let saved = savedPointPositions[py * MAX_COLUMN_OBJECT + px];
-          if (!!!saved) {
-            saved = [pos];
+          if (!(px % 2)) {
+            ret.push({
+              x: x0 + px * DX,
+              y: y0 + py * 2 * DY + (px % 2 ? DY : 0),
+              row: row0 - py + (px >> 1),
+              column: column0 + py + (px >> 1),
+              type: 'point',
+            });
           } else {
-            saved.push(pos);
+            ret.push({
+              x: x0 + px * DX,
+              y: y0 + py * 2 * DY + (px % 2 ? DY : 0),
+              row: row0 - py + (px >> 1),
+              column: column0 + py + ((px + 1) >> 1),
+              type: 'point',
+            });
           }
+
+          // let saved = savedPointPositions[py * MAX_COLUMN_OBJECT + px];
+          // if (!!!saved) {
+          //   saved = [pos];
+          // } else {
+          //   saved.push(pos);
+          // }
         });
       });
       break;
     case 3:
-      Array.from(Array(numRows).keys()).map((py, row) => {
-        Array.from(Array(numColumns).reverse().keys()).map((px, column) => {
+      Array.from(Array(numRows).keys()).map((py) => {
+        Array.from(Array(numColumns).reverse().keys()).map((px) => {
           const pos: PointPosition = {
             x: x0 + px * DX,
             y: y0 + py * DY,
-            row: row0 + row,
-            column: column0 + column,
+            row: row0 + py,
+            column: column0 + px,
             type: 'point',
           };
 
@@ -167,14 +215,15 @@ export const getHighlightedPointPosition: Positioner.GetHighlightedPointPosition
       case 1:
       case 2:
         if ((x - x0) % DX < hitboxX) {
-          const column = column0 + parseInt('' + (x - x0) / DX);
-          if (column % 2) {
+          const row = parseInt('' + (y - y0) / (2 * DY));
+          const column = parseInt('' + (x - x0) / DX);
+          if (!(column % 2)) {
             if ((y - y0) % (2 * DY) < hitboxY) {
               return {
                 x,
                 y,
-                row: row0 + parseInt('' + (y - y0) / (2 * DY)),
-                column: column,
+                row: row0 - row + (column >> 1),
+                column: column0 + column + row - (column >> 1),
                 type: 'point',
               };
             } else return null;
@@ -183,8 +232,8 @@ export const getHighlightedPointPosition: Positioner.GetHighlightedPointPosition
               return {
                 x,
                 y,
-                row: row0 + parseInt('' + (y - y0) / (2 * DY)),
-                column: column,
+                row: row0 - row + (column >> 1),
+                column: column0 + column + row - (column >> 1),
                 type: 'point',
               };
             } else return null;
@@ -192,17 +241,6 @@ export const getHighlightedPointPosition: Positioner.GetHighlightedPointPosition
         } else {
           return null;
         }
-      // if ((x - x0) % DX > hitboxX || (y - y0) % (2 * DY) > hitboxY) {
-      //   return null;
-      // } else {
-      //   return {
-      //     x,
-      //     y,
-      //     row: row0 + parseInt('' + (y - y0) / (2 * DY)),
-      //     column: column0 + parseInt('' + (x - x0) / DX),
-      //     type: 'point',
-      //   };
-      // }
       case 3:
         if ((x - x0) % DX > hitboxX || (y - y0) % DY > hitboxY) {
           return null;
@@ -292,23 +330,43 @@ export const getGridPositions: Positioner.GetLinePositions = (
   return ret;
 };
 
-export const getBlockPositions: Positioner.GetBlockPositions = (
+// const getPointPosition: Positioner.GetPointPosition = (matrix) => {
+//   return {
+//     x
+//   }
+// }
+
+const getBlockPositions: Positioner.GetBlockPositions = (
   width,
   height,
   level,
   matrixes,
   type
 ) => {
-  const ret: PointPosition[] = [];
-  const { DX, DY, A, numRows, numColumns, x0, y0 } = getCanvasValues(
+  if (!!!matrixes) return [];
+  const { DX, DY, x0, y0, row0, column0 } = getCanvasValues(
     width,
     height,
     level
   );
-  return ret;
+  let highest = 50;
+  return matrixes.map((matrix) => {
+    const { row, column } = matrix;
+    console.debug(`[Pos] row: ${row} column: ${column}`);
+    const x = x0 + (row - row0 + column - column0) * DX;
+    const y = y0 + (-row + row0 + column - column0) * DY;
+    return {
+      x,
+      y,
+      z: highest - (Math.random() * 20 + 5),
+      row: matrix.row,
+      column: matrix.column,
+      type,
+    };
+  });
 };
 
-export const getGroupPositions: Positioner.GetGroupPositions = (
+const getGroupPositions: Positioner.GetGroupPositions = (
   width,
   height,
   level,
@@ -322,31 +380,6 @@ export const getGroupPositions: Positioner.GetGroupPositions = (
     level
   );
   return ret;
-};
-
-export const getSampleViewPosition: Positioner.GetViewPositions<'dev'> = (
-  width,
-  height,
-  level,
-  maxRow,
-  canvasColumn,
-  options
-) => {
-  const sortedData = savedViews.developer[level];
-
-  const pods: Matrix[] = [];
-  const deployments: [Matrix, Matrix][] | null = options.showDeployments
-    ? []
-    : null;
-  const namespaces: [Matrix, Matrix][] | null = options.showNamespaces
-    ? []
-    : null;
-
-  return {
-    block: getBlockPositions(width, height, level, pods, 'pod'),
-    group1: getGroupPositions(width, height, level, deployments, 'deployment'),
-    group2: getGroupPositions(width, height, level, namespaces, 'namespace'),
-  };
 };
 
 /**
@@ -397,25 +430,22 @@ export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
       selCol = parseInt('' + dataLength / maxRow) - 1;
       selRow = maxRow - 1;
     }
+
     if (selCol > 0 && selRow > 0) {
-      Array.from(Array(selRow).keys()).map((row) => {
-        Array.from(Array(selCol).keys()).map((column) => {
-          const pos = {
-            row,
-            column,
-          };
-          pods.push(pos);
+      Array.from(Array(selRow).keys())
+        .reverse()
+        .map((row) => {
+          Array.from(Array(selCol).keys()).map((column) => {
+            const pos = {
+              row,
+              column,
+            };
+            pods.push(pos);
+          });
         });
-      });
     }
-  } else if (
-    options.showDeployments === true ||
-    options.showNamespaces === false
-  ) {
-  } else if (
-    options.showDeployments === false ||
-    options.showNamespaces === true
-  ) {
+  } else if (options.showDeployments && !options.showNamespaces) {
+  } else if (!options.showDeployments && options.showNamespaces) {
   } else {
   }
 
@@ -426,7 +456,7 @@ export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
   };
 };
 
-export const GetAdminViewPositions: Positioner.GetViewPositions<'admin'> = (
+export const getAdminViewPositions: Positioner.GetViewPositions<'admin'> = (
   width,
   height,
   level,
@@ -435,10 +465,33 @@ export const GetAdminViewPositions: Positioner.GetViewPositions<'admin'> = (
   options
 ) => {
   const sortedData = savedViews.admin;
-
   const pods: Matrix[] | null = options.showPods ? [] : null;
-  const nodes: [Matrix, Matrix][] | Matrix[] = [];
+  const nodes: [Matrix, Matrix][] & Matrix[] = [];
   const clusters: [Matrix, Matrix][] | null = options.showClusters ? [] : null;
+
+  let nodeLength = sortedData.nodes.length,
+    selRow: number,
+    selCol: number;
+
+  if (!options.showClusters && !options.showPods) {
+    if (maxRow * canvasColumn > nodeLength) {
+      selCol = canvasColumn - 1;
+      selRow = parseInt('' + nodeLength / canvasColumn) - 1;
+    } else {
+      selCol = parseInt('' + nodeLength / maxRow) - 1;
+      selRow = maxRow - 1;
+    }
+
+    if (selCol > 0 && selRow > 0) {
+      Array.from(Array(selRow).keys())
+        .reverse()
+        .map((row) => {
+          Array.from(Array(selCol).keys()).map((column) => {
+            nodes.push({ row, column });
+          });
+        });
+    }
+  }
 
   if (options.showPods) {
     return {

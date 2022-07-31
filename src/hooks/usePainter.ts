@@ -153,8 +153,8 @@ export default (
             dimensions.width,
             dimensions.height,
             level,
-            5,
             10,
+            6,
             { showClusters: false, showPods: false }
           )
         );
@@ -165,8 +165,8 @@ export default (
             dimensions.width,
             dimensions.height,
             level,
-            5,
             10,
+            8,
             { showDeployments: false, showNamespaces: false }
           )
         );
