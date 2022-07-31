@@ -411,7 +411,6 @@ export const SAMPLE_POD_METRICS: Resource.Pod.Metric[] = [
     values: {
       CPUUsage: 3.2,
       memoryUsage: 67891843072,
-      CPUSpec: 16,
       memorySpec: 127891843072,
     },
   },
@@ -420,7 +419,6 @@ export const SAMPLE_POD_METRICS: Resource.Pod.Metric[] = [
     values: {
       CPUUsage: 3.2,
       memoryUsage: 67891843072,
-      CPUSpec: 16,
       memorySpec: 127891843072,
     },
   },
@@ -429,7 +427,6 @@ export const SAMPLE_POD_METRICS: Resource.Pod.Metric[] = [
     values: {
       CPUUsage: 3.2,
       memoryUsage: 67891843072,
-      CPUSpec: 16,
       memorySpec: 127891843072,
     },
   },
@@ -438,7 +435,6 @@ export const SAMPLE_POD_METRICS: Resource.Pod.Metric[] = [
     values: {
       CPUUsage: 3.2,
       memoryUsage: 67891843072,
-      CPUSpec: 16,
       memorySpec: 127891843072,
     },
   },
@@ -447,7 +443,6 @@ export const SAMPLE_POD_METRICS: Resource.Pod.Metric[] = [
     values: {
       CPUUsage: 3.2,
       memoryUsage: 67891843072,
-      CPUSpec: 16,
       memorySpec: 127891843072,
     },
   },
@@ -456,7 +451,6 @@ export const SAMPLE_POD_METRICS: Resource.Pod.Metric[] = [
     values: {
       CPUUsage: 3.2,
       memoryUsage: 67891843072,
-      CPUSpec: 16,
       memorySpec: 127891843072,
     },
   },
@@ -465,7 +459,6 @@ export const SAMPLE_POD_METRICS: Resource.Pod.Metric[] = [
     values: {
       CPUUsage: 3.2,
       memoryUsage: 67891843072,
-      CPUSpec: 16,
       memorySpec: 127891843072,
     },
   },
@@ -474,7 +467,6 @@ export const SAMPLE_POD_METRICS: Resource.Pod.Metric[] = [
     values: {
       CPUUsage: 3.2,
       memoryUsage: 67891843072,
-      CPUSpec: 16,
       memorySpec: 127891843072,
     },
   },
@@ -483,7 +475,6 @@ export const SAMPLE_POD_METRICS: Resource.Pod.Metric[] = [
     values: {
       CPUUsage: 3.2,
       memoryUsage: 67891843072,
-      CPUSpec: 16,
       memorySpec: 127891843072,
     },
   },
@@ -492,7 +483,6 @@ export const SAMPLE_POD_METRICS: Resource.Pod.Metric[] = [
     values: {
       CPUUsage: 3.2,
       memoryUsage: 67891843072,
-      CPUSpec: 16,
       memorySpec: 127891843072,
     },
   },
@@ -501,7 +491,6 @@ export const SAMPLE_POD_METRICS: Resource.Pod.Metric[] = [
     values: {
       CPUUsage: 3.2,
       memoryUsage: 67891843072,
-      CPUSpec: 16,
       memorySpec: 127891843072,
     },
   },
@@ -510,7 +499,6 @@ export const SAMPLE_POD_METRICS: Resource.Pod.Metric[] = [
     values: {
       CPUUsage: 3.2,
       memoryUsage: 67891843072,
-      CPUSpec: 16,
       memorySpec: 127891843072,
     },
   },
@@ -519,7 +507,6 @@ export const SAMPLE_POD_METRICS: Resource.Pod.Metric[] = [
     values: {
       CPUUsage: 3.2,
       memoryUsage: 67891843072,
-      CPUSpec: 16,
       memorySpec: 127891843072,
     },
   },
@@ -528,7 +515,6 @@ export const SAMPLE_POD_METRICS: Resource.Pod.Metric[] = [
     values: {
       CPUUsage: 3.2,
       memoryUsage: 67891843072,
-      CPUSpec: 16,
       memorySpec: 127891843072,
     },
   },
@@ -537,7 +523,6 @@ export const SAMPLE_POD_METRICS: Resource.Pod.Metric[] = [
     values: {
       CPUUsage: 3.2,
       memoryUsage: 67891843072,
-      CPUSpec: 16,
       memorySpec: 127891843072,
     },
   },
@@ -546,7 +531,6 @@ export const SAMPLE_POD_METRICS: Resource.Pod.Metric[] = [
     values: {
       CPUUsage: 3.2,
       memoryUsage: 67891843072,
-      CPUSpec: 16,
       memorySpec: 127891843072,
     },
   },
@@ -555,7 +539,6 @@ export const SAMPLE_POD_METRICS: Resource.Pod.Metric[] = [
     values: {
       CPUUsage: 3.2,
       memoryUsage: 67891843072,
-      CPUSpec: 16,
       memorySpec: 127891843072,
     },
   },
@@ -564,7 +547,6 @@ export const SAMPLE_POD_METRICS: Resource.Pod.Metric[] = [
     values: {
       CPUUsage: 3.2,
       memoryUsage: 67891843072,
-      CPUSpec: 16,
       memorySpec: 127891843072,
     },
   },
@@ -573,7 +555,6 @@ export const SAMPLE_POD_METRICS: Resource.Pod.Metric[] = [
     values: {
       CPUUsage: 3.2,
       memoryUsage: 67891843072,
-      CPUSpec: 16,
       memorySpec: 127891843072,
     },
   },
@@ -582,7 +563,6 @@ export const SAMPLE_POD_METRICS: Resource.Pod.Metric[] = [
     values: {
       CPUUsage: 3.2,
       memoryUsage: 67891843072,
-      CPUSpec: 16,
       memorySpec: 127891843072,
     },
   },
@@ -591,7 +571,6 @@ export const SAMPLE_POD_METRICS: Resource.Pod.Metric[] = [
     values: {
       CPUUsage: 3.2,
       memoryUsage: 67891843072,
-      CPUSpec: 16,
       memorySpec: 127891843072,
     },
   },
@@ -600,7 +579,6 @@ export const SAMPLE_POD_METRICS: Resource.Pod.Metric[] = [
     values: {
       CPUUsage: 3.2,
       memoryUsage: 67891843072,
-      CPUSpec: 16,
       memorySpec: 127891843072,
     },
   },
@@ -609,7 +587,6 @@ export const SAMPLE_POD_METRICS: Resource.Pod.Metric[] = [
     values: {
       CPUUsage: 3.2,
       memoryUsage: 67891843072,
-      CPUSpec: 16,
       memorySpec: 127891843072,
     },
   },
@@ -618,7 +595,6 @@ export const SAMPLE_POD_METRICS: Resource.Pod.Metric[] = [
     values: {
       CPUUsage: 3.2,
       memoryUsage: 67891843072,
-      CPUSpec: 16,
       memorySpec: 127891843072,
     },
   },
@@ -627,7 +603,6 @@ export const SAMPLE_POD_METRICS: Resource.Pod.Metric[] = [
     values: {
       CPUUsage: 3.2,
       memoryUsage: 67891843072,
-      CPUSpec: 16,
       memorySpec: 127891843072,
     },
   },
@@ -636,7 +611,6 @@ export const SAMPLE_POD_METRICS: Resource.Pod.Metric[] = [
     values: {
       CPUUsage: 3.2,
       memoryUsage: 67891843072,
-      CPUSpec: 16,
       memorySpec: 127891843072,
     },
   },
@@ -645,7 +619,6 @@ export const SAMPLE_POD_METRICS: Resource.Pod.Metric[] = [
     values: {
       CPUUsage: 3.2,
       memoryUsage: 67891843072,
-      CPUSpec: 16,
       memorySpec: 127891843072,
     },
   },
@@ -654,7 +627,6 @@ export const SAMPLE_POD_METRICS: Resource.Pod.Metric[] = [
     values: {
       CPUUsage: 3.2,
       memoryUsage: 67891843072,
-      CPUSpec: 16,
       memorySpec: 127891843072,
     },
   },
@@ -663,7 +635,6 @@ export const SAMPLE_POD_METRICS: Resource.Pod.Metric[] = [
     values: {
       CPUUsage: 3.2,
       memoryUsage: 67891843072,
-      CPUSpec: 16,
       memorySpec: 127891843072,
     },
   },
