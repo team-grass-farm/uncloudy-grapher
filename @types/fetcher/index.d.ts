@@ -127,7 +127,7 @@ declare namespace Fetcher {
     pods: Pod[];
     nodes: Node[];
     deployments: Deployment[];
-    namespaces: string[];
+    namespaces: Namespace[];
   }>;
 
   type FetchNodeRelatedResources = () => Promise<{
@@ -136,12 +136,16 @@ declare namespace Fetcher {
   }>;
 
   type FetchPodMetrics = (
-    data: Pod.Metric[],
+    data: Pod[],
     timeRange: string
-  ) => Promise<Pod.Metric[]>;
+  ) => Promise<{
+    [id: string]: Pod.Metric[];
+  }>;
 
   type FetchNodeMetrics = (
-    data: Node.Metrice[],
+    data: Node[],
     timeRange: string
-  ) => Promise<Node.Metric[]>;
+  ) => Promise<{
+    [id: string]: Node.Metric[];
+  }>;
 }

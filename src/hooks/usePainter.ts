@@ -1,9 +1,19 @@
-import React, { RefObject, useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+  RefObject,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { usePainterEvent } from '~hooks';
 import { renderGrids, renderObjects, renderPoints } from '~utils/painter';
 import {
-    addNodes, addPods, getAdminViewPositions, getDeveloperViewPositions, getGridPositions,
-    getPointPositions
+  addNodes,
+  addPods,
+  getAdminViewPositions,
+  getDeveloperViewPositions,
+  getGridPositions,
+  getPointPositions,
 } from '~utils/positioner';
 
 type Layer = 'block' | 'group1' | 'group2';

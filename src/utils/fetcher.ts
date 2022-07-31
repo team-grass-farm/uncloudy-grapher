@@ -48,26 +48,39 @@ export const fetchPodRelatedResources: Fetcher.FetchPodRelatedResources =
     //developer.mozilla.org/ko/docs/Web/API/Fetch_API/Using_Fetch
     const queries: string[] = ['custom_pod_cpu_usage[1m]'];
 
-    // await Promise.all([
-    //   fetch('a'),
-    //   fetch('b'),
-    //   fetch('c')
-    // ]);
-    const res = await Promise.all(queries.map((query) => fetch(query)));
+    const res = await Promise.all(
+      queries.map((query) => fetch(API_URL + 'query?query=' + query))
+    );
+
+    const podList: Pod[] = [];
+    const nodeList: Node[] = [];
+    const namespaceList: string[] = [];
+    const deploymentList: string[] = [];
+
+    const getData: any = await res[0].json();
+    if (getData.status === 'success') {
+      for (let i = 0; i < getData.data.result.length; i++) {
+        const data = getData.data.result[i].metric;
+        const splitShortId = data.pod.split('-').at(-1);
+        podList[i] = {
+          id: data.pod,
+          shortId: splitShortId,
+          deploymentId: data.deployment,
+          namespace: data.namespace,
+        };
+        nodeList.push(data.instance);
+        namespaceList.push(data.namespace);
+        deploymentList.push(data.deployment);
+      }
+    }
+
     return new Promise((resolve, reject) => {
       try {
         resolve({
-          // pods: [{
-          //   id: 'string',
-          //   shortId: 'string',
-          //   deploymentId: 'string',
-          //   namespace: 'string',
-          //   metrics: []
-          // }],
-          pods: [],
-          nodes: [],
-          deployments: [],
-          namespaces: [],
+          pods: podList,
+          nodes: nodeList,
+          deployments: deploymentList,
+          namespaces: namespaceList,
         });
       } catch (e) {
         reject('error: ' + e);
@@ -75,17 +88,37 @@ export const fetchPodRelatedResources: Fetcher.FetchPodRelatedResources =
     });
   };
 
-export const fechNodeRelatedResources: Fetcher.FetchNodeRelatedResources =
+export const fetchNodeRelatedResources: Fetcher.FetchNodeRelatedResources =
   async () => {
     const queries: string[] = ['custom_node_cpu_usage[1m]'];
+
     const res = await Promise.all(
       queries.map((query) => fetch(API_URL + 'query?query=' + query))
     );
+
+    const nodeList: Node[] = [];
+    const clusterList: Cluster[] = [];
+
+    const getData: any = await res[0].json();
+
+    if (getData.status === 'success') {
+      for (let i = 0; i < getData.data.result.length; i++) {
+        const data = getData.data.result[i].metric;
+        nodeList[i] = {
+          id: data.instance,
+          region: data.cluster,
+          os: 'ubuntu',
+          type: 'worker',
+        };
+        clusterList.push(data.result[i].metric.cluster);
+      }
+    }
+
     return new Promise((resolve, reject) => {
       try {
         resolve({
-          nodes: [],
-          clusters: [],
+          nodes: nodeList,
+          clusters: clusterList,
         });
       } catch (e) {
         reject('error: ' + e);
@@ -94,12 +127,18 @@ export const fechNodeRelatedResources: Fetcher.FetchNodeRelatedResources =
   };
 
 export const fetchPodMetrics: Fetcher.FetchPodMetrics = async (
-  data: Resource.Pod.Metric[],
-  timeRange: string
+  data: any,
+  timeRange: any
 ) => {
   return new Promise((resolve, reject) => {
     try {
-      resolve([{}]);
+      console.log('data:', data);
+      const ret: Record<string, Pod.Metric[]> = {};
+      data.forEach((pod: any) => {
+        console.log(pod);
+        // ret[pod.id] =
+      });
+      resolve({});
     } catch (e) {
       reject('error: ' + e);
     }
@@ -107,10 +146,16 @@ export const fetchPodMetrics: Fetcher.FetchPodMetrics = async (
 };
 
 export const fetchNodeMetrics: Fetcher.FetchNodeMetrics = async (
-  data: Resource.Node.Metric[],
-  timeRange: string
+  data: any,
+  timeRange: any
 ) => {
-  return new Promise((resolve) => {
-    resolve([]);
+  return new Promise((resolve, reject) => {
+    try {
+      const ret: Record<string, Node.Metric[]> = {};
+
+      resolve({});
+    } catch (e) {
+      reject('error: ' + e);
+    }
   });
 };
