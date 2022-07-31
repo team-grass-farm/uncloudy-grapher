@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { SAMPLE_NODES, SAMPLE_PODS } from '~constants';
 
 export default (
-  type: 'production' | 'development' | 'offline' = 'production'
+  type: 'production' | 'development' | 'offline' = 'production',
+  enableSamples?: boolean
 ): [Resource.Map] => {
   const [pods, setPods] = useState<Resource.Pod[]>([]);
   const [nodes, setNodes] = useState<Resource.Node[]>([]);
@@ -12,10 +13,10 @@ export default (
 
   useEffect(() => {
     if (type === 'offline') {
-      setPods(SAMPLE_PODS);
-      setNodes(SAMPLE_NODES);
+      setPods(enableSamples ? SAMPLE_PODS : []);
+      setNodes(enableSamples ? SAMPLE_NODES : []);
     }
-  }, []);
+  }, [enableSamples]);
 
   useEffect(() => {
     const info: Set<[string, string]> = new Set();
