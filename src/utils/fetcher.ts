@@ -55,7 +55,7 @@ export const fetchPodRelatedResources: Fetcher.FetchPodRelatedResources =
     // ]);
     const res = await Promise.all(queries.map((query) => fetch(query)));
     if (res[0].status === 200) {
-      console.log(res[0]);
+      console.debug('[Fetcher] res:', res[0]);
     }
 
     return new Promise((resolve, reject) => {
@@ -85,7 +85,7 @@ export const fetchNodeRelatedResources: Fetcher.FetchNodeRelatedResources =
     const res = await Promise.all(
       queries.map((query) => fetch(API_URL + 'query?query=' + query))
     );
-    console.log(res);
+    console.debug('[Fetcher] res: ', res);
     return new Promise((resolve, reject) => {
       try {
         resolve({
@@ -106,7 +106,7 @@ export const fetchPodMetrics: Fetcher.FetchPodMetrics = async (
     try {
       const returnData: [number, number][] = [];
       data.forEach((el) => returnData.push([el.time, el.values.CPUUsage]));
-      console.log(returnData);
+      console.debug('[Fetcher] returnData:', returnData);
       resolve([returnData]);
     } catch (e) {
       reject('error: ' + e);
