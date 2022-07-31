@@ -85,7 +85,7 @@ export const fetchNodeRelatedResources: Fetcher.FetchNodeRelatedResources =
     const res = await Promise.all(
       queries.map((query) => fetch(API_URL + 'query?query=' + query))
     );
-    console.debug('[Fetcher] res: ', res);
+    console.debug('[Fetcher] res: ', await res[0].json());
     return new Promise((resolve, reject) => {
       try {
         resolve({
@@ -99,15 +99,17 @@ export const fetchNodeRelatedResources: Fetcher.FetchNodeRelatedResources =
   };
 
 export const fetchPodMetrics: Fetcher.FetchPodMetrics = async (
-  data: Resource.Pod.Metric[],
-  timeRange: string
+  data,
+  timeRange
 ) => {
   return new Promise((resolve, reject) => {
     try {
-      const returnData: [number, number][] = [];
-      data.forEach((el) => returnData.push([el.time, el.values.CPUUsage]));
-      console.debug('[Fetcher] returnData:', returnData);
-      resolve([returnData]);
+      const ret: Record<string, Pod.Metric[]> = {};
+      data.forEach((pod) => {
+        // ret[pod.id] =
+        return;
+      });
+      resolve({});
     } catch (e) {
       reject('error: ' + e);
     }
@@ -115,17 +117,12 @@ export const fetchPodMetrics: Fetcher.FetchPodMetrics = async (
 };
 
 export const fetchNodeMetrics: Fetcher.FetchNodeMetrics = async (
-  data: Resource.Node.Metric[],
-  timeRange: string
+  data,
+  timeRange
 ) => {
   return new Promise((resolve, reject) => {
     try {
-      resolve([
-        {
-          data: data,
-          timeRange: timeRange,
-        },
-      ]);
+      resolve({});
     } catch (e) {
       reject('error: ' + e);
     }
