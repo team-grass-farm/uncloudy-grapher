@@ -12,18 +12,18 @@ import { MainBlock } from './styles';
 
 import type { Page } from '~models';
 export default () => {
-  const [resourceMap] = useFetcher('offline');
-  const [panelMode, setPanelMode] = useState<'dev' | 'admin'>('dev');
-  const [filterOptions, setFilterOptions] = useState<Page.Option[]>([]);
-  const [filter, setFilter] = useState<ValueType>([]);
-
   const [debuggingOptions, setDebuggingOptions] =
     useState<Page.DebuggingOptions>({
-      showBlocks: false,
-      showPoints: true,
+      showBlocks: true,
+      showPoints: false,
       showGrids: true,
       level: 2,
     });
+
+  const [resourceMap] = useFetcher('offline', debuggingOptions.showBlocks);
+  const [panelMode, setPanelMode] = useState<'dev' | 'admin'>('dev');
+  const [filterOptions, setFilterOptions] = useState<Page.Option[]>([]);
+  const [filter, setFilter] = useState<ValueType>([]);
 
   useEffect(() => {
     setFilterOptions(getFilteringOptions(panelMode));
