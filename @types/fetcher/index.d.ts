@@ -123,29 +123,44 @@ declare namespace Fetcher {
     };
   }
 
+  /**
+   * pods' Map key: string === Resource.Pod.id
+   * nodes' Map key: string === Resource.Pod.id
+   * deployments' Map key: string === Resource.Pod.id
+   * namespaces' Map key: string === namespace
+   * namespaces' Map value: MUST BE NULL (because there's no Resource.Namespace)
+   */
   type FetchPodRelatedResources = () => Promise<{
-    pods: Pod[];
-    nodes: Node[];
-    deployments: Deployment[];
-    namespaces: Namespace[];
+    pods: Map<string, Resource.Pod>;
+    nodes: Map<string, Resource.Node>;
+    deployments: Map<string, Resource.Deployment>;
+    namespaces: Map<string, null>;
   }>;
 
+  /**
+   * nodes's Map key: string === Resource.Node.id
+   * clusters' Map key: string === Resource.Cluster.id
+   */
   type FetchNodeRelatedResources = () => Promise<{
-    nodes: Node[];
-    clusters: Cluster[];
+    nodes: Map<string, Resource.Node>;
+    clusters: Map<string, Resource.Cluster>;
   }>;
 
+  /**
+   * data's Map key: string === Resource.Pod.id
+   * return value's Map key: string === Resource.Pod.id
+   */
   type FetchPodMetrics = (
-    data: Pod[],
+    data: Map<string, Resource.Pod>,
     timeRange: string
-  ) => Promise<{
-    [id: string]: Pod.Metric[];
-  }>;
+  ) => Promise<Map<string, Resource.Pod.Metric[]>>;
 
+  /**
+   * data's Map key: string === Resource.Node.id
+   * return value's Map key: string === Resource.Node.id
+   */
   type FetchNodeMetrics = (
-    data: Node[],
+    data: Map<string, Resource.Node>,
     timeRange: string
-  ) => Promise<{
-    [id: string]: Node.Metric[];
-  }>;
+  ) => Promise<Map<string, Resource.Node.Metric[]>>;
 }
