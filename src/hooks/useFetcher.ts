@@ -13,8 +13,8 @@ export default (
 
   useEffect(() => {
     if (type === 'offline') {
-      setPods(enableSamples ? SAMPLE_PODS : []);
-      setNodes(enableSamples ? SAMPLE_NODES : []);
+      // setPods(enableSamples ? SAMPLE_PODS : []);
+      // setNodes(enableSamples ? SAMPLE_NODES : []);
     }
   }, [enableSamples]);
 

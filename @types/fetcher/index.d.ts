@@ -132,7 +132,6 @@ declare namespace Fetcher {
    */
   type FetchPodRelatedResources = () => Promise<{
     pods: Map<string, Resource.Pod>;
-    nodes: Map<string, Resource.Node>;
     deployments: Map<string, Resource.Deployment>;
     namespaces: Map<string, null>;
   }>;
