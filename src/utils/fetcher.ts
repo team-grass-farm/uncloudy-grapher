@@ -4,6 +4,12 @@ import type { Page } from '~models';
 
 const API_URL = 'http://133.186.222.196:9090/api/v1/';
 const listMap = new Map();
+const nodeRole = {
+  b: 'bastion',
+  m: 'master',
+  h: 'router',
+  n: 'worker',
+};
 
 export const getFilteringOptions = (mode: 'admin' | 'dev'): Page.Option[] => {
   if (mode === 'admin') {
@@ -43,6 +49,73 @@ export const getFilteringOptions = (mode: 'admin' | 'dev'): Page.Option[] => {
     return [...Object.values(candidates)];
   }
 };
+
+const fetchResources: Fetcher.FetchResources = <T>(
+  queries: Record<string, (response: Fetcher.PromResponse) => T>
+) =>
+  new Promise<T>(async (resolve) => {
+    resolve(
+      (
+        await Promise.all(
+          Object.entries(queries).map(
+            ([query, callbackfn]) =>
+              new Promise<
+                [Fetcher.PromResponse, (response: Fetcher.PromResponse) => T]
+              >(async (resolve, reject) => {
+                const response = await fetch(API_URL + 'query?query=' + query);
+                if (!response.ok)
+                  reject('[Fetcher] error: ' + response.statusText);
+                else
+                  resolve([
+                    (await response.json())[
+                      'data'
+                    ] as unknown as Fetcher.PromResponse,
+                    callbackfn,
+                  ]);
+              })
+          )
+        )
+      ).reduce(
+        (acc, [response, callbackfn]) => ({ ...acc, ...callbackfn(response) }),
+        {} as T
+      )
+    );
+  });
+
+export const fetchPodRelatedResources2: Fetcher.FetchPodRelatedResources = () =>
+  new Promise(async (resolve) => {
+    resolve(
+      await fetchResources({
+        'custom_pod_cpu_usage[1m]': ({
+          result,
+        }: Fetcher.PodCPUUsageResponse) => {
+          const pods = new Map<string, Resource.Pod>();
+          const deployments = new Map<string, Resource.Deployment>();
+          const namespaces = new Map<string, null>();
+
+          result.forEach(({ metric }) => {
+            const { pod, namespace, deployment, instance } = metric;
+            pods.set(pod, {
+              id: pod,
+              shortId: pod.split('-').pop() ?? '',
+              namespace: namespace,
+              deploymentId: deployment,
+              nodeId: instance,
+            });
+            namespaces.set(namespace, null);
+            deployments.set(deployment, {
+              id: deployment,
+              shortId: deployment.split('-deployment-')[0],
+              replicas: null,
+              availableReplicas: null,
+              namespace: namespace,
+            });
+          });
+          return { pods, deployments, namespaces };
+        },
+      })
+    );
+  });
 
 export const fetchPodRelatedResources: Fetcher.FetchPodRelatedResources =
   async () => {
