@@ -28,8 +28,6 @@ declare interface LinePosition {
 declare interface GroupPosition {
   start: PointPosition;
   end: PointPosition;
-  width: number;
-  height: number;
   zIndex: number;
   type: GroupType;
 }
