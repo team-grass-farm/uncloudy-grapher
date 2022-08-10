@@ -4,11 +4,7 @@ import { ValueType } from 'rc-cascader/lib/Cascader';
 import React, { useEffect, useState } from 'react';
 import { DevelopmentOnlyAlert, UncloudyGraph } from '~components';
 import { useFetcher } from '~hooks';
-import {
-  fetchNodeRelatedResources,
-  fetchPodRelatedResources,
-  getFilteringOptions,
-} from '~utils/fetcher';
+import { getFilteringOptions } from '~utils/fetcher';
 
 import {
   BarChartOutlined,
@@ -37,10 +33,6 @@ export default () => {
     setFilterOptions(getFilteringOptions(panelMode));
     setFilter([]);
   }, [panelMode]);
-
-  useEffect(() => {
-    fetchPodRelatedResources().then((res) => console.log(res));
-  });
 
   return (
     <MainBlock>
