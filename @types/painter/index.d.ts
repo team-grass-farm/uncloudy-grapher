@@ -3,25 +3,16 @@ declare namespace Painter {
     | {
         text: string;
         color?: never;
-        reversed?: never;
         selected?: never;
       }
     | {
         text?: never;
         color: string;
-        reversed?: never;
         selected?: never;
       }
     | {
         text?: never;
         color?: never;
-        reversed: boolean;
-        selected?: never;
-      }
-    | {
-        text?: never;
-        color?: never;
-        reversed?: never;
         selected: boolean;
       };
 
@@ -57,8 +48,8 @@ declare namespace Painter {
     ctx: CanvasRenderingContext2D,
     currentRef: HTMLCanvasElement,
     positions: T[],
-    selectedPosition: T | null,
     visible: boolean,
-    level?: 1 | 2 | 3
+    level?: 1 | 2 | 3,
+    selectedPosition?: T | null
   ) => void;
 }
