@@ -118,7 +118,6 @@ export default (
             ctx,
             ref.current,
             getGridPositions(dimensions.width, dimensions.height, level ?? 2),
-            null,
             visible.grid ?? false
           );
           break;
@@ -127,7 +126,6 @@ export default (
             ctx,
             ref.current,
             getPointPositions(dimensions.width, dimensions.height, level ?? 2),
-            highlightedPointPosition,
             visible.point ?? false
           );
           break;
@@ -137,7 +135,6 @@ export default (
               ctx,
               ref.current,
               data.block,
-              null,
               visible.block ?? false,
               level
             );
@@ -145,13 +142,49 @@ export default (
         case 'group1':
           break;
         case 'group2':
+          // data &&
+          //   data.group2 &&
+          //   renderGroups(ctx, ref.current, data.group2, null, true, level);
           break;
         default:
           break;
       }
     });
     setLevelOnEvent(level);
-  }, [highlightedPointPosition, data, dimensions, level, visible]);
+  }, [data, dimensions, level, visible]);
+
+  useEffect(() => {
+    (
+      Object.entries(refMap) as [keyof RefMap, RefObject<HTMLCanvasElement>][]
+    ).map(([refName, ref]) => {
+      const ctx = ref.current && ref.current.getContext('2d');
+      if (ctx === null || ref.current === null) return;
+      switch (refName) {
+        case 'point':
+          renderPoints(
+            ctx,
+            ref.current,
+            getPointPositions(dimensions.width, dimensions.height, level ?? 2),
+            visible.point ?? false,
+            level,
+            highlightedPointPosition
+          );
+          break;
+        case 'block':
+          data &&
+            highlightedPointPosition &&
+            renderObjects(
+              ctx,
+              ref.current,
+              data.block,
+              visible.block ?? false,
+              level,
+              highlightedPointPosition
+            );
+          break;
+      }
+    });
+  }, [highlightedPointPosition]);
 
   const paint = useCallback<Paint>(
     (panelMode, data) => {
@@ -177,7 +210,7 @@ export default (
             level,
             10,
             8,
-            { showDeployments: false, showNamespaces: false }
+            { showDeployments: false, showNamespaces: true }
           )
         );
       }
