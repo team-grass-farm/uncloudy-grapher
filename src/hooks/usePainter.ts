@@ -1,19 +1,9 @@
-import React, {
-  RefObject,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, { RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { usePainterEvent } from '~hooks';
 import { renderGrids, renderObjects, renderPoints } from '~utils/painter';
 import {
-  addNodes,
-  addPods,
-  getAdminViewPositions,
-  getDeveloperViewPositions,
-  getGridPositions,
-  getPointPositions,
+    addNodes, addPods, getAdminViewPositions, getDeveloperViewPositions, getGridPositions,
+    getPointPositions
 } from '~utils/positioner';
 
 type Layer = 'block' | 'group1' | 'group2';
@@ -192,14 +182,10 @@ export default (
       if (panelMode === 'admin') {
         data.nodes && addNodes(data.nodes);
         setData(
-          getAdminViewPositions(
-            dimensions.width,
-            dimensions.height,
-            level,
-            10,
-            6,
-            { showClusters: false, showPods: false }
-          )
+          getAdminViewPositions(dimensions.width, dimensions.height, level, {
+            showClusters: false,
+            showPods: false,
+          })
         );
       } else {
         data.pods && addPods(data.pods);
@@ -208,9 +194,7 @@ export default (
             dimensions.width,
             dimensions.height,
             level,
-            10,
-            8,
-            { showDeployments: false, showNamespaces: true }
+            { showDeployments: false, showNamespaces: false }
           )
         );
       }
