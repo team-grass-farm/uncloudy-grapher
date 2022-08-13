@@ -1,26 +1,38 @@
 declare namespace Positioner {
-  interface SavedViews {
-    admin: {
-      pods: Map<string, Resource.Pod>;
-      nodes: Map<string, Resource.Node>;
-      clusters: Map<string, Resource.Cluster>;
-    };
-    developer: {
-      pods: Map<string, Resource.Pod>;
-      deployments: Map<string, Resource.Deployment>;
-      namespaces: Map<string, null>;
-    };
+  type Dimensions = Record<'width' | 'height', number>;
+  type Pose = (resourceMap: Positioner.ResourceMap) => void;
+
+  type AdminResourceMap =
+    | {
+        type: 'admin';
+        pods: Map<string, Resource.Pod>;
+        nodes?: Map<string, Resource.Node>;
+        clusters?: Map<string, Resource.Cluster>;
+      }
+    | {
+        type: 'admin';
+        pods?: never;
+        nodes: Map<string, Resource.Pod>;
+        clusters?: Map<string, Resource.Cluster>;
+      };
+  interface DeveloperResourceMap {
+    type: 'dev';
+    pods: Map<string, Resource.Pod>;
+    deployments?: Map<string, Resource.Deployment>;
+    namespaces?: Map<string, null>;
   }
+
+  type ResourceMap<T = 'admin' | 'dev'> = T extends 'admin'
+    ? AdminResourceMap
+    : T extends 'dev'
+    ? DeveloperResourceMap
+    : never;
 
   interface Plot {
-    blocks: PointPosition[];
-    groups1: GroupPosition[] | null;
-    groups2: GroupPosition[] | null;
+    blocks: BlockPositions;
+    groups1: GroupPositions | null;
+    groups2: GroupPositions | null;
   }
-
-  type AddResource<T extends Resource.Pod | Resource.Node> = (
-    data: Map<string, T>
-  ) => void;
 
   type GetCursorPosition = (
     width: number,
@@ -88,7 +100,7 @@ declare namespace Positioner {
     level: 1 | 2 | 3,
     matrixes: Matrix[] | null,
     type: PointType & ('node' | 'pod')
-  ) => PointPosition[];
+  ) => BlockPositions | null;
 
   type GetGroupPositions = (
     width: number,
@@ -96,20 +108,12 @@ declare namespace Positioner {
     level: 1 | 2 | 3,
     matrixes: [Matrix, Matrix][] | null,
     type: GroupType
-  ) => GroupPosition[];
+  ) => GroupPositions | null;
 
   type GetViewPositions<T extends 'dev' | 'admin'> = (
+    resourceMap: ResourceMap<T>,
     width: number,
     height: number,
-    level: 1 | 2 | 3,
-    options: T extends 'dev'
-      ? {
-          showDeployments: boolean;
-          showNamespaces: boolean;
-        }
-      : {
-          showPods: boolean;
-          showClusters: boolean;
-        }
-  ) => PositionMap;
+    level: 1 | 2 | 3
+  ) => Plot;
 }

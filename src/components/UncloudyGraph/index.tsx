@@ -1,25 +1,40 @@
 import { Col, Row, Select } from 'antd';
-import React, { useEffect, useLayoutEffect } from 'react';
-import { usePainter } from '~hooks';
+import React, { useEffect } from 'react';
+import { usePainter, usePositioner } from '~hooks';
 
 import { MainBlock } from './styles';
 
 import type { Props } from './types';
 
 export default ({ id, panelMode, data, options, ...otherProps }: Props) => {
-  const [refMap, level, update, setLevel, setVisible, selectedPoint] =
+  const [refMap, level, paint, setLevel, setVisible, selectedPoint] =
     usePainter(options.level ?? 2);
+  const [dimensions, plot, pose] = usePositioner(
+    options.level ?? 2,
+    refMap.main
+  );
 
-  useEffect(() => update(panelMode), [panelMode, level, data]);
+  useEffect(() => {
+    if (panelMode === 'admin') {
+      const { pods, clusters, nodes } = data;
+      pose({ type: panelMode, pods, nodes, clusters });
+    } else {
+      const { pods, deployments, namespaces } = data;
+      pose({ type: panelMode, pods, deployments, namespaces });
+    }
+  }, [panelMode, level, data]);
+
+  useEffect(() => (plot ? paint(plot) : undefined), [plot]);
 
   useEffect(() => {
     const { showGrids, showPoints, showBlocks, level } = options;
     setVisible({
       grid: showGrids ?? true,
-      point: showPoints ?? true,
-      block: showBlocks ?? true,
-      group1: true,
-      group2: true,
+      points: showPoints ?? true,
+      main: true,
+      blocks: showBlocks ?? true,
+      groups1: true,
+      groups2: true,
     });
     level !== undefined && setLevel(level);
   }, [options]);
