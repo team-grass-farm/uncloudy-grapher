@@ -20,13 +20,9 @@ const savedViews: Positioner.SavedViews = {
   },
 };
 
-/**
- * 포지셔닝 할 pod 리소스를 추가합니다.
- * @param pods
- * @see @types/positioner/index.d.ts
- */
 export const addPods: Positioner.AddResource<Resource.Pod> = (pods) => {
-  savedViews.admin.pods = savedViews.developer.pods = Array.from(pods.values());
+  savedViews.admin.pods = pods;
+  savedViews.developer.pods = pods;
   pods.forEach((pod) => {
     savedViews.developer.deployments.push({
       id: pod.deploymentId,
@@ -37,19 +33,10 @@ export const addPods: Positioner.AddResource<Resource.Pod> = (pods) => {
     });
     savedViews.developer.namespaces.push(pod.namespace);
   });
-
-  console.debug(
-    `[Positioner] stored ${savedViews.developer.pods.length} pods.`
-  );
 };
 
-/**
- * 포지셔닝 할 node 리소스를 추가합니다.
- * @param nodes
- * @see @types/positioner/index.d.ts
- */
 export const addNodes: Positioner.AddResource<Resource.Node> = (nodes) => {
-  savedViews.admin.nodes = Object.values(nodes);
+  savedViews.admin.nodes = nodes;
   nodes.forEach((node) => {
     savedViews.admin.clusters.push({
       id: node.region,
@@ -121,30 +108,10 @@ export const getCursorPosition: Positioner.GetCursorPosition = (
   }
 };
 
-/**
- * Positioning 기능 구현을 위해 렌더링된 Canvas에 의존적인 좌표 정보들을 반환하는 내부합수입니다.
- * @param width : 브라우저 내 렌더링 된 canvas 너비;
- * @param height : 브라우저 내 렌더링 된
- * @param level : Grid 뷰 레벨
- * @returns {DX, DY, A, numRows, numColumns, x0, y0, row0, column0}
- * @see @types/positioner/index.d.ts
- */
 const getCanvasValues: Positioner.GetCanvasValues = (width, height, level) => {
   const { DX, DY, A } = DELTA[level];
   const numRows = parseInt('' + height / (DY * (level === 3 ? 1 : 2))) + 1;
   const numColumns = parseInt('' + width / DX) + 1;
-
-  let x0: number, y0: number;
-  if (level === 3) {
-    x0 = width % (DX * 2) >> 1;
-    y0 = DY >> 1;
-  } else if (level === 2) {
-    x0 = width % (DX * 4) >> 1;
-    y0 = DY;
-  } else {
-    x0 = width % (DX * 4) >> 1;
-    y0 = -50;
-  }
 
   return {
     DX,
@@ -152,19 +119,19 @@ const getCanvasValues: Positioner.GetCanvasValues = (width, height, level) => {
     A,
     numRows,
     numColumns,
-    x0,
-    y0,
+    x0: width % (DX * (level === 3 ? 2 : 4)) >> 1,
+    y0: level === 3 ? DY >> 1 : DY,
     row0: 2,
     column0: -5,
   };
 };
 
 /**
- * 포인트 포지션의 렌더링 위치를 지정합니다.
- * @param width : 브라우저 내 렌더링 된 canvas 너비;
+ * Grid 레벨에 따른 렌더링 위치를 정의합니다.
+ * @param width : 브라우저 내 렌더링된 canvas 너비;
  * @param height : 브라우저 내 렌더링 된 canvas 높이;
- * @param level : 현재 Grid 뷰 레벨
- * @returns {PointPosition[]}: 렌더링 가능한 모든 포지션
+ * @param level : Grid View
+ * @returns {Position[]}: 렌더링 가능한 모든 포지션
  * @see @types/positioner/index.d.ts
  */
 export const getPointPositions: Positioner.GetPointPositions = (
@@ -181,6 +148,14 @@ export const getPointPositions: Positioner.GetPointPositions = (
     case 2:
       Array.from(Array(parseInt('' + numRows) + 1).keys()).map((py) => {
         Array.from(Array(numColumns).keys()).map((px) => {
+          // const pos: PointPosition = {
+          //   x: x0 + px * DX,
+          //   y: y0 + py * 2 * DY + (px % 2 ? DY : 0),
+          //   row: row0 + py + 1 - parseInt('' + ((column0 + px) >> 1)),
+          //   column: column0 + px,
+          //   type: 'point',
+          // };
+
           if (!(px % 2)) {
             ret.push({
               x: x0 + px * DX,
@@ -198,6 +173,13 @@ export const getPointPositions: Positioner.GetPointPositions = (
               type: 'point',
             });
           }
+
+          // let saved = savedPointPositions[py * MAX_COLUMN_OBJECT + px];
+          // if (!!!saved) {
+          //   saved = [pos];
+          // } else {
+          //   saved.push(pos);
+          // }
         });
       });
       break;
@@ -230,14 +212,10 @@ export const getPointPositions: Positioner.GetPointPositions = (
 
 /**
  * 선택된 항목의 포지션을 반환합니다.
- * @deprecated
- * @param width : 브라우저 내 렌더링 된 canvas 너비;
- * @param height : 브라우저 내 렌더링 된 canvas 높이;
- * @param level : 현재 Grid 뷰 레벨
- * @param cx : 마우스 커서 x의 위치
- * @param cy : 마우스 커서 y의 위치
- * @returns {PointPosition | null}
- * @see @types/positioner/index.d.ts
+ * @param px : 마우스 커서 x의 위치
+ * @param py : 마우스 커서 y의 위치
+ * @param level : 현재 Grid 레벨
+ * @returns {SelectedPointPosition}
  */
 export const getHighlightedPointPosition: Positioner.GetHighlightedPointPosition =
   (width, height, level, cx, cy) => {
@@ -296,14 +274,6 @@ export const getHighlightedPointPosition: Positioner.GetHighlightedPointPosition
     }
   };
 
-/**
- * 격자 줄 포지션의 렌더링 위치를 지정합니다.
- * @param width : 브라우저 내 렌더링 된 canvas 너비;
- * @param height : 브라우저 내 렌더링 된 canvas 높이;
- * @param level : 현재 Grid 뷰 레벨
- * @returns {LinePosition[]}
- * @see @types/positioner/index.d.ts
- */
 export const getGridPositions: Positioner.GetLinePositions = (
   width,
   height,
@@ -325,45 +295,52 @@ export const getGridPositions: Positioner.GetLinePositions = (
           x4 = x0 - DX + px * 2 * DX,
           y4 = y0;
 
-        ret.push({
+        const pos1: LinePosition = {
           x1: -y3 / A + x3,
           y1: 0,
           x2: (height - y3) / A + x3,
           y2: height,
           type: 'grid',
-        });
-        ret.push({
+        };
+        const pos2: LinePosition = {
           x1: y4 / A + x4,
           y1: 0,
           x2: -(height - y4) / A + x4,
           y2: height,
           type: 'grid',
-        });
+        };
+
+        ret.push(pos1);
+        ret.push(pos2);
       });
       break;
     case 3:
       Array.from(Array(numColumns).keys()).map((px) => {
         const x3 = x0 - DX / 2 + px * DX;
 
-        ret.push({
+        const pos: LinePosition = {
           x1: x3,
           y1: 0,
           x2: x3,
           y2: height,
           type: 'grid',
-        });
+        };
+
+        ret.push(pos);
       });
 
       Array.from(Array(numRows).keys()).map((py) => {
         const y3 = y0 - DY / 2 + py * DY;
 
-        ret.push({
+        const pos: LinePosition = {
           x1: 0,
           y1: y3,
           x2: width,
           y2: y3,
           type: 'grid',
-        });
+        };
+
+        ret.push(pos);
       });
       break;
   }
@@ -371,31 +348,12 @@ export const getGridPositions: Positioner.GetLinePositions = (
   return ret;
 };
 
-/**
- * row, column이 지정된 단일 포인트 포지션에 대한 x, y 좌표를 구합니다.
- * @param c : getCanvasValues()를 통해 얻어진 정보
- * @param matrix : 포지셔닝이 필요한 리소스
- * @param type : 포인트 타입;
- * @param z : 높이
- * @returns {PointPosition}
- * @see @types/positioner/index.d.ts
- */
-const getPointPosition: Positioner.GetPointPosition = (c, matrix, type, z) => {
-  const { row, column } = matrix;
-  const x = c.x0 + (row - c.row0 + column - c.column0) * c.DX;
-  const y = c.y0 + (-row + c.row0 + column - c.column0) * c.DY;
-  return { x, y, z, row, column, type };
-};
+// const getPointPosition: Positioner.GetPointPosition = (matrix) => {
+//   return {
+//     x
+//   }
+// }
 
-/**
- * row, column이 지정된 복수 포인트 포지션에 대한 x, y 좌표를 구합니다.
- * @param width : 브라우저 내 렌더링 된 canvas 너비;
- * @param height : 브라우저 내 렌더링 된 canvas 높이;
- * @param level : 현재 Grid 뷰 레벨
- * @param matrixes : 포지션이 필요한 리소스 배결
- * @param type : 그룹 타입
- * @returns {PointPosition[]}
- */
 const getBlockPositions: Positioner.GetBlockPositions = (
   width,
   height,
@@ -404,28 +362,28 @@ const getBlockPositions: Positioner.GetBlockPositions = (
   type
 ) => {
   if (!!!matrixes) return [];
-  const canvasValues = getCanvasValues(width, height, level);
+  const { DX, DY, x0, y0, row0, column0 } = getCanvasValues(
+    width,
+    height,
+    level
+  );
   let highest = 50;
   return matrixes.map((matrix) => {
-    return getPointPosition(
-      canvasValues,
-      matrix,
+    const { row, column } = matrix;
+    console.debug(`[Pos] row: ${row} column: ${column}`);
+    const x = x0 + (row - row0 + column - column0) * DX;
+    const y = y0 + (-row + row0 + column - column0) * DY;
+    return {
+      x,
+      y,
+      z: highest - (Math.random() * 20 + 5),
+      row: matrix.row,
+      column: matrix.column,
       type,
-      highest - (Math.random() * 20 + 5)
-    );
+    };
   });
 };
 
-/**
- * row, column이 지정된 복수 그룹 포지션에 대한 x, y 좌표를 구합니다.
- * @param width : 브라우저 내 렌더링 된 canvas 너비;
- * @param height : 브라우저 내 렌더링 된 canvas 높이;
- * @param level : 현재 Grid 뷰 레벨
- * @param matrixes : 포지션이 필요한 리소스 배결
- * @param type : 그룹 타입
- * @returns {GroupPosition[]}
- * @see @types/positioner/index.d.ts
- */
 const getGroupPositions: Positioner.GetGroupPositions = (
   width,
   height,
@@ -433,29 +391,24 @@ const getGroupPositions: Positioner.GetGroupPositions = (
   matrixes,
   type
 ) => {
-  return [];
-  // if (!!!matrixes) return [];
-  // const canvasValues = getCanvasValues(width, height, level);
-  // return matrixes.map(
-  //   ([matrix1, matrix2]): GroupPosition => ({
-  //     start: getPointPosition(canvasValues, matrix1, 'point'),
-  //     end: getPointPosition(canvasValues, matrix2, 'point'),
-  //     zIndex: 0,
-  //     type,
-  //   })
-  // ) as GroupPosition[];
+  const ret: GroupPosition[] = [];
+  const { DX, DY, A, numRows, numColumns, x0, y0 } = getCanvasValues(
+    width,
+    height,
+    level
+  );
+  return ret;
 };
 
 /**
- * Grid 레벨에 따른 Pod, Deployment, Namespace 등의 리소스 맵을 반환하는 함수입니다.
- * @param width : 브라우저 내 렌더링 된 canvas 너비;
- * @param height : 브라우저 내 렌더링 된 canvas 높이;
- * @param level : 현재 Grid 뷰 레벨
- * @param maxRow : Canvas 내 최대로 보여질 수 있는 행 수
- * @param canvasColumn : Canvas 내 최대로 보여질 수 있는 열 수 (단, 열은 스크롤을 통해 숨겨진 열을 볼 수 있다.)
- * @param options : 특정 그룹을 보여지게 할 지에 대한 옵션
- * @returns {PositionMap} 포인트 값
+ * Grid 레벨에 따른 Pod, Deployment, Namespace 의 포인트들을 입력합니다.
  * @see @types/positioner/index.d.ts
+ * @param pods
+ * @param level
+ * @param maxRow
+ * @param canvasColumn
+ * @param options
+ * @returns {{pods: PointPosition[]; deployments: GroupPosition[] | null; namespaces: GroupPosition[] | null }} 포인트 값
  */
 export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
   width,
@@ -501,34 +454,16 @@ export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
         .reverse()
         .map((row) => {
           Array.from(Array(selCol).keys()).map((column) => {
-            pods.push({ row, column });
+            const pos = {
+              row,
+              column,
+            };
+            pods.push(pos);
           });
         });
     }
   } else if (options.showDeployments && !options.showNamespaces) {
   } else if (!options.showDeployments && options.showNamespaces) {
-    // NOTE This is a sample code:
-    if (maxRow * canvasColumn > dataLength) {
-      selCol = canvasColumn - 1;
-      selRow = parseInt('' + dataLength / canvasColumn) - 1;
-    } else {
-      selCol = parseInt('' + dataLength / maxRow) - 1;
-      selRow = maxRow - 1;
-    }
-
-    if (selCol > 0 && selRow > 0) {
-      Array.from(Array(selRow).keys())
-        .reverse()
-        .map((row) => {
-          Array.from(Array(selCol).keys()).map((column) => {
-            pods.push({ row, column });
-          });
-        });
-    }
-    namespaces!.push([
-      { row: 3, column: 3 },
-      { row: selRow, column: selCol },
-    ]);
   } else {
   }
 
@@ -539,17 +474,6 @@ export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
   };
 };
 
-/**
- * Grid 레벨에 따른 Pod, Node, Cluster 등의 리소스 맵을 반환하는 함수입니다.
- * @param width : 브라우저 내 렌더링 된 canvas 너비;
- * @param height : 브라우저 내 렌더링 된 canvas 높이;
- * @param level : 현재 Grid 뷰 레벨
- * @param maxRow : Canvas 내 최대로 보여질 수 있는 행 수
- * @param canvasColumn : Canvas 내 최대로 보여질 수 있는 열 수 (단, 열은 스크롤을 통해 숨겨진 열을 볼 수 있다.)
- * @param options : 특정 그룹을 보여지게 할 지에 대한 옵션
- * @returns {PositionMap} 포인트 값
- * @see @types/positioner/index.d.ts
- */
 export const getAdminViewPositions: Positioner.GetViewPositions<'admin'> = (
   width,
   height,
