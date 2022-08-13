@@ -23,12 +23,11 @@ declare namespace Positioner {
   ) => void;
 
   type GetCursorPosition = (
-    width: number,
-    height: number,
-    level: 1 | 2 | 3,
     cx: number,
     cy: number,
-    hitbox?: number
+    level: 1 | 2 | 3,
+    offsetX: number,
+    offsetY: number
   ) => PointPosition | null;
 
   type GetCanvasValues = (

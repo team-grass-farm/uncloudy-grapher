@@ -45,63 +45,45 @@ export const addNodes: Positioner.AddResource<Resource.Node> = (nodes) => {
 };
 
 /**
- * 움직이는 커서의 포지션에 따라 포인트 포지션을 구합니다. 2D Shearing 과 2D Rotation 회전변환을 이용합니다.
- * @param width : 브라우저 내 렌더링 된 canvas 너비;
- * @param height : 브라우저 내 렌더링 된 canvas 높이;
- * @param level : 현재 Grid 뷰 레벨
- * @param cx : 마우스 커서 x의 위치
- * @param cy : 마우스 커서 y의 위치
- * @param hitbox : 중앙 기준 커서의 유효 범위
+ * 움직이는 커서의 포지션에 따라 포인트 포지션을 구합니다.
+ * @param px {number} mouse position x
+ * @param py {number} mouse position y
+ * @param level {1 | 2 | 3} view level
+ * @param offsetX starting x0 point
+ * @param offsetY starting y == 0 point
+ * @param hitbox mouse hitbox
  * @returns { PointPosition | null }
- * @see @types/positioner/index.d.ts
  */
-export const getCursorPosition: Positioner.GetCursorPosition = (
-  width,
-  height,
-  level,
+const getCursorPosition: Positioner.GetCursorPosition = (
   cx,
   cy,
-  hitbox = 0
+  level,
+  offsetX,
+  offsetY,
+  hitbox = 15
 ) => {
-  const { DX, DY, x0, y0, row0, column0 } = getCanvasValues(
-    width,
-    height,
-    level
-  );
+  const { DX, DY } = DELTA[level];
+  const glitch = hitbox >> 1;
+  const distX = (cx + glitch - offsetX) % DX;
+  const distY = (cy + glitch - offsetY) % DY;
 
-  let px: number, py: number;
   switch (level) {
     case 1:
+      return null;
     case 2:
-      px = cx - (x0 - (row0 + column0 + 1) * DX);
-      py = cy - (y0 + (row0 - column0) * DY);
-
-      // NOTE that this equations are derived from 2D affine matrix transformation.
-      const column = Math.floor((DY * px + DX * py) / (2 * DX * DY));
-      const row = Math.floor((DY * px - DX * py) / (2 * DX * DY));
-      return { x: cx, y: cy, row, column, type: 'point' };
+      return null;
     case 3:
-      px = cx - x0 + (DX >> 1);
-      py = cy - y0 + (DY >> 1);
-
-      const hitboxX = DX * hitbox,
-        hitboxY = DY * hitbox;
-      const glitchX = hitboxX >> 1,
-        glitchY = hitboxY >> 1;
-
-      if (!!!hitbox) {
-        return null;
-      } else if (
-        (px + glitchX) % DX > hitboxX ||
-        (py + glitchY) % DY > hitboxY
-      ) {
+      if (distX > hitbox || distY > hitbox) {
         return null;
       } else {
+        const x = cx - distX;
+        const y = cy - distY;
+
         return {
-          x: cx,
-          y: cy,
-          row: row0 + parseInt('' + py / DY),
-          column: column0 + parseInt('' + px / DX),
+          x,
+          y,
+          row: parseInt('' + y / (2 * DY)),
+          column: parseInt('' + x / DX),
           type: 'point',
         };
       }
