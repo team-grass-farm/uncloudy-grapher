@@ -738,7 +738,7 @@ export const renderObjects: Painter.Render<PointPosition> = (
   ctx.scale(1, 1);
 
   let paintObject: Painter.PaintObject | null = null;
-  switch (positions[0] ? positions[0].type : null) {
+  switch (!!positions.length ? positions[0].type : null) {
     case 'pod':
       paintObject = level === 3 ? paintFlatPod : paintPod;
       break;

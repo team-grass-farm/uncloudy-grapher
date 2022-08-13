@@ -2,12 +2,11 @@ import React, { RefObject, useCallback, useEffect, useRef, useState } from 'reac
 import { usePainterEvent } from '~hooks';
 import { renderGrids, renderObjects, renderPoints } from '~utils/painter';
 import {
-    addNodes, addPods, getAdminViewPositions, getDeveloperViewPositions, getGridPositions,
-    getPointPositions
+    getAdminViewPositions, getDeveloperViewPositions, getGridPositions, getPointPositions
 } from '~utils/positioner';
 
 type Layer = 'block' | 'group1' | 'group2';
-type Paint = (panelMode: 'dev' | 'admin', data: Resource.Map) => void;
+type Paint = (panelMode: 'dev' | 'admin') => void;
 
 // NOTE grid & point is skippable because these are just for debugging.
 interface RefMap extends Record<Layer, RefObject<HTMLCanvasElement>> {
@@ -30,7 +29,7 @@ export default (
   React.Dispatch<React.SetStateAction<FlagMap>>,
   PointPosition | null
 ] => {
-  const [data, setData] = useState<Positioner.PositionMap | null>(null);
+  const [data, setData] = useState<Positioner.Plot | null>(null);
   const [isDevMode] = useState(process.env.NODE_ENV === 'development');
   const [paused, setPaused] = useState<boolean>(true);
   const [level, setLevel] = useState<1 | 2 | 3>(_level);
@@ -124,7 +123,8 @@ export default (
             renderObjects(
               ctx,
               ref.current,
-              data.block,
+              // data.block,
+              [],
               visible.block ?? false,
               level
             );
@@ -166,7 +166,7 @@ export default (
             renderObjects(
               ctx,
               ref.current,
-              data.block,
+              data.blocks,
               visible.block ?? false,
               level,
               highlightedPointPosition
@@ -177,10 +177,10 @@ export default (
   }, [highlightedPointPosition]);
 
   const paint = useCallback<Paint>(
-    (panelMode, data) => {
+    (panelMode) => {
       // TODO move this data fetcher to useFetcher.ts
       if (panelMode === 'admin') {
-        data.nodes && addNodes(data.nodes);
+        // data.nodes && addNodes(data.nodes);
         setData(
           getAdminViewPositions(dimensions.width, dimensions.height, level, {
             showClusters: false,
@@ -188,19 +188,24 @@ export default (
           })
         );
       } else {
-        data.pods && addPods(data.pods);
+        // data.pods && addPods(data.pods);
         setData(
           getDeveloperViewPositions(
             dimensions.width,
             dimensions.height,
             level,
-            { showDeployments: false, showNamespaces: false }
+            { showDeployments: true, showNamespaces: false }
           )
         );
       }
     },
     [dimensions, level]
   );
+
+  isDevMode &&
+    useEffect(() => {
+      console.debug('[usePainter] data: ', data);
+    }, [data]);
 
   return [refMap, level, paint, setLevel, setVisible, highlightedPointPosition];
 };

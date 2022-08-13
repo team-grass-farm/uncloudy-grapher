@@ -7,10 +7,10 @@ import { MainBlock } from './styles';
 import type { Props } from './types';
 
 export default ({ id, panelMode, data, options, ...otherProps }: Props) => {
-  const [refMap, level, paint, setLevel, setVisible, selectedPoint] =
+  const [refMap, level, update, setLevel, setVisible, selectedPoint] =
     usePainter(options.level ?? 2);
 
-  useEffect(() => paint(panelMode, data), [panelMode, data, level]);
+  useEffect(() => update(panelMode), [panelMode, level, data]);
 
   useEffect(() => {
     const { showGrids, showPoints, showBlocks, level } = options;

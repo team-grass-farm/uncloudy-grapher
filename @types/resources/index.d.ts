@@ -2,7 +2,7 @@ declare namespace Resource {
   interface Map {
     clusters?: Map<string, Resource.Cluster>;
     pods?: Map<string, Resource.Pod>;
-    nodes?: Map<string, ResourceNode>;
+    nodes?: Map<string, Resource.Node>;
     deployments?: Map<string, Resource.Deployment>;
     namespaces?: Map<string, string>;
   }
