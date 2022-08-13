@@ -1,5 +1,4 @@
 declare namespace Positioner {
-  type Dimensions = Record<'width' | 'height', number>;
   type Pose = (resourceMap: Positioner.ResourceMap) => void;
 
   type AdminResourceMap =

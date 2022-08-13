@@ -1,17 +1,24 @@
 import React, { RefObject, useCallback, useEffect, useState } from 'react';
-import { getAdminViewPositions, getDeveloperViewPositions } from '~utils/positioner';
+import {
+  getAdminViewPositions,
+  getDeveloperViewPositions,
+} from '~utils/positioner';
 
 export default (
-  _level: 1 | 2 | 3,
   ref: RefObject<HTMLCanvasElement>
-): [Positioner.Dimensions, Positioner.Plot | null, Positioner.Pose] => {
+): [
+  Dimensions,
+  Positioner.Plot | null,
+  Positioner.Pose,
+  React.Dispatch<1 | 2 | 3>
+] => {
   const [plot, setPlot] = useState<Positioner.Plot | null>(null);
   const [adminPlot, setAdminPlot] = useState<Positioner.Plot | null>(null);
   const [devPlot, setDevPlot] = useState<Positioner.Plot | null>(null);
 
   const [paused, setPaused] = useState<boolean>(true);
-  const [level, setLevel] = useState<1 | 2 | 3>(_level);
-  const [dimensions, setDimensions] = useState<Positioner.Dimensions>({
+  const [level, setLevel] = useState<1 | 2 | 3>(2);
+  const [dimensions, setDimensions] = useState<Dimensions>({
     width: 0,
     height: 0,
   });
@@ -64,5 +71,5 @@ export default (
   useEffect(() => setPlot(adminPlot), [adminPlot]);
   useEffect(() => setPlot(devPlot), [devPlot]);
 
-  return [dimensions, plot, pose];
+  return [dimensions, plot, pose, setLevel];
 };

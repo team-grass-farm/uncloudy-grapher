@@ -1,4 +1,4 @@
-import { DAYS, DELTA, GRID_SIZE, POS_ZANDIS, SPACING } from '~constants';
+import { DAYS, GRID_SIZE, POS_ZANDIS, SPACING } from '~constants';
 
 const DX = 2 * (GRID_SIZE + SPACING);
 const DY = GRID_SIZE + SPACING;
@@ -587,13 +587,40 @@ export const paintDayText: Painter.PaintObject = (
   },
 ];
 
+const render: Painter.BaseRender = (
+  ctx,
+  { width, height },
+  stackPaintings,
+  clearCanvas,
+  animated
+) => {
+  ctx.lineJoin = 'round';
+  ctx.fillStyle = 'transparent';
+  ctx.scale(1, 1);
+  if (clearCanvas) {
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillRect(0, 0, width, height);
+  }
+
+  stackPaintings.forEach((paintObject) => paintObject());
+  // animated && requestAnimationFrame(this);
+};
+
+/**
+ * Render texts of legends of a graph
+ * @deprecated
+ * @param ctx
+ * @param currentRef
+ * @param dataChunks
+ * @param paintingType
+ */
 export const renderLegend = (
   ctx: CanvasRenderingContext2D,
   currentRef: HTMLCanvasElement,
   dataChunks: number[][],
   paintingType: ('day' | 'month')[]
 ) => {
-  const stackPaintingObject: any[] = [];
+  const stackPaintings: (() => void)[] = [];
   const length = dataChunks.length;
   const x0 = currentRef.width / 2 + 6 * DX;
   const y0 = currentRef.height / 4 + 6 * DY;
@@ -601,13 +628,9 @@ export const renderLegend = (
   const a = new Date(Date.now());
   const b = new Date(a.getFullYear() + '-01-01');
 
-  ctx.lineJoin = 'round';
-  ctx.fillStyle = 'transparent';
-  ctx.scale(1, 1);
-
   if (paintingType.includes('month')) {
     dataChunks.map((_, y) =>
-      stackPaintingObject.push(
+      stackPaintings.push(
         ...paintMonthText(
           ctx,
           x0 - (-1 + y) * DX,
@@ -626,7 +649,7 @@ export const renderLegend = (
   if (paintingType.includes('day')) {
     !!dataChunks[0] &&
       dataChunks[0].map((_, x) =>
-        stackPaintingObject.push(
+        stackPaintings.push(
           ...paintDayText(
             ctx,
             x0 - (x + length) * DX,
@@ -640,100 +663,62 @@ export const renderLegend = (
       );
   }
 
-  const render = () => {
-    ctx.clearRect(0, 0, currentRef.width, currentRef.height);
-    ctx.fillRect(0, 0, currentRef.width, currentRef.height);
-    stackPaintingObject.forEach((paintObject) => paintObject());
-  };
-
-  render();
+  render(ctx, currentRef, stackPaintings, true, false);
 };
 
 export const renderGrids: Painter.Render<LinePosition[]> = (
   ctx,
-  currentRef,
-  positions,
-  visible
+  dimensions,
+  positions
 ) => {
-  const stackPaintingObject: any[] = [];
+  const stackPaintings: (() => void)[] = [];
 
-  ctx.lineJoin = 'round';
-  ctx.fillStyle = 'transparent';
-  ctx.scale(1, 1);
+  positions.forEach((position) => {
+    stackPaintings.push(
+      ...paintLine(ctx, position.x1, position.y1, position.x2, position.y2)
+    );
+  });
 
-  if (visible) {
-    positions.forEach((position) => {
-      stackPaintingObject.push(
-        ...paintLine(ctx, position.x1, position.y1, position.x2, position.y2)
-      );
-    });
-  }
-
-  const render = () => {
-    ctx.clearRect(0, 0, currentRef.width, currentRef.height);
-    ctx.fillRect(0, 0, currentRef.width, currentRef.height);
-    stackPaintingObject.forEach((paintObject) => paintObject());
-  };
-
-  render();
+  render(ctx, dimensions, stackPaintings, true, false);
 };
 
 export const renderPoints: Painter.Render<PointPosition[]> = (
   ctx,
-  currentRef,
-  positions,
-  visible,
-  selectedPosition
-) => {
-  const stackPaintingObject: (() => void)[] = [];
-
-  ctx.lineJoin = 'round';
-  ctx.fillStyle = 'transparent';
-  ctx.scale(1, 1);
-
-  if (visible) {
-    positions.forEach((position) => {
-      if (
-        !!selectedPosition &&
-        position.row === selectedPosition.row &&
-        position.column === selectedPosition.column
-      ) {
-        stackPaintingObject.push(
-          ...paintPoint(ctx, position.x, position.y, 5, 5, 0)
-        );
-      } else {
-        stackPaintingObject.push(
-          ...paintPoint(ctx, position.x, position.y, 0, 0, 0)
-        );
-      }
-    });
-  }
-
-  const render = () => {
-    ctx.clearRect(0, 0, currentRef.width, currentRef.height);
-    ctx.fillRect(0, 0, currentRef.width, currentRef.height);
-    visible && stackPaintingObject.forEach((paintObject) => paintObject());
-  };
-  render();
-};
-
-let prevLevel: 1 | 2 | 3;
-// let prevStackPaintings: (() => void)[] = [];
-let lastSurface: ImageData | null;
-let ax: number, ay: number;
-
-export const renderObjects: Painter.Render<BlockPositions> = (
-  ctx,
-  currentRef,
-  positions,
-  visible,
-  selectedPosition
+  dimensions,
+  positions
 ) => {
   const stackPaintings: (() => void)[] = [];
 
-  ctx.lineJoin = 'round';
-  ctx.fillStyle = 'transparent';
-  ctx.scale(1, 1);
+  positions.forEach(({ x, y }) => {
+    stackPaintings.push(...paintPoint(ctx, x, y, 0, 0, 0));
+  });
+
+  render(ctx, dimensions, stackPaintings, true, false);
+};
+
+export const renderHighlightedPoints: Painter.Render<PointPosition[]> = (
+  ctx,
+  dimensions,
+  positions
+) => {
+  const stackPaintings: (() => void)[] = [];
+
+  positions.forEach(({ x, y }) => {
+    stackPaintings.push(...paintPoint(ctx, x, y, 5, 5, 0));
+  });
+
+  render(ctx, dimensions, stackPaintings, false, true);
+};
+
+let lastSurface: ImageData | null;
+
+export const renderBlocks: Painter.Render<BlockPositions> = (
+  ctx,
+  dimensions,
+  positions,
+  isBaseCanvas
+) => {
+  const stackPaintings: (() => void)[] = [];
 
   let paintObject: Painter.PaintObject | null = null;
   switch (!!positions.data.length ? positions[0].type : null) {
@@ -745,102 +730,78 @@ export const renderObjects: Painter.Render<BlockPositions> = (
       break;
   }
 
-  // const { DX, DY } = DELTA[level ?? 2];
-
-  // TODO: fix this
-  // if (prevLevel !== level) {
-  //   prevLevel = level ?? 1;
-
-  //   lastSurface = null;
-  // }
-
   if (!!paintObject) {
-    if (selectedPosition === null) {
-      !!lastSurface && ctx.putImageData(lastSurface, ax ?? 0, ay ?? 0);
-    } else if (selectedPosition !== undefined) {
-      !!lastSurface && ctx.putImageData(lastSurface, ax ?? 0, ay ?? 0);
-      ax = selectedPosition.x - 200;
-      ay = selectedPosition.y - 200;
-      lastSurface = ctx.getImageData(ax, ay, 400, 400);
-
-      positions.data.forEach((position) => {
-        const weight =
-          (position.row - selectedPosition.row) ** 2 +
-          (position.column - selectedPosition.column) ** 2;
-        let option: Painter.Option;
-
-        if (weight >= 6) return;
-        else if (weight >= 3) option = { selected: false };
-        else if (weight > 0) option = { selected: false };
-        else option = { selected: true };
-
-        stackPaintings.push(
-          ...paintObject!(
-            ctx,
-            position.x,
-            position.y,
-            DX_OBJ,
-            DY_OBJ,
-            position.z ?? 35,
-            option
-          )
-        );
-      });
-    } else {
-      lastSurface = null;
-      positions.data.forEach((position) => {
-        stackPaintings.push(
-          ...paintObject!(
-            ctx,
-            position.x,
-            position.y,
-            DX_OBJ,
-            DY_OBJ,
-            position.z ?? 35
-          )
-        );
-      });
-    }
+    lastSurface = null;
+    positions.data.forEach((position) => {
+      stackPaintings.push(
+        ...paintObject!(
+          ctx,
+          position.x,
+          position.y,
+          positions.dx,
+          positions.dy,
+          position.z ? (positions.dz ?? 35) * position.z : 35,
+          { selected: !!!isBaseCanvas }
+        )
+      );
+    });
   }
 
-  const render = () => {
-    if (selectedPosition === undefined) {
-      ctx.clearRect(0, 0, currentRef.width, currentRef.height);
-      ctx.fillRect(0, 0, currentRef.width, currentRef.height);
-    }
-    visible && stackPaintings.forEach((paint) => paint());
+  render(ctx, dimensions, stackPaintings, true, false);
+};
 
-    // requestAnimationFrame(render);
-  };
+export const renderHighlightedBlocks: Painter.Render<BlockPositions | null> = (
+  ctx,
+  dimensions,
+  positions
+) => {
+  const stackPaintings: (() => void)[] = [];
 
-  render();
+  if (positions === null) {
+    return;
+  }
+
+  let paintBlock: Painter.PaintObject | null = null;
+  switch (!!positions.data.length ? positions[0].type : null) {
+    case 'pod':
+      paintBlock = positions.viewType === 'flat' ? paintFlatPod : paintPod;
+      break;
+    case 'node':
+      paintBlock = positions.viewType === 'flat' ? paintFlatNode : paintNode;
+      break;
+  }
+
+  !!lastSurface &&
+    ctx.putImageData(lastSurface, dimensions.width, dimensions.height);
+
+  positions.data.forEach((position) => {
+    stackPaintings.push(
+      ...paintBlock!(
+        ctx,
+        position.x,
+        position.y,
+        positions.dx,
+        positions.dy,
+        position.z ? (positions.dz ?? 35) * position.z : 35,
+        { selected: true }
+      )
+    );
+  });
+
+  render(ctx, dimensions, stackPaintings, false, false);
 };
 
 export const renderGroups: Painter.Render<GroupPositions> = (
   ctx,
-  currentRef,
-  positions,
-  visible,
-  selectedPosition
+  dimensions,
+  positions
 ) => {
   const stackPaintings: (() => void)[] = [];
-
-  ctx.lineJoin = 'round';
-  ctx.fillStyle = 'transparent';
-  ctx.scale(1, 1);
 
   console.log('position: ', positions);
   // positions.forEach((position) => {});
 
   // stackPaintings.push(...paintNamespace(ctx, 100, 100, 200, 200));
 
-  const render = () => {
-    ctx.clearRect(0, 0, currentRef.width, currentRef.height);
-    ctx.fillRect(0, 0, currentRef.width, currentRef.height);
-    stackPaintings.forEach((paint) => paint());
-
-    // requestAnimationFrame(render);
-  };
-
-  render();
+  render(ctx, dimensions, stackPaintings, true, false);
 };
