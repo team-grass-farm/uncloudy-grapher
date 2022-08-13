@@ -19,7 +19,7 @@ declare namespace Positioner {
   }
 
   type AddResource<T extends Resource.Pod | Resource.Node> = (
-    data: Map<string, T>
+    data: T[]
   ) => void;
 
   type GetCursorPosition = (
@@ -66,20 +66,6 @@ declare namespace Positioner {
     height: number,
     level: 1 | 2 | 3
   ) => LinePosition[];
-
-  type GetPointPosition = (
-    canvasValues: {
-      DX: number;
-      DY: number;
-      x0: number;
-      y0: number;
-      row0: number;
-      column0: number;
-    },
-    matrix: Matrix,
-    type: PointType,
-    z?: number
-  ) => PointPosition;
 
   type GetBlockPositions = (
     width: number,

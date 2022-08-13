@@ -1,10 +1,10 @@
 declare namespace Resource {
-  interface Map {
-    clusters?: Map<string, Resource.Cluster>;
-    pods?: Map<string, Resource.Pod>;
-    nodes?: Map<string, ResourceNode>;
-    deployments?: Map<string, Resource.Deployment>;
-    namespaces?: Map<string, string>;
+  declare interface Map {
+    clusters?: Cluster[];
+    pods?: Pod[];
+    nodes?: Node[];
+    deployments?: Deployment[];
+    namespaces?: string[];
   }
 
   interface Cluster {
