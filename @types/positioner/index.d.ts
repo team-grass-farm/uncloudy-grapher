@@ -1,21 +1,21 @@
 declare namespace Positioner {
   interface SavedViews {
     admin: {
-      pods: Resource.Pod[];
-      nodes: Resource.Node[];
-      clusters: Resource.Cluster[];
+      pods: Map<string, Resource.Pod>;
+      nodes: Map<string, Resource.Node>;
+      clusters: Map<string, Resource.Cluster>;
     };
     developer: {
-      pods: Resource.Pod[];
-      deployments: Resource.Deployment[];
-      namespaces: string[];
+      pods: Map<string, Resource.Pod>;
+      deployments: Map<string, Resource.Deployment>;
+      namespaces: Map<string, null>;
     };
   }
 
-  interface PositionMap {
-    block: PointPosition[];
-    group1: GroupPosition[] | null;
-    group2: GroupPosition[] | null;
+  interface Plot {
+    blocks: PointPosition[];
+    groups1: GroupPosition[] | null;
+    groups2: GroupPosition[] | null;
   }
 
   type AddResource<T extends Resource.Pod | Resource.Node> = (

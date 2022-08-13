@@ -1,22 +1,22 @@
 import { DELTA, MAX_COLUMN_OBJECT } from '~constants';
 
 const savedPointPositions: Record<number, PointPosition[]> = {};
-const savedPods: Record<number, Matrix> = {};
-const savedNodes: Record<number, Matrix> = {};
-const savedDeployments: Record<number, [Matrix, Matrix]> = {};
-const savedNamespaces: Record<number, [Matrix, Matrix]> = {};
-const savedClusters: Record<number, [Matrix, Matrix]> = {};
+// const savedPods: Record<number, Matrix> = {};
+// const savedNodes: Record<number, Matrix> = {};
+// const savedDeployments: Record<number, [Matrix, Matrix]> = {};
+// const savedNamespaces: Record<number, [Matrix, Matrix]> = {};
+// const savedClusters: Record<number, [Matrix, Matrix]> = {};
 
 const savedViews: Positioner.SavedViews = {
   admin: {
-    pods: [],
-    nodes: [],
-    clusters: [],
+    pods: new Map(),
+    nodes: new Map(),
+    clusters: new Map(),
   },
   developer: {
-    pods: [],
-    deployments: [],
-    namespaces: [],
+    pods: new Map(),
+    deployments: new Map(),
+    namespaces: new Map(),
   },
 };
 
@@ -26,21 +26,20 @@ const savedViews: Positioner.SavedViews = {
  * @see @types/positioner/index.d.ts
  */
 export const addPods: Positioner.AddResource<Resource.Pod> = (pods) => {
-  savedViews.admin.pods = savedViews.developer.pods = Array.from(pods.values());
+  savedViews.admin.pods = savedViews.developer.pods = pods;
   pods.forEach((pod) => {
-    savedViews.developer.deployments.push({
-      id: pod.deploymentId,
-      shortId: pod.deploymentId.split('-deployment-')[0],
-      replicas: null,
-      availableReplicas: null,
-      namespace: pod.namespace,
-    });
-    savedViews.developer.namespaces.push(pod.namespace);
+    !savedViews.developer.deployments.has(pod.deploymentId) &&
+      savedViews.developer.deployments.set(pod.deploymentId, {
+        id: pod.deploymentId,
+        shortId: pod.deploymentId.split('-deployment-')[0],
+        replicas: null,
+        availableReplicas: null,
+        namespace: pod.namespace,
+      });
+    savedViews.developer.namespaces.set(pod.namespace, null);
   });
 
-  console.debug(
-    `[Positioner] stored ${savedViews.developer.pods.length} pods.`
-  );
+  console.debug(`[Positioner] stored ${savedViews.developer.pods.size} pods.`);
 };
 
 /**
@@ -49,11 +48,9 @@ export const addPods: Positioner.AddResource<Resource.Pod> = (pods) => {
  * @see @types/positioner/index.d.ts
  */
 export const addNodes: Positioner.AddResource<Resource.Node> = (nodes) => {
-  savedViews.admin.nodes = Object.values(nodes);
+  savedViews.admin.nodes = nodes;
   nodes.forEach((node) => {
-    savedViews.admin.clusters.push({
-      id: node.region,
-    });
+    savedViews.admin.clusters.set(node.region, { id: node.region });
   });
 };
 
@@ -394,7 +391,7 @@ const getPointPosition: Positioner.GetPointPosition = (c, matrix, type, z) => {
  * @param level : 현재 Grid 뷰 레벨
  * @param matrixes : 포지션이 필요한 리소스 배결
  * @param type : 그룹 타입
- * @returns {PointPosition[]}
+ * @returns {Map<string, PointPosition>}
  */
 const getBlockPositions: Positioner.GetBlockPositions = (
   width,
@@ -433,17 +430,33 @@ const getGroupPositions: Positioner.GetGroupPositions = (
   matrixes,
   type
 ) => {
-  return [];
-  // if (!!!matrixes) return [];
-  // const canvasValues = getCanvasValues(width, height, level);
-  // return matrixes.map(
-  //   ([matrix1, matrix2]): GroupPosition => ({
-  //     start: getPointPosition(canvasValues, matrix1, 'point'),
-  //     end: getPointPosition(canvasValues, matrix2, 'point'),
-  //     zIndex: 0,
-  //     type,
-  //   })
-  // ) as GroupPosition[];
+  if (!!!matrixes) return [];
+  const { DX, DY, x0, y0, row0, column0 } = getCanvasValues(
+    width,
+    height,
+    level
+  );
+
+  return matrixes.map(([m1, m2]): GroupPosition => {
+    return {
+      start: {
+        x: x0 + (m1.row - row0 + m1.column - column0) * DX,
+        y: y0 + (-m1.row + row0 + m1.column - column0) * DY,
+        row: m1.row,
+        column: m1.column,
+        type: 'point',
+      },
+      end: {
+        x: x0 + (m2.row - row0 + m2.column - column0) * DX,
+        y: y0 + (-m2.row + row0 + m2.column - column0) * DY,
+        row: m2.row,
+        column: m2.column,
+        type: 'point',
+      },
+      zIndex: 0,
+      type,
+    };
+  });
 };
 
 const getSelectedBox = (
@@ -462,7 +475,7 @@ const getSelectedBox = (
     row = maxRow - 1;
   }
 
-  return { row, column };
+  return row * column > 0 ? { row, column } : null;
 };
 
 /**
@@ -496,7 +509,7 @@ export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
   const canvasColumn = 6;
 
   if (!options.showDeployments && !options.showNamespaces) {
-    let selBox = getSelectedBox(maxRow, canvasColumn, sortedData.pods.length);
+    let selBox = getSelectedBox(maxRow, canvasColumn, sortedData.pods.size);
 
     if (!!selBox) {
       Array.from(Array(selBox.row).keys())
@@ -512,74 +525,77 @@ export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
       const maxGroup1Row = ((maxRow - 1) >> 1) - 2;
 
       let paddingCol = 0;
-      let secondRow = sortedData.deployments.length >> 1;
+      let secondRow = sortedData.deployments.size >> 1;
 
-      sortedData.deployments.map((deployment, index) => {
-        if (secondRow === index) {
-          paddingCol = 0;
-        }
-        let paddingRow = secondRow >= index ? 0 : maxGroup1Row;
-        let numPods = sortedData.pods.filter(
-          (pod) => pod.deploymentId === deployment.id
-        ).length;
+      console.log('deployments: ', sortedData.deployments.size);
 
-        let selGroup1 = getSelectedBox(
-          ((maxRow - 1) >> 1) - 2,
-          canvasColumn - 2,
-          numPods
-        );
+      Object.entries(sortedData.deployments).map(
+        ([deploymentId, deployment], index) => {
+          if (secondRow === index) {
+            paddingCol = 0;
+          }
+          let paddingRow = secondRow >= index ? 0 : maxGroup1Row;
+          let numPods = [...sortedData.pods].filter(
+            ([_, pod]) => pod.deploymentId === deploymentId
+          ).length;
 
-        if (!!selGroup1) {
-          deployments.push([
-            { row: paddingRow, column: paddingCol },
-            {
-              row: paddingRow + selGroup1.row,
-              column: paddingCol + selGroup1.column,
-            },
-          ]);
+          let selGroup1 = getSelectedBox(
+            ((maxRow - 1) >> 1) - 2,
+            canvasColumn - 2,
+            numPods
+          );
 
-          // NOTE 디플로이먼트 박스 안 - 파드 간 간격을 설정할 지의 여부
-          // paddingRow++;
-          // paddingCol++;
+          if (!!selGroup1) {
+            deployments.push([
+              { row: paddingRow, column: paddingCol },
+              {
+                row: paddingRow + selGroup1.row - 1,
+                column: paddingCol + selGroup1.column - 1,
+              },
+            ]);
 
-          Array.from(Array(selGroup1.row).keys())
-            .reverse()
-            .map((row) => {
-              Array.from(Array(selGroup1!.column).keys()).map((column) => {
-                pods.push({
-                  row: paddingRow + row,
-                  column: paddingCol + column,
+            // NOTE 디플로이먼트 박스 안 - 파드 간 간격을 설정할 지의 여부
+            // paddingRow++;
+            // paddingCol++;
+
+            Array.from(Array(selGroup1.row).keys())
+              .reverse()
+              .map((row) => {
+                Array.from(Array(selGroup1!.column).keys()).map((column) => {
+                  pods.push({
+                    row: paddingRow + row,
+                    column: paddingCol + column,
+                  });
                 });
               });
-            });
 
-          paddingCol += selGroup1.column + 1;
+            paddingCol += selGroup1.column + 1;
+          }
         }
-      });
+      );
     }
   } else if (!options.showDeployments && options.showNamespaces) {
-    // NOTE This is a sample code:
-    if (maxRow * canvasColumn > dataLength) {
-      selCol = canvasColumn - 1;
-      selRow = parseInt('' + dataLength / canvasColumn) - 1;
-    } else {
-      selCol = parseInt('' + dataLength / maxRow) - 1;
-      selRow = maxRow - 1;
-    }
-
-    if (selCol > 0 && selRow > 0) {
-      Array.from(Array(selRow).keys())
-        .reverse()
-        .map((row) => {
-          Array.from(Array(selCol).keys()).map((column) => {
-            pods.push({ row, column });
-          });
-        });
-    }
-    namespaces!.push([
-      { row: 3, column: 3 },
-      { row: selRow, column: selCol },
-    ]);
+    // // NOTE This is a sample code:
+    // if (maxRow * canvasColumn > dataLength) {
+    //   selCol = canvasColumn - 1;
+    //   selRow = parseInt('' + dataLength / canvasColumn) - 1;
+    // } else {
+    //   selCol = parseInt('' + dataLength / maxRow) - 1;
+    //   selRow = maxRow - 1;
+    // }
+    // if (selCol > 0 && selRow > 0) {
+    //   Array.from(Array(selRow).keys())
+    //     .reverse()
+    //     .map((row) => {
+    //       Array.from(Array(selCol).keys()).map((column) => {
+    //         pods.push({ row, column });
+    //       });
+    //     });
+    // }
+    // namespaces!.push([
+    //   { row: 3, column: 3 },
+    //   { row: selRow, column: selCol },
+    // ]);
   } else {
   }
 
@@ -615,7 +631,7 @@ export const getAdminViewPositions: Positioner.GetViewPositions<'admin'> = (
   const maxRow = 10;
   const canvasColumn = 8;
 
-  let nodeLength = sortedData.nodes.length,
+  let nodeLength = sortedData.nodes.size,
     selRow: number,
     selCol: number;
 
