@@ -102,8 +102,6 @@ declare namespace Positioner {
     width: number,
     height: number,
     level: 1 | 2 | 3,
-    maxRow: number,
-    canvasColumn: number,
     options: T extends 'dev'
       ? {
           showDeployments: boolean;

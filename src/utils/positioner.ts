@@ -446,6 +446,25 @@ const getGroupPositions: Positioner.GetGroupPositions = (
   // ) as GroupPosition[];
 };
 
+const getSelectedBox = (
+  maxRow: number,
+  maxCol: number,
+  blockLength: number
+): Matrix | null => {
+  let row: number = 0;
+  let column: number = 0;
+
+  if (maxRow * maxCol > blockLength) {
+    column = maxCol - 1;
+    row = parseInt('' + blockLength / maxCol) - 1;
+  } else {
+    column = parseInt('' + blockLength / maxRow) - 1;
+    row = maxRow - 1;
+  }
+
+  return { row, column };
+};
+
 /**
  * Grid 레벨에 따른 Pod, Deployment, Namespace 등의 리소스 맵을 반환하는 함수입니다.
  * @param width : 브라우저 내 렌더링 된 canvas 너비;
@@ -461,12 +480,9 @@ export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
   width,
   height,
   level,
-  maxRow,
-  canvasColumn,
   options
 ) => {
   const sortedData = savedViews.developer;
-  const counts: Record<string, number> = {};
   const pods: Matrix[] = [];
   const deployments: [Matrix, Matrix][] | null = options.showDeployments
     ? []
@@ -475,37 +491,72 @@ export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
     ? []
     : null;
 
-  let selRow: number = 0;
-  let selCol: number = 0;
-  const dataLength: number = sortedData.pods.length;
-
-  sortedData.pods.forEach((el) => {
-    if (!!counts[el.deploymentId]) {
-      counts[el.deploymentId]++;
-    } else {
-      counts[el.deploymentId] = 1;
-    }
-  });
+  // TODO: calculate maxRow, canvasColumn instead of parameters
+  const maxRow = 10;
+  const canvasColumn = 6;
 
   if (!options.showDeployments && !options.showNamespaces) {
-    if (maxRow * canvasColumn > dataLength) {
-      selCol = canvasColumn - 1;
-      selRow = parseInt('' + dataLength / canvasColumn) - 1;
-    } else {
-      selCol = parseInt('' + dataLength / maxRow) - 1;
-      selRow = maxRow - 1;
-    }
+    let selBox = getSelectedBox(maxRow, canvasColumn, sortedData.pods.length);
 
-    if (selCol > 0 && selRow > 0) {
-      Array.from(Array(selRow).keys())
+    if (!!selBox) {
+      Array.from(Array(selBox.row).keys())
         .reverse()
         .map((row) => {
-          Array.from(Array(selCol).keys()).map((column) => {
+          Array.from(Array(selBox!.column).keys()).map((column) => {
             pods.push({ row, column });
           });
         });
     }
   } else if (options.showDeployments && !options.showNamespaces) {
+    if (!!deployments) {
+      const maxGroup1Row = ((maxRow - 1) >> 1) - 2;
+
+      let paddingCol = 0;
+      let secondRow = sortedData.deployments.length >> 1;
+
+      sortedData.deployments.map((deployment, index) => {
+        if (secondRow === index) {
+          paddingCol = 0;
+        }
+        let paddingRow = secondRow >= index ? 0 : maxGroup1Row;
+        let numPods = sortedData.pods.filter(
+          (pod) => pod.deploymentId === deployment.id
+        ).length;
+
+        let selGroup1 = getSelectedBox(
+          ((maxRow - 1) >> 1) - 2,
+          canvasColumn - 2,
+          numPods
+        );
+
+        if (!!selGroup1) {
+          deployments.push([
+            { row: paddingRow, column: paddingCol },
+            {
+              row: paddingRow + selGroup1.row,
+              column: paddingCol + selGroup1.column,
+            },
+          ]);
+
+          // NOTE 디플로이먼트 박스 안 - 파드 간 간격을 설정할 지의 여부
+          // paddingRow++;
+          // paddingCol++;
+
+          Array.from(Array(selGroup1.row).keys())
+            .reverse()
+            .map((row) => {
+              Array.from(Array(selGroup1!.column).keys()).map((column) => {
+                pods.push({
+                  row: paddingRow + row,
+                  column: paddingCol + column,
+                });
+              });
+            });
+
+          paddingCol += selGroup1.column + 1;
+        }
+      });
+    }
   } else if (!options.showDeployments && options.showNamespaces) {
     // NOTE This is a sample code:
     if (maxRow * canvasColumn > dataLength) {
@@ -554,14 +605,15 @@ export const getAdminViewPositions: Positioner.GetViewPositions<'admin'> = (
   width,
   height,
   level,
-  maxRow,
-  canvasColumn,
   options
 ) => {
   const sortedData = savedViews.admin;
   const pods: Matrix[] | null = options.showPods ? [] : null;
   const nodes: [Matrix, Matrix][] & Matrix[] = [];
   const clusters: [Matrix, Matrix][] | null = options.showClusters ? [] : null;
+
+  const maxRow = 10;
+  const canvasColumn = 8;
 
   let nodeLength = sortedData.nodes.length,
     selRow: number,
