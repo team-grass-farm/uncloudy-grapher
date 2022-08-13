@@ -1,5 +1,5 @@
 declare namespace Painter {
-  type Layer = 'blocks' | 'groups1' | 'groups2' | 'main';
+  type Layer = 'blocks' | 'groups1' | 'groups2' | 'base';
   type Paint = (plot: Positioner.Plot) => void;
   type Option =
     | {
@@ -60,13 +60,25 @@ declare namespace Painter {
     ? GroupPosition
     : PointPosition;
 
+  type BaseRender = (
+    ctx: CanvasRenderingContext2D,
+    dimensions: Dimensions,
+    stackPaintings: (() => void)[],
+    clearCanvas: boolean,
+    animated: boolean
+  ) => void;
+
   type Render<
-    T extends PointPosition[] | LinePosition[] | BlockPositions | GroupPositions
+    T extends
+      | PointPosition[]
+      | LinePosition[]
+      | BlockPositions
+      | GroupPositions
+      | null
   > = (
     ctx: CanvasRenderingContext2D,
-    currentRef: HTMLCanvasElement,
+    dimensions: Dimensions,
     positions: T,
-    visible: boolean,
-    selectedPosition?: SelectedPosition<T> | null
+    isBaseCanvas?: boolean
   ) => void;
 }

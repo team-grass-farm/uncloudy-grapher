@@ -6,37 +6,53 @@ import { MainBlock } from './styles';
 
 import type { Props } from './types';
 
-export default ({ id, panelMode, data, options, ...otherProps }: Props) => {
-  const [refMap, level, paint, setLevel, setVisible, selectedPoint] =
-    usePainter(options.level ?? 2);
-  const [dimensions, plot, pose] = usePositioner(
-    options.level ?? 2,
-    refMap.main
+export default ({
+  id,
+  panelMode: type,
+  data,
+  options,
+  ...otherProps
+}: Props) => {
+  const [
+    refMap,
+    selectedPoint,
+    paint,
+    setLevelOnPainter,
+    setDimensions,
+    setVisible,
+  ] = usePainter();
+  const [dimensions, plot, pose, setLevelOnPositioner] = usePositioner(
+    refMap.base
   );
 
   useEffect(() => {
-    if (panelMode === 'admin') {
+    if (type === 'admin') {
       const { pods, clusters, nodes } = data;
-      pose({ type: panelMode, pods, nodes, clusters });
+      pose({ type, pods, nodes, clusters });
     } else {
       const { pods, deployments, namespaces } = data;
-      pose({ type: panelMode, pods, deployments, namespaces });
+      pose({ type, pods, deployments, namespaces });
     }
-  }, [panelMode, level, data]);
+  }, [type, options.level, data]);
 
   useEffect(() => (plot ? paint(plot) : undefined), [plot]);
+
+  useEffect(() => setDimensions(dimensions), [dimensions]);
 
   useEffect(() => {
     const { showGrids, showPoints, showBlocks, level } = options;
     setVisible({
       grid: showGrids ?? true,
       points: showPoints ?? true,
-      main: true,
+      base: true,
       blocks: showBlocks ?? true,
       groups1: true,
       groups2: true,
     });
-    level !== undefined && setLevel(level);
+    if (level !== undefined) {
+      setLevelOnPainter(level);
+      setLevelOnPositioner(level);
+    }
   }, [options]);
 
   return (

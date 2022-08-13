@@ -2,16 +2,18 @@ import React, { useEffect, useRef, useState } from 'react';
 import { getCursorPosition } from '~utils/positioner';
 
 export default (
-  dimensions: Record<'width' | 'height', number>,
-  _level: 1 | 2 | 3
+  dimensions: Record<'width' | 'height', number>
 ): [
   React.RefObject<HTMLCanvasElement>,
-  React.Dispatch<1 | 2 | 3>,
-  PointPosition | null
+  PointPosition | null,
+  BlockPositions | null,
+  React.Dispatch<1 | 2 | 3>
 ] => {
-  const [level, setLevel] = useState<1 | 2 | 3>(_level);
+  const [level, setLevel] = useState<1 | 2 | 3>(2);
   const [highlightedPointPosition, setHighlightedPointPosition] =
     useState<PointPosition | null>(null);
+  const [highlightedBlockPositions, setHighlightedBlockPositions] =
+    useState<BlockPositions | null>(null);
 
   const ref = useRef<HTMLCanvasElement>(null);
 
@@ -50,5 +52,5 @@ export default (
       );
   }, [highlightedPointPosition]);
 
-  return [ref, setLevel, highlightedPointPosition];
+  return [ref, highlightedPointPosition, highlightedBlockPositions, setLevel];
 };
