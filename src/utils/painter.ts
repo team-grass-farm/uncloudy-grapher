@@ -649,7 +649,7 @@ export const renderLegend = (
   render();
 };
 
-export const renderGrids: Painter.Render<LinePosition> = (
+export const renderGrids: Painter.Render<LinePosition[]> = (
   ctx,
   currentRef,
   positions,
@@ -678,12 +678,11 @@ export const renderGrids: Painter.Render<LinePosition> = (
   render();
 };
 
-export const renderPoints: Painter.Render<PointPosition> = (
+export const renderPoints: Painter.Render<PointPosition[]> = (
   ctx,
   currentRef,
   positions,
   visible,
-  _,
   selectedPosition
 ) => {
   const stackPaintingObject: (() => void)[] = [];
@@ -723,12 +722,11 @@ let prevLevel: 1 | 2 | 3;
 let lastSurface: ImageData | null;
 let ax: number, ay: number;
 
-export const renderObjects: Painter.Render<PointPosition> = (
+export const renderObjects: Painter.Render<BlockPositions> = (
   ctx,
   currentRef,
   positions,
   visible,
-  level,
   selectedPosition
 ) => {
   const stackPaintings: (() => void)[] = [];
@@ -738,21 +736,23 @@ export const renderObjects: Painter.Render<PointPosition> = (
   ctx.scale(1, 1);
 
   let paintObject: Painter.PaintObject | null = null;
-  switch (!!positions.length ? positions[0].type : null) {
+  switch (!!positions.data.length ? positions[0].type : null) {
     case 'pod':
-      paintObject = level === 3 ? paintFlatPod : paintPod;
+      paintObject = positions.viewType === 'flat' ? paintFlatPod : paintPod;
       break;
     case 'node':
-      paintObject = level === 3 ? paintFlatNode : paintNode;
+      paintObject = positions.viewType === 'flat' ? paintFlatNode : paintNode;
       break;
   }
 
-  const { DX, DY } = DELTA[level ?? 2];
+  // const { DX, DY } = DELTA[level ?? 2];
 
-  if (prevLevel !== level) {
-    prevLevel = level ?? 1;
-    lastSurface = null;
-  }
+  // TODO: fix this
+  // if (prevLevel !== level) {
+  //   prevLevel = level ?? 1;
+
+  //   lastSurface = null;
+  // }
 
   if (!!paintObject) {
     if (selectedPosition === null) {
@@ -763,7 +763,7 @@ export const renderObjects: Painter.Render<PointPosition> = (
       ay = selectedPosition.y - 200;
       lastSurface = ctx.getImageData(ax, ay, 400, 400);
 
-      positions.forEach((position) => {
+      positions.data.forEach((position) => {
         const weight =
           (position.row - selectedPosition.row) ** 2 +
           (position.column - selectedPosition.column) ** 2;
@@ -788,7 +788,7 @@ export const renderObjects: Painter.Render<PointPosition> = (
       });
     } else {
       lastSurface = null;
-      positions.forEach((position) => {
+      positions.data.forEach((position) => {
         stackPaintings.push(
           ...paintObject!(
             ctx,
@@ -816,12 +816,11 @@ export const renderObjects: Painter.Render<PointPosition> = (
   render();
 };
 
-export const renderGroups: Painter.Render<GroupPosition> = (
+export const renderGroups: Painter.Render<GroupPositions> = (
   ctx,
   currentRef,
   positions,
   visible,
-  level,
   selectedPosition
 ) => {
   const stackPaintings: (() => void)[] = [];
