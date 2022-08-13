@@ -1,58 +1,6 @@
 import { DELTA, MAX_COLUMN_OBJECT } from '~constants';
 
-const savedPointPositions: Record<number, PointPosition[]> = {};
-// const savedPods: Record<number, Matrix> = {};
-// const savedNodes: Record<number, Matrix> = {};
-// const savedDeployments: Record<number, [Matrix, Matrix]> = {};
-// const savedNamespaces: Record<number, [Matrix, Matrix]> = {};
-// const savedClusters: Record<number, [Matrix, Matrix]> = {};
-
-const savedViews: Positioner.SavedViews = {
-  admin: {
-    pods: new Map(),
-    nodes: new Map(),
-    clusters: new Map(),
-  },
-  developer: {
-    pods: new Map(),
-    deployments: new Map(),
-    namespaces: new Map(),
-  },
-};
-
-/**
- * 포지셔닝 할 pod 리소스를 추가합니다.
- * @param pods
- * @see @types/positioner/index.d.ts
- */
-export const addPods: Positioner.AddResource<Resource.Pod> = (pods) => {
-  savedViews.admin.pods = savedViews.developer.pods = pods;
-  pods.forEach((pod) => {
-    !savedViews.developer.deployments.has(pod.deploymentId) &&
-      savedViews.developer.deployments.set(pod.deploymentId, {
-        id: pod.deploymentId,
-        shortId: pod.deploymentId.split('-deployment-')[0],
-        replicas: null,
-        availableReplicas: null,
-        namespace: pod.namespace,
-      });
-    savedViews.developer.namespaces.set(pod.namespace, null);
-  });
-
-  console.debug(`[Positioner] stored ${savedViews.developer.pods.size} pods.`);
-};
-
-/**
- * 포지셔닝 할 node 리소스를 추가합니다.
- * @param nodes
- * @see @types/positioner/index.d.ts
- */
-export const addNodes: Positioner.AddResource<Resource.Node> = (nodes) => {
-  savedViews.admin.nodes = nodes;
-  nodes.forEach((node) => {
-    savedViews.admin.clusters.set(node.region, { id: node.region });
-  });
-};
+// const plots:
 
 /**
  * 움직이는 커서의 포지션에 따라 포인트 포지션을 구합니다. 2D Shearing 과 2D Rotation 회전변환을 이용합니다.
@@ -201,22 +149,13 @@ export const getPointPositions: Positioner.GetPointPositions = (
     case 3:
       Array.from(Array(numRows).keys()).map((py) => {
         Array.from(Array(numColumns).reverse().keys()).map((px) => {
-          const pos: PointPosition = {
+          ret.push({
             x: x0 + px * DX,
             y: y0 + py * DY,
             row: row0 + py,
             column: column0 + px,
             type: 'point',
-          };
-
-          ret.push(pos);
-
-          let saved = savedPointPositions[py * MAX_COLUMN_OBJECT + px];
-          if (!!!saved) {
-            saved = [pos];
-          } else {
-            saved.push(pos);
-          }
+          });
         });
       });
       break;
@@ -385,13 +324,13 @@ const getPointPosition: Positioner.GetPointPosition = (c, matrix, type, z) => {
 };
 
 /**
- * row, column이 지정된 복수 포인트 포지션에 대한 x, y 좌표를 구합니다.
+ * row, column이 지정된 복수 블록 포지션에 대한 x, y 좌표를 구합니다.
  * @param width : 브라우저 내 렌더링 된 canvas 너비;
  * @param height : 브라우저 내 렌더링 된 canvas 높이;
  * @param level : 현재 Grid 뷰 레벨
  * @param matrixes : 포지션이 필요한 리소스 배결
  * @param type : 그룹 타입
- * @returns {Map<string, PointPosition>}
+ * @returns {BlockPositions}
  */
 const getBlockPositions: Positioner.GetBlockPositions = (
   width,
@@ -400,17 +339,23 @@ const getBlockPositions: Positioner.GetBlockPositions = (
   matrixes,
   type
 ) => {
-  if (!!!matrixes) return [];
+  if (!!!matrixes) return null;
   const canvasValues = getCanvasValues(width, height, level);
   let highest = 50;
-  return matrixes.map((matrix) => {
-    return getPointPosition(
-      canvasValues,
-      matrix,
-      type,
-      highest - (Math.random() * 20 + 5)
-    );
-  });
+  return {
+    viewType: level === 3 ? 'flat' : 'normal',
+    dx: canvasValues.DX,
+    dy: canvasValues.DY,
+    dz: undefined,
+    data: matrixes.map((matrix) => {
+      return getPointPosition(
+        canvasValues,
+        matrix,
+        type,
+        highest - (Math.random() * 20 + 5)
+      );
+    }),
+  };
 };
 
 /**
@@ -420,7 +365,7 @@ const getBlockPositions: Positioner.GetBlockPositions = (
  * @param level : 현재 Grid 뷰 레벨
  * @param matrixes : 포지션이 필요한 리소스 배결
  * @param type : 그룹 타입
- * @returns {GroupPosition[]}
+ * @returns {GroupPositions}
  * @see @types/positioner/index.d.ts
  */
 const getGroupPositions: Positioner.GetGroupPositions = (
@@ -430,33 +375,39 @@ const getGroupPositions: Positioner.GetGroupPositions = (
   matrixes,
   type
 ) => {
-  if (!!!matrixes) return [];
+  if (!!!matrixes) return null;
   const { DX, DY, x0, y0, row0, column0 } = getCanvasValues(
     width,
     height,
     level
   );
 
-  return matrixes.map(([m1, m2]): GroupPosition => {
-    return {
-      start: {
-        x: x0 + (m1.row - row0 + m1.column - column0) * DX,
-        y: y0 + (-m1.row + row0 + m1.column - column0) * DY,
-        row: m1.row,
-        column: m1.column,
-        type: 'point',
-      },
-      end: {
-        x: x0 + (m2.row - row0 + m2.column - column0) * DX,
-        y: y0 + (-m2.row + row0 + m2.column - column0) * DY,
-        row: m2.row,
-        column: m2.column,
-        type: 'point',
-      },
-      zIndex: 0,
-      type,
-    };
-  });
+  return {
+    viewType: level === 3 ? 'flat' : 'normal',
+    dx: DX,
+    dy: DY,
+    dz: undefined,
+    data: matrixes.map(([m1, m2]): GroupPosition => {
+      return {
+        start: {
+          x: x0 + (m1.row - row0 + m1.column - column0) * DX,
+          y: y0 + (-m1.row + row0 + m1.column - column0) * DY,
+          row: m1.row,
+          column: m1.column,
+          type: 'point',
+        },
+        end: {
+          x: x0 + (m2.row - row0 + m2.column - column0) * DX,
+          y: y0 + (-m2.row + row0 + m2.column - column0) * DY,
+          row: m2.row,
+          column: m2.column,
+          type: 'point',
+        },
+        zIndex: 0,
+        type,
+      };
+    }),
+  };
 };
 
 const getSelectedBox = (
@@ -490,17 +441,16 @@ const getSelectedBox = (
  * @see @types/positioner/index.d.ts
  */
 export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
+  resourceMap,
   width,
   height,
-  level,
-  options
+  level
 ) => {
-  const sortedData = savedViews.developer;
   const pods: Matrix[] = [];
-  const deployments: [Matrix, Matrix][] | null = options.showDeployments
+  const deployments: [Matrix, Matrix][] | null = !!resourceMap.deployments
     ? []
     : null;
-  const namespaces: [Matrix, Matrix][] | null = options.showNamespaces
+  const namespaces: [Matrix, Matrix][] | null = !!resourceMap.namespaces
     ? []
     : null;
 
@@ -508,8 +458,8 @@ export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
   const maxRow = 10;
   const canvasColumn = 6;
 
-  if (!options.showDeployments && !options.showNamespaces) {
-    let selBox = getSelectedBox(maxRow, canvasColumn, sortedData.pods.size);
+  if (!!resourceMap.deployments && !!resourceMap.namespaces) {
+    let selBox = getSelectedBox(maxRow, canvasColumn, resourceMap.pods.size);
 
     if (!!selBox) {
       Array.from(Array(selBox.row).keys())
@@ -520,22 +470,26 @@ export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
           });
         });
     }
-  } else if (options.showDeployments && !options.showNamespaces) {
+  } else if (!!resourceMap.deployments && !!!resourceMap.namespaces) {
     if (!!deployments) {
       const maxGroup1Row = ((maxRow - 1) >> 1) - 2;
 
       let paddingCol = 0;
-      let secondRow = sortedData.deployments.size >> 1;
+      let secondRow =
+        (resourceMap.deployments ? resourceMap.deployments.size : 0) >> 1;
 
-      console.log('deployments: ', sortedData.deployments.size);
+      console.log(
+        '[Positioner] deployments: ',
+        resourceMap.deployments ? resourceMap.deployments.size : 0
+      );
 
-      Object.entries(sortedData.deployments).map(
+      Object.entries(resourceMap.deployments ?? []).map(
         ([deploymentId, deployment], index) => {
           if (secondRow === index) {
             paddingCol = 0;
           }
           let paddingRow = secondRow >= index ? 0 : maxGroup1Row;
-          let numPods = [...sortedData.pods].filter(
+          let numPods = [...resourceMap.pods].filter(
             ([_, pod]) => pod.deploymentId === deploymentId
           ).length;
 
@@ -556,6 +510,7 @@ export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
 
             // NOTE 디플로이먼트 박스 안 - 파드 간 간격을 설정할 지의 여부
             // paddingRow++;
+
             // paddingCol++;
 
             Array.from(Array(selGroup1.row).keys())
@@ -574,7 +529,7 @@ export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
         }
       );
     }
-  } else if (!options.showDeployments && options.showNamespaces) {
+  } else if (!!!resourceMap.deployments && !!resourceMap.namespaces) {
     // // NOTE This is a sample code:
     // if (maxRow * canvasColumn > dataLength) {
     //   selCol = canvasColumn - 1;
@@ -600,9 +555,9 @@ export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
   }
 
   return {
-    block: getBlockPositions(width, height, level, pods, 'pod'),
-    group1: getGroupPositions(width, height, level, deployments, 'deployment'),
-    group2: getGroupPositions(width, height, level, namespaces, 'namespace'),
+    blocks: getBlockPositions(width, height, level, pods, 'pod')!,
+    groups1: getGroupPositions(width, height, level, deployments, 'deployment'),
+    groups2: getGroupPositions(width, height, level, namespaces, 'namespace'),
   };
 };
 
@@ -618,24 +573,25 @@ export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
  * @see @types/positioner/index.d.ts
  */
 export const getAdminViewPositions: Positioner.GetViewPositions<'admin'> = (
+  resourceMap,
   width,
   height,
-  level,
-  options
+  level
 ) => {
-  const sortedData = savedViews.admin;
-  const pods: Matrix[] | null = options.showPods ? [] : null;
+  const pods: Matrix[] | null = !!resourceMap.pods ? [] : null;
   const nodes: [Matrix, Matrix][] & Matrix[] = [];
-  const clusters: [Matrix, Matrix][] | null = options.showClusters ? [] : null;
+  const clusters: [Matrix, Matrix][] | null = !!resourceMap.clusters
+    ? []
+    : null;
 
   const maxRow = 10;
   const canvasColumn = 8;
 
-  let nodeLength = sortedData.nodes.size,
+  let nodeLength = resourceMap.nodes ? resourceMap.nodes.size : 0,
     selRow: number,
     selCol: number;
 
-  if (!options.showClusters && !options.showPods) {
+  if (!!!resourceMap.clusters && !!!resourceMap.pods) {
     if (maxRow * canvasColumn > nodeLength) {
       selCol = canvasColumn - 1;
       selRow = parseInt('' + nodeLength / canvasColumn) - 1;
@@ -655,29 +611,35 @@ export const getAdminViewPositions: Positioner.GetViewPositions<'admin'> = (
     }
   }
 
-  if (options.showPods) {
+  if (!!resourceMap.pods) {
     return {
-      block: getBlockPositions(width, height, level, pods, 'pod'),
-      group1: getGroupPositions(
+      blocks: getBlockPositions(width, height, level, pods, 'pod')!,
+      groups1: getGroupPositions(
         width,
         height,
         level,
         nodes as [Matrix, Matrix][],
         'node'
       ),
-      group2: getGroupPositions(width, height, level, clusters, 'cluster'),
+      groups2: getGroupPositions(width, height, level, clusters, 'cluster'),
     };
   } else {
     return {
-      block: getBlockPositions(width, height, level, nodes as Matrix[], 'node'),
-      group1: getGroupPositions(
+      blocks: getBlockPositions(
+        width,
+        height,
+        level,
+        nodes as Matrix[],
+        'node'
+      )!,
+      groups1: getGroupPositions(
         width,
         height,
         level,
         nodes as [Matrix, Matrix][],
         'node'
       ),
-      group2: null,
+      groups2: null,
     };
   }
 };

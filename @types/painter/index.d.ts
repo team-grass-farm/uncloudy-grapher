@@ -1,4 +1,6 @@
 declare namespace Painter {
+  type Layer = 'blocks' | 'groups1' | 'groups2' | 'main';
+  type Paint = (plot: Positioner.Plot) => void;
   type Option =
     | {
         text: string;
@@ -15,6 +17,16 @@ declare namespace Painter {
         color?: never;
         selected: boolean;
       };
+
+  interface RefMap extends Record<Layer, RefObject<HTMLCanvasElement>> {
+    grid?: RefObject<HTMLCanvasElement>;
+    points?: RefObject<HTMLCanvasElement>;
+    event: RefObject<HTMLCanvasElement>;
+  }
+  interface FlagMap extends Record<Layer, boolean> {
+    grid?: boolean;
+    points?: boolean;
+  }
 
   type PaintObject = (
     ctx: CanvasRenderingContext2D,
@@ -44,12 +56,17 @@ declare namespace Painter {
     option?: Option
   ) => () => void;
 
-  type Render<T = PointPosition | LinePosition | GroupPosition> = (
+  type SelectedPosition<T> = T extends GroupPositions
+    ? GroupPosition
+    : PointPosition;
+
+  type Render<
+    T extends PointPosition[] | LinePosition[] | BlockPositions | GroupPositions
+  > = (
     ctx: CanvasRenderingContext2D,
     currentRef: HTMLCanvasElement,
-    positions: T[],
+    positions: T,
     visible: boolean,
-    level?: 1 | 2 | 3,
-    selectedPosition?: T | null
+    selectedPosition?: SelectedPosition<T> | null
   ) => void;
 }

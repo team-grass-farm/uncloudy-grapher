@@ -1,8 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  getCursorPosition,
-  getHighlightedPointPosition,
-} from '~utils/positioner';
+import { getCursorPosition } from '~utils/positioner';
 
 export default (
   dimensions: Record<'width' | 'height', number>,
