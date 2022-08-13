@@ -1,8 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  getCursorPosition,
-  getHighlightedPointPosition,
-} from '~utils/positioner';
+import { getHighlightedPointPosition } from '~utils/positioner';
 
 export default (
   dimensions: Record<'width' | 'height', number>,
@@ -26,13 +23,12 @@ export default (
       const x = el.offsetX,
         y = el.offsetY;
 
-      const bounded = getCursorPosition(
+      const bounded = getHighlightedPointPosition(
         dimensions.width,
         dimensions.height,
         level,
         x,
-        y,
-        1
+        y
       );
 
       setHighlightedPointPosition(bounded);

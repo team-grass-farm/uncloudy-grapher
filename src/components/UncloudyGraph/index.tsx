@@ -40,8 +40,8 @@ export default ({ id, panelMode, data, options, ...otherProps }: Props) => {
         <div
           id="tooltip-pos"
           style={{
-            marginTop: selectedPoint.y + 15 + 'px',
-            marginLeft: selectedPoint.x + 15 + 'px',
+            marginTop: selectedPoint.y + 'px',
+            marginLeft: selectedPoint.x + 'px',
           }}
         >
           <span>{`row: ${selectedPoint.row}, col: ${selectedPoint.column}`}</span>

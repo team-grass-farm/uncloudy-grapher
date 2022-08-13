@@ -2,12 +2,10 @@ import { DAYS, DELTA, GRID_SIZE, POS_ZANDIS, SPACING } from '~constants';
 
 const DX = 2 * (GRID_SIZE + SPACING);
 const DY = GRID_SIZE + SPACING;
-const DX_OBJ = DX * 0.45;
-const DY_OBJ = DY * 0.45;
 const c = (l: number, u: number) =>
   Math.round(Math.random() * (u || 255) + l || 0);
 
-const HEAD_H = 5; //노드 헤드 두께
+const HEAD_H = 10; //노드 헤드 두께
 const HEAD_MARGIN = 2; //노드 헤드 마진
 const LINE_BOLD = 2;
 const LINE_LIGHT = 1;
@@ -208,19 +206,6 @@ export const paintNode: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   },
 ];
 
-export const paintFlatNode: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
-  () => {
-    ctx.save();
-
-    ctx.fillStyle = '#16BFC0';
-    ctx.beginPath();
-    ctx.ellipse(x, y - h, 0.75 * dx, 0.6 * dy, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.restore();
-  },
-];
-
 /**
  * 클러스터 그룹을 렌더링합니다.
  * @author 김민정
@@ -306,44 +291,37 @@ export const paintCluster: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
  * @param h: 파드 블럭의 높이
  * @returns () => void
  */
-export const paintPod: Painter.PaintObject = (ctx, x, y, dx, dy, h, option) => [
+export const paintPod: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   () => {
     ctx.save();
-    const body_h = h - HEAD_H - HEAD_MARGIN;
-    const greyscale = option && option.selected === false;
+    var body_h = h - HEAD_H - HEAD_MARGIN;
 
-    const lingrad = ctx.createLinearGradient(x - dx, y, x + dx, y);
-    lingrad.addColorStop(0, greyscale ? '#EEEEEE' : '#A3E8E9');
-    lingrad.addColorStop(1, greyscale ? '#999999' : '#009596');
+    var lingrad = ctx.createLinearGradient(x - dx, y, x + dx, y);
+    lingrad.addColorStop(0, '#A3E8E9');
+    lingrad.addColorStop(1, '#009596');
 
-    const whitegrad = ctx.createLinearGradient(x - dx, y, x + dx, y);
-    whitegrad.addColorStop(0, '#DDDDDD');
-    whitegrad.addColorStop(1, '#EFEFEF');
+    //=========================기둥부=================
+    ctx.fillStyle = lingrad;
+    ctx.beginPath();
+    ctx.moveTo(x - dx, y);
+    ctx.lineTo(x + dx, y);
+    ctx.lineTo(x + dx, y - body_h);
+    ctx.lineTo(x - dx, y - body_h);
+    ctx.fill();
 
-    if (!greyscale) {
-      //=========================기둥부=================
-      ctx.fillStyle = option && option.selected ? lingrad : whitegrad;
-      ctx.beginPath();
-      ctx.moveTo(x - dx, y);
-      ctx.lineTo(x + dx, y);
-      ctx.lineTo(x + dx, y - body_h);
-      ctx.lineTo(x - dx, y - body_h);
-      ctx.fill();
-
-      // 바닥부
-      ctx.fillStyle = option && option.selected ? lingrad : whitegrad;
-      ctx.beginPath();
-      ctx.ellipse(x, y, dx, dy, 0, 0, Math.PI * 2);
-      ctx.fill();
-    }
+    // 바닥부
+    ctx.fillStyle = lingrad;
+    ctx.beginPath();
+    ctx.ellipse(x, y, dx, dy, 0, 0, Math.PI * 2);
+    ctx.fill();
 
     //몸통의 맨위
-    ctx.fillStyle = greyscale ? '#AAAAAA' : '#08A8A9';
+    ctx.fillStyle = '#08A8A9';
     ctx.beginPath();
     ctx.ellipse(x, y - body_h, dx, dy, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.lineWidth = LINE_LIGHT;
-    ctx.strokeStyle = '#FFFFFF';
+    ctx.strokeStyle = 'white';
     ctx.beginPath();
     ctx.ellipse(x, y - body_h, dx, dy, 0, 0, Math.PI * 2);
     ctx.stroke();
@@ -366,43 +344,30 @@ export const paintPod: Painter.PaintObject = (ctx, x, y, dx, dy, h, option) => [
     ctx.fill();
 
     //머리 큰 뚜껑
-    ctx.fillStyle = greyscale ? '#BBBBBB' : '#16BFC0';
+    ctx.fillStyle = '#B7E8E9';
     ctx.beginPath();
     ctx.ellipse(x, y - h, dx, dy, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // //머리 작은 뚜껑
-    // ctx.fillStyle = greyscale ? '#BBBBBB' : '#16BFC0';
-    // ctx.beginPath();
-    // ctx.ellipse(x, y - h, 0.75 * dx, 0.6 * dy, 0, 0, Math.PI * 2);
-    // ctx.fill();
+    //머리 작은 뚜껑
+    ctx.fillStyle = '#16BFC0';
+    ctx.beginPath();
+    ctx.ellipse(x, y - h, 0.75 * dx, 0.6 * dy, 0, 0, Math.PI * 2);
+    ctx.fill();
 
     //===================흰색 음영 라인==================
 
-    // ctx.lineWidth = 0;
-    // ctx.strokeStyle = greyscale ? '#BBBBBB' : '#16BFC0';
-    // ctx.beginPath();
-    // ctx.ellipse(x, y - h, 0.75 * dx, 0.6 * dy, 0, 0, Math.PI * 2);
-    // ctx.stroke();
-
-    // ctx.lineWidth = 0;
-    // ctx.strokeStyle = greyscale ? '#BBBBBB' : '#16BFC0';
-    // ctx.beginPath();
-    // ctx.ellipse(x, y - h, dx, dy, 0, 0, Math.PI * 2);
-    // ctx.stroke();
-
-    ctx.restore();
-  },
-];
-
-export const paintFlatPod: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
-  () => {
-    ctx.save();
-
-    ctx.fillStyle = '#16BFC0';
+    ctx.lineWidth = LINE_LIGHT;
+    ctx.strokeStyle = 'white';
     ctx.beginPath();
-    ctx.ellipse(x, y, 0.75 * dx, 0.75 * dy, 0, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.ellipse(x, y - h, 0.75 * dx, 0.6 * dy, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.lineWidth = LINE_LIGHT;
+    ctx.strokeStyle = 'white';
+    ctx.beginPath();
+    ctx.ellipse(x, y - h, dx, dy, 0, 0, Math.PI * 2);
+    ctx.stroke();
 
     ctx.restore();
   },
@@ -547,7 +512,7 @@ export const paintMonthText: Painter.PaintObject = (
   dx,
   dy,
   h,
-  option
+  data
 ) => [
   () => {
     ctx.save();
@@ -559,7 +524,7 @@ export const paintMonthText: Painter.PaintObject = (
     const sin = Math.sin(Math.PI / 6);
     ctx.transform(1, 0.5, -1, 0.5, 0, 0);
     ctx.scale(1, 0.75);
-    ctx.fillText(!!option ? option.text + '월' : '', dx, dy * 2);
+    ctx.fillText(!!data ? data.text + '월' : '', dx, dy * 2);
     ctx.restore();
   },
 ];
@@ -571,7 +536,7 @@ export const paintDayText: Painter.PaintObject = (
   dx,
   dy,
   h,
-  option
+  data
 ) => [
   () => {
     ctx.save();
@@ -582,7 +547,7 @@ export const paintDayText: Painter.PaintObject = (
     const cos = Math.cos(Math.PI / 6);
     const sin = Math.sin(Math.PI / 6);
     ctx.transform(1, 0.5, -1, 0.5, 0, 0);
-    ctx.fillText(!!option ? option.text ?? '' : '', dx, dy * 2);
+    ctx.fillText(!!data ? data.text ?? '' : '', dx, dy * 2);
     ctx.restore();
   },
 ];
@@ -653,6 +618,7 @@ export const renderGrids: Painter.Render<LinePosition> = (
   ctx,
   currentRef,
   positions,
+  selectedPosition,
   visible
 ) => {
   const stackPaintingObject: any[] = [];
@@ -682,9 +648,8 @@ export const renderPoints: Painter.Render<PointPosition> = (
   ctx,
   currentRef,
   positions,
-  visible,
-  _,
-  selectedPosition
+  selectedPosition,
+  visible
 ) => {
   const stackPaintingObject: (() => void)[] = [];
 
@@ -718,127 +683,42 @@ export const renderPoints: Painter.Render<PointPosition> = (
   render();
 };
 
-let prevLevel: 1 | 2 | 3;
-// let prevStackPaintings: (() => void)[] = [];
-let lastSurface: ImageData | null;
-let ax: number, ay: number;
-
 export const renderObjects: Painter.Render<PointPosition> = (
   ctx,
   currentRef,
   positions,
+  selectedPosition,
   visible,
-  level,
-  selectedPosition
+  level
 ) => {
-  const stackPaintings: (() => void)[] = [];
+  const stackPaintingObject: any[] = [];
+  const x0 = currentRef.width / 2 + 6 * DX;
+  const y0 = currentRef.height / 4 + 6 * DY;
+  const height = 15;
 
   ctx.lineJoin = 'round';
   ctx.fillStyle = 'transparent';
   ctx.scale(1, 1);
 
-  let paintObject: Painter.PaintObject | null = null;
-  switch (positions[0] ? positions[0].type : null) {
-    case 'pod':
-      paintObject = level === 3 ? paintFlatPod : paintPod;
-      break;
-    case 'node':
-      paintObject = level === 3 ? paintFlatNode : paintNode;
-      break;
-  }
-
-  const { DX, DY } = DELTA[level ?? 2];
-
-  if (prevLevel !== level) {
-    prevLevel = level ?? 1;
-    lastSurface = null;
-  }
-
-  if (!!paintObject) {
-    if (selectedPosition === null) {
-      !!lastSurface && ctx.putImageData(lastSurface, ax ?? 0, ay ?? 0);
-    } else if (selectedPosition !== undefined) {
-      !!lastSurface && ctx.putImageData(lastSurface, ax ?? 0, ay ?? 0);
-      ax = selectedPosition.x - 200;
-      ay = selectedPosition.y - 200;
-      lastSurface = ctx.getImageData(ax, ay, 400, 400);
-
-      positions.forEach((position) => {
-        const weight =
-          (position.row - selectedPosition.row) ** 2 +
-          (position.column - selectedPosition.column) ** 2;
-        let option: Painter.Option;
-
-        if (weight >= 6) return;
-        else if (weight >= 3) option = { selected: false };
-        else if (weight > 0) option = { selected: false };
-        else option = { selected: true };
-
-        stackPaintings.push(
-          ...paintObject!(
-            ctx,
-            position.x,
-            position.y,
-            DX_OBJ,
-            DY_OBJ,
-            position.z ?? 35,
-            option
-          )
-        );
-      });
-    } else {
-      lastSurface = null;
-      positions.forEach((position) => {
-        stackPaintings.push(
-          ...paintObject!(
-            ctx,
-            position.x,
-            position.y,
-            DX_OBJ,
-            DY_OBJ,
-            position.z ?? 35
-          )
-        );
-      });
-    }
-  }
-
-  const render = () => {
-    if (selectedPosition === undefined) {
-      ctx.clearRect(0, 0, currentRef.width, currentRef.height);
-      ctx.fillRect(0, 0, currentRef.width, currentRef.height);
-    }
-    visible && stackPaintings.forEach((paint) => paint());
-
-    // requestAnimationFrame(render);
-  };
-
-  render();
-};
-
-export const renderGroups: Painter.Render<GroupPosition> = (
-  ctx,
-  currentRef,
-  positions,
-  visible,
-  level,
-  selectedPosition
-) => {
-  const stackPaintings: (() => void)[] = [];
-
-  ctx.lineJoin = 'round';
-  ctx.fillStyle = 'transparent';
-  ctx.scale(1, 1);
-
-  console.log('position: ', positions);
-  // positions.forEach((position) => {});
-
-  // stackPaintings.push(...paintNamespace(ctx, 100, 100, 200, 200));
+  positions.forEach((position) => {
+    const paintObject = position.type === 'pod' ? paintPod : paintNode;
+    const { DX, DY } = DELTA[level ?? 2];
+    stackPaintingObject.push(
+      ...paintObject(
+        ctx,
+        position.x,
+        position.y,
+        DX >> 1,
+        DY >> 1,
+        position.z ?? 35
+      )
+    );
+  });
 
   const render = () => {
     ctx.clearRect(0, 0, currentRef.width, currentRef.height);
     ctx.fillRect(0, 0, currentRef.width, currentRef.height);
-    stackPaintings.forEach((paint) => paint());
+    stackPaintingObject.forEach((paint) => paint());
 
     // requestAnimationFrame(render);
   };
