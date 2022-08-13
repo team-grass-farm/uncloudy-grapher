@@ -1,3 +1,5 @@
+declare type Dimensions = Record<'width' | 'height', number>;
+
 declare type PointType = 'pod' | 'node' | 'point';
 declare type LineType = 'grid';
 declare type GroupType = 'deployment' | 'namespace' | 'cluster' | 'node';
