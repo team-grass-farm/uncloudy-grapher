@@ -1,4 +1,5 @@
 import { DAYS, GRID_SIZE, POS_ZANDIS, SPACING } from '~constants';
+import { report } from '~utils/logger';
 
 const DX = 2 * (GRID_SIZE + SPACING);
 const DY = GRID_SIZE + SPACING;
@@ -533,7 +534,7 @@ export const paintGrasses: Painter.PaintObject = (
   };
 
   POS_ZANDIS[parseInt('' + Math.random() * 2, 10)].forEach((posZandi) => {
-    console.log('pos: ', posZandi);
+    report.log('Painter', ['pos: ', posZandi]);
     stack.push(paintGrass(ctx, x + posZandi[0], y + posZandi[1], dx, dy, h));
   });
 
@@ -721,7 +722,7 @@ export const renderBlocks: Painter.Render<BlockPositions> = (
   const stackPaintings: (() => void)[] = [];
 
   let paintObject: Painter.PaintObject | null = null;
-  switch (!!positions.data.length ? positions[0].type : null) {
+  report.log('Painter', ['positions: ', positions]);
     case 'pod':
       paintObject = positions.viewType === 'flat' ? paintFlatPod : paintPod;
       break;

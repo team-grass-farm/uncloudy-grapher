@@ -1,8 +1,5 @@
 import React, { RefObject, useCallback, useEffect, useState } from 'react';
-import {
-  getAdminViewPositions,
-  getDeveloperViewPositions,
-} from '~utils/positioner';
+import { report } from '~utils/logger';
 
 export default (
   ref: RefObject<HTMLCanvasElement>
@@ -33,7 +30,7 @@ export default (
     let handler: NodeJS.Timeout | undefined;
     if (paused) {
       if (ref.current === null) return;
-      console.log('[Positioner] executed handleResize()');
+      report.log('usePositioner', ['excuted handleResize()']);
       setDimensions({
         width: ref.current.clientWidth,
         height: ref.current.clientHeight,
@@ -44,7 +41,7 @@ export default (
     }
     return () => {
       clearTimeout(handler);
-      console.debug('[usePainter] timeout cleared: ', paused);
+      report.log('usePositioner', ['timeout cleared', paused]);
     };
   }, [paused]);
 

@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { DevelopmentOnlyAlert, UncloudyGraph } from '~components';
 import { useFetcher } from '~hooks';
 import { getFilteringOptions } from '~utils/fetcher';
+import { report } from '~utils/logger';
 
 import {
   BarChartOutlined,
@@ -86,9 +87,7 @@ export default () => {
               style={{ width: '100%' }}
               showTime
               placeholder={['시작일', '종료일']}
-              onChange={(val) => {
-                console.log('val: ', val);
-              }}
+              onChange={(val) => report.log('Screens', ['val: ', val])}
               defaultValue={[
                 moment(new Date()).subtract(15, 'minutes'),
                 moment(new Date()),

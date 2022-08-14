@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { report } from '~utils/logger';
 import { getCursorPosition } from '~utils/positioner';
 
 export default (
@@ -46,10 +47,12 @@ export default (
 
   useEffect(() => {
     !!highlightedPointPosition &&
-      console.debug(
-        `[usePainterEvent] level: ${level}, bounded event: `,
-        highlightedPointPosition
-      );
+      report.debug('usePainterEvent', [
+        'level: ',
+        level,
+        'boundedEvent: ',
+        highlightedPointPosition,
+      ]);
   }, [highlightedPointPosition]);
 
   return [ref, highlightedPointPosition, highlightedBlockPositions, setLevel];
