@@ -145,10 +145,8 @@ export const fetchPodMetrics: Fetcher.FetchPodMetrics = async (
 ) => {
   return new Promise((resolve, reject) => {
     try {
-      console.log('data:', data);
       const ret: Record<string, Resource.Pod.Metric[]> = {};
       data.forEach((pod: any) => {
-        console.log(pod);
         // ret[pod.id] =
       });
       resolve(listMap.set('dd', []));
