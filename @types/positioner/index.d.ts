@@ -1,5 +1,5 @@
 declare namespace Positioner {
-  type Pose = (resourceMap: Positioner.ResourceMap) => void;
+  type Pose = (resourceMap: Positioner.ResourceMap, level: 1 | 2 | 3) => void;
 
   type AdminResourceMap =
     | {

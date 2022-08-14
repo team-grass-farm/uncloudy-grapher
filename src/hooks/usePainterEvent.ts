@@ -22,7 +22,7 @@ export default (
     const ctx = ref.current && ref.current.getContext('2d');
     if (ctx === null || ref.current === null) return;
 
-    const handler = (el: MouseEvent) => {
+    const handleMouseMove = (el: MouseEvent) => {
       const x = el.offsetX,
         y = el.offsetY;
 
@@ -36,13 +36,22 @@ export default (
       );
 
       setHighlightedPointPosition(bounded);
+      // setHighlightedBlockPositions(bounded);
     };
 
-    ref.current.addEventListener('mousemove', handler);
-    return () =>
-      ref.current
-        ? ref.current.removeEventListener('mousemove', handler)
-        : undefined;
+    const handleMouseLeave = () => {
+      setHighlightedPointPosition(null);
+      setHighlightedBlockPositions(null);
+    };
+
+    ref.current.addEventListener('mousemove', handleMouseMove);
+    ref.current.addEventListener('mouseleave', handleMouseLeave);
+    return () => {
+      if (ref.current) {
+        ref.current.removeEventListener('mousemove', handleMouseMove);
+        ref.current.removeEventListener('mouseleave', handleMouseLeave);
+      }
+    };
   }, [dimensions, level]);
 
   useEffect(() => {
