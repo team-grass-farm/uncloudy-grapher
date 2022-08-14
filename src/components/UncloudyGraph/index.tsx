@@ -22,17 +22,16 @@ export default ({
     setDimensions,
     setVisible,
   ] = usePainter();
-  const [dimensions, plot, pose, setLevelOnPositioner] = usePositioner(
-    refMap.base
-  );
+  const [dimensions, plot, pose] = usePositioner(refMap.base);
 
   useEffect(() => {
+    if (!!!options.level) return;
     if (type === 'admin') {
       const { pods, clusters, nodes } = data;
-      pose({ type, pods, nodes, clusters });
+      pose({ type, pods, nodes, clusters }, options.level);
     } else {
       const { pods, deployments, namespaces } = data;
-      pose({ type, pods, deployments, namespaces });
+      pose({ type, pods, deployments, namespaces }, options.level);
     }
   }, [type, options.level, data]);
 
@@ -52,7 +51,6 @@ export default ({
     });
     if (level !== undefined) {
       setLevelOnPainter(level);
-      setLevelOnPositioner(level);
     }
   }, [options]);
 

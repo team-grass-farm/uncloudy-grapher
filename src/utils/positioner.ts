@@ -350,7 +350,7 @@ const getBlockPositions: Positioner.GetBlockPositions = (
     viewType: level === 3 ? 'flat' : 'normal',
     dx: canvasValues.DX,
     dy: canvasValues.DY,
-    dz: undefined,
+    dz: 1,
     data: matrixes.map((matrix) => {
       return getPointPosition(
         canvasValues,

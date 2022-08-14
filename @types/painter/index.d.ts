@@ -68,6 +68,11 @@ declare namespace Painter {
     animated: boolean
   ) => void;
 
+  type ClearRendered = (
+    ctx: CanvasRenderingContext2D,
+    dimensions: Dimensions
+  ) => void;
+
   type Render<
     T extends
       | PointPosition[]

@@ -7,11 +7,7 @@ import { useFetcher } from '~hooks';
 import { getFilteringOptions } from '~utils/fetcher';
 import { report } from '~utils/logger';
 
-import {
-  BarChartOutlined,
-  CodeOutlined,
-  ToolOutlined,
-} from '@ant-design/icons';
+import { BarChartOutlined, CodeOutlined, ToolOutlined } from '@ant-design/icons';
 
 import { MainBlock } from './styles';
 
