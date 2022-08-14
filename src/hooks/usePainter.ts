@@ -1,7 +1,10 @@
 import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { usePainterEvent } from '~hooks';
 import { report } from '~utils/logger';
-import { renderBlocks, renderGrids, renderPoints } from '~utils/painter';
+import {
+    clearRendered, renderBlocks, renderGrids, renderHighlightedBlocks, renderHighlightedPoints,
+    renderPoints
+} from '~utils/painter';
 import { getGridPositions, getPointPositions } from '~utils/positioner';
 
 // NOTE grid & point is skippable because these are just for debugging.
@@ -109,25 +112,25 @@ export default (): [
   );
 
   useEffect(() => {
-    if (highlightedPointPosition === null) return;
-    (
-      Object.entries(refMap) as [
-        keyof Painter.RefMap,
-        RefObject<HTMLCanvasElement>
-      ][]
-    ).map(([refName, ref]) => {
-      const ctx = ref.current && ref.current.getContext('2d');
-      if (ctx === null || ref.current === null) return;
-      switch (refName) {
-        case 'points':
-          renderPoints(ctx, ref.current, [highlightedPointPosition]);
-          break;
-        case 'blocks':
-          // renderBlocks(ctx, ref.current, [highlightedBlockPositions]);
-          break;
-      }
-    });
-  }, [highlightedPointPosition]);
+    const ctx = refMap.event.current && refMap.event.current.getContext('2d');
+    if (!refMap.event.current) return;
+    else if (highlightedPointPosition === null) {
+      clearRendered(ctx, refMap.event.current);
+    }
+
+    if (!!highlightedPointPosition && visible.points) {
+      renderHighlightedPoints(ctx, refMap.event.current, [
+        highlightedPointPosition,
+      ]);
+    }
+    if (!!highlightedBlockPositions) {
+      report.log('usePainter', [
+        'executed renderHighlightedBlocks(): ',
+        highlightedBlockPositions,
+      ]);
+      renderHighlightedBlocks(ctx, dimensions, highlightedBlockPositions);
+    }
+  }, [highlightedPointPosition, highlightedBlockPositions]);
 
   return [
     refMap,

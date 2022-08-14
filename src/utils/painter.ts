@@ -711,7 +711,7 @@ export const renderHighlightedPoints: Painter.Render<PointPosition[]> = (
     stackPaintings.push(...paintPoint(ctx, x, y, 5, 5, 0));
   });
 
-  render(ctx, dimensions, stackPaintings, false, true);
+  render(ctx, dimensions, stackPaintings, true, true);
 };
 
 let lastSurface: ImageData | null;
@@ -726,6 +726,7 @@ export const renderBlocks: Painter.Render<BlockPositions> = (
 
   let paintObject: Painter.PaintObject | null = null;
   report.log('Painter', ['positions: ', positions]);
+  switch (!!positions.data.length ? positions.data[0].type : null) {
     case 'pod':
       paintObject = positions.viewType === 'flat' ? paintFlatPod : paintPod;
       break;
@@ -742,10 +743,10 @@ export const renderBlocks: Painter.Render<BlockPositions> = (
           ctx,
           position.x,
           position.y,
-          positions.dx,
-          positions.dy,
-          position.z ? (positions.dz ?? 35) * position.z : 35,
-          { selected: !!!isBaseCanvas }
+          positions.dx * 0.45,
+          positions.dy * 0.45,
+          position.z ? (positions.dz ?? 1) * position.z : 35,
+          isBaseCanvas ? { selected: true } : undefined
         )
       );
     });
@@ -802,10 +803,13 @@ export const renderGroups: Painter.Render<GroupPositions> = (
 ) => {
   const stackPaintings: (() => void)[] = [];
 
-  console.log('position: ', positions);
   // positions.forEach((position) => {});
 
   // stackPaintings.push(...paintNamespace(ctx, 100, 100, 200, 200));
 
   render(ctx, dimensions, stackPaintings, true, false);
+};
+
+export const clearRendered: Painter.ClearRendered = (ctx, dimensions) => {
+  render(ctx, dimensions, [], true, false);
 };
