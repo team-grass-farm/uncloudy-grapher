@@ -1,3 +1,6 @@
+/**
+ * @module positioner
+ */
 import { DELTA, MAX_COLUMN_OBJECT } from '~constants';
 import { report } from '~utils/logger';
 

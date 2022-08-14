@@ -1,3 +1,6 @@
+/**
+ * @module fetcher
+ */
 import { SAMPLE_NODES, SAMPLE_PODS } from '~constants';
 
 import type { Page } from '~models';

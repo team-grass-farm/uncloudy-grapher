@@ -1,3 +1,6 @@
+/**
+ * @module painter
+ */
 import { DAYS, GRID_SIZE, POS_ZANDIS, SPACING } from '~constants';
 import { report } from '~utils/logger';
 
