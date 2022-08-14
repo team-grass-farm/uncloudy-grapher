@@ -1,6 +1,7 @@
 import { Col, Row, Select } from 'antd';
 import React, { useEffect } from 'react';
 import { usePainter, usePositioner } from '~hooks';
+import { report } from '~utils/logger';
 
 import { MainBlock } from './styles';
 
@@ -89,7 +90,9 @@ export default ({
           <Col span={6}>
             <Select
               mode="multiple"
-              onChange={(value) => console.log('value: ', value)}
+              onChange={(value) =>
+                report.log('UncloudyGraph', ['viewType value: ', value])
+              }
               style={{ width: '100%' }}
               placeholder="보기 설정"
               maxTagCount="responsive"

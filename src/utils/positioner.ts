@@ -1,4 +1,5 @@
 import { DELTA, MAX_COLUMN_OBJECT } from '~constants';
+import { report } from '~utils/logger';
 
 // const plots:
 
@@ -478,10 +479,10 @@ export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
       let secondRow =
         (resourceMap.deployments ? resourceMap.deployments.size : 0) >> 1;
 
-      console.log(
-        '[Positioner] deployments: ',
-        resourceMap.deployments ? resourceMap.deployments.size : 0
-      );
+      report.log('Positioner', [
+        'deployments: ',
+        resourceMap.deployments ? resourceMap.deployments.size : 0,
+      ]);
 
       Object.entries(resourceMap.deployments ?? []).map(
         ([deploymentId, deployment], index) => {

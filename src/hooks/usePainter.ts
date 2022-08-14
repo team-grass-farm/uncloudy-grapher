@@ -6,6 +6,7 @@ import React, {
   useState,
 } from 'react';
 import { usePainterEvent } from '~hooks';
+import { report } from '~utils/logger';
 import { renderBlocks, renderGrids, renderPoints } from '~utils/painter';
 import { getGridPositions, getPointPositions } from '~utils/positioner';
 
@@ -56,6 +57,7 @@ export default (): [
 
   useEffect(() => {
     if (refMap.blocks.current === null) return;
+    report.log('usePainter', ['dimensions changed:', dimensions]);
     Object.values(refMap).forEach((ref) => {
       if (ref.current) {
         ref.current.width = ref.current.clientWidth;
@@ -66,7 +68,7 @@ export default (): [
 
   const paint = useCallback(
     (plot: Positioner.Plot) => {
-      console.debug('[usePainter] plot: ', plot);
+      report.log('usePainter', ['plot: ', plot]);
       (
         Object.entries(refMap) as [
           keyof Painter.RefMap,
