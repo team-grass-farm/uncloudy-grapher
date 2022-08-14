@@ -1,10 +1,4 @@
-import React, {
-  RefObject,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { usePainterEvent } from '~hooks';
 import { report } from '~utils/logger';
 import { renderBlocks, renderGrids, renderPoints } from '~utils/painter';
@@ -96,7 +90,7 @@ export default (): [
             renderBlocks(ctx, ref.current, plot.blocks);
             break;
           case 'base':
-            renderBlocks(ctx, ref.current, plot.blocks, true);
+            // renderBlocks(ctx, ref.current, plot.blocks, true);
             break;
           case 'groups1':
             break;

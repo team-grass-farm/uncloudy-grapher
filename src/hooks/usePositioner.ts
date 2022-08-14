@@ -1,4 +1,4 @@
-import React, { RefObject, useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { report } from '~utils/logger';
 
 export default (
