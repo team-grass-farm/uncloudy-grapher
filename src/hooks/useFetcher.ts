@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { SAMPLE_NODES, SAMPLE_PODS } from '~constants';
 
 export default (

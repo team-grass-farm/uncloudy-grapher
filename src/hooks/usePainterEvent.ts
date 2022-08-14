@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { report } from '~utils/logger';
 import { getCursorPosition } from '~utils/positioner';
 
