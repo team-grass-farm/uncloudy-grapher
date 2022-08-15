@@ -30,6 +30,9 @@ const NAMESPACE_Y = 300;
 const NAMESAPCE_DX = 200;
 const NAMESAPCE_DY = 100;
 
+const DEPLOYMENTGROUP_NM = 'Deployment Group';
+const DEPLOYMENTGROUP_H = 5;
+
 export const paintCube: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   () => {
     ctx.save();
@@ -394,6 +397,79 @@ export const paintPod: Painter.PaintObject = (ctx, x, y, dx, dy, h, option) => [
     // ctx.beginPath();
     // ctx.ellipse(x, y - h, dx, dy, 0, 0, Math.PI * 2);
     // ctx.stroke();
+
+    ctx.restore();
+  },
+];
+
+/**
+ * 디플로이먼트 그룹을 렌더링합니다.
+ * @author 김민정
+ * @param ctx: 캔버스 포인터
+ * @param x1: 디플로이먼트그룹의 x1 시작점 (A)
+ * @param y1: 디플로이먼트그룹의 y1 시작점 (A)
+ * @param x2: 디플로이먼트그룹의 x2 시작점 (C)
+ * @param y2: 디플로이먼트그룹의 y2 시작점 (C)
+ *      B
+ * A        C
+ *      D
+ * @returns () => void
+ */
+export const paintDeploymentGroup: Painter.PaintArea = (
+  ctx,
+  x1,
+  y1,
+  x2,
+  y2
+) => [
+  () => {
+    ctx.save();
+
+    var ratioY = (x2 - x1) / 4;
+
+    //===================디플로이먼트그룹==================
+    ctx.fillStyle = '#E3F1FF';
+    ctx.beginPath();
+    ctx.moveTo(x1, y1 - DEPLOYMENTGROUP_H);
+    ctx.lineTo((x1 + x2) / 2, y1 - ratioY - DEPLOYMENTGROUP_H);
+    ctx.lineTo(x2, y2 - DEPLOYMENTGROUP_H);
+    ctx.lineTo((x1 + x2) / 2, y1 + ratioY - DEPLOYMENTGROUP_H);
+    ctx.fill();
+
+    //디플로이먼트그룹 바닥
+    ctx.fillStyle = '#E3F1FF';
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo((x1 + x2) / 2, y1 - ratioY);
+    ctx.lineTo(x2, y2);
+    ctx.lineTo((x1 + x2) / 2, y1 + ratioY);
+    ctx.fill();
+
+    //디플로이먼트그룹 왼쪽
+    ctx.fillStyle = '#C1E0FF';
+    ctx.beginPath();
+    ctx.moveTo(x1, y1 - DEPLOYMENTGROUP_H);
+    ctx.lineTo((x1 + x2) / 2, y1 + ratioY - DEPLOYMENTGROUP_H);
+    ctx.lineTo((x1 + x2) / 2, y1 + ratioY);
+    ctx.lineTo(x1, y1);
+    ctx.fill();
+
+    // //디플로이먼트그룹 오른쪽
+    ctx.fillStyle = '#85BDF4';
+    ctx.beginPath();
+    ctx.lineTo((x1 + x2) / 2, y1 + ratioY - DEPLOYMENTGROUP_H);
+    ctx.lineTo(x2, y2 - DEPLOYMENTGROUP_H);
+    ctx.lineTo(x2, y2);
+    ctx.lineTo((x1 + x2) / 2, y1 + ratioY);
+    ctx.fill();
+
+    //디플로이먼트그룹 이름 텍스트
+    ctx.translate((x1 + x2) / 2, y1 * 2);
+    ctx.rotate(-Math.PI / 7);
+    ctx.font = '20px Roboto';
+    ctx.fillStyle = '#85BDF4';
+    ctx.textAlign = 'left';
+    ctx.fillText(DEPLOYMENTGROUP_NM, 0, 0);
 
     ctx.restore();
   },
