@@ -476,6 +476,48 @@ export const paintNamespace: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   },
 ];
 
+/**
+ * 평면 네임스페이스 렌더링합니다.
+ * @author 김민정
+ * @param ctx: 캔버스 포인터
+ * @param x1: 평면 네임스페이스  x1 시작점 (A)
+ * @param y1: 평면 네임스페이스  y1 시작점 (A)
+ * @param x2: 평면 네임스페이스  x2 시작점 (C)
+ * @param y2: 평면 네임스페이스  y2 시작점 (C)
+ * A     D
+ * 
+ * B     C
+ 
+ * @returns () => void
+ */
+export const paintFlatNamespace: Painter.PaintArea = (ctx, x1, y1, x2, y2) => [
+  () => {
+    ctx.save();
+
+    //네임스페이스 평면도
+    ctx.fillStyle = '#F1F8FF';
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y1);
+    ctx.lineTo(x2, y2);
+    ctx.lineTo(x1, y2);
+    ctx.fill();
+
+    //네임스페이스 겉 점선 스트로크
+    ctx.strokeStyle = '#63AFFC';
+    ctx.beginPath();
+    ctx.setLineDash([3, 3]);
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y1);
+    ctx.lineTo(x2, y2);
+    ctx.lineTo(x1, y2);
+    ctx.lineTo(x1, y1);
+    ctx.stroke();
+
+    ctx.restore();
+  },
+];
+
 export const paintPoint: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   () => {
     ctx.save();
