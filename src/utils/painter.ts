@@ -476,6 +476,43 @@ export const paintNamespace: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   },
 ];
 
+/**
+ * 평면 디플로이먼트그룹을 렌더링합니다.
+ * @author 김민정
+ * @param ctx: 캔버스 포인터
+ * @param x1: 평면 디플로이먼트그룹  x1 시작점 (A)
+ * @param y1: 평면 디플로이먼트그룹  y1 시작점 (A)
+ * @param x2: 평면 디플로이먼트그룹  x2 시작점 (C)
+ * @param y2: 평면 디플로이먼트그룹  y2 시작점 (C)
+ * A     D
+ * 
+ * B     C
+ 
+ * @returns () => void
+ */
+export const paintFlatDeploymentGroup: Painter.PaintArea = (
+  ctx,
+  x1,
+  y1,
+  x2,
+  y2
+) => [
+  () => {
+    ctx.save();
+
+    //디플로이먼트 그룹 평면도
+    ctx.fillStyle = '#E3F1FF';
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y1);
+    ctx.lineTo(x2, y2);
+    ctx.lineTo(x1, y2);
+    ctx.fill();
+
+    ctx.restore();
+  },
+];
+
 export const paintPoint: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   () => {
     ctx.save();
