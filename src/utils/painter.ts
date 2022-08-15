@@ -551,10 +551,23 @@ export const paintFlatPod: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   () => {
     ctx.save();
 
+    ctx.fillStyle = '#B7E8E9';
+    ctx.beginPath();
+    ctx.ellipse(x, y, dx, dy, 0, 0, Math.PI * 2);
+    ctx.fill();
+
     ctx.fillStyle = '#16BFC0';
     ctx.beginPath();
-    ctx.ellipse(x, y, 0.75 * dx, 0.75 * dy, 0, 0, Math.PI * 2);
+    ctx.ellipse(x, y, 0.6 * dx, 0.6 * dy, 0, 0, Math.PI * 2);
     ctx.fill();
+
+    //===================흰색 음영 라인==================
+
+    ctx.lineWidth = LINE_LIGHT;
+    ctx.strokeStyle = 'white';
+    ctx.beginPath();
+    ctx.ellipse(x, y, 0.6 * dx, 0.6 * dy, 0, 0, Math.PI * 2);
+    ctx.stroke();
 
     ctx.restore();
   },
