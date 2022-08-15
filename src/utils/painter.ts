@@ -30,6 +30,9 @@ const NAMESPACE_Y = 300;
 const NAMESAPCE_DX = 200;
 const NAMESAPCE_DY = 100;
 
+const NODEGROUP_NM = 'Node Group';
+const NODEGROUP_H = 10;
+
 export const paintCube: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   () => {
     ctx.save();
@@ -220,6 +223,99 @@ export const paintFlatNode: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
     ctx.beginPath();
     ctx.ellipse(x, y - h, 0.75 * dx, 0.6 * dy, 0, 0, Math.PI * 2);
     ctx.fill();
+
+    ctx.restore();
+  },
+];
+
+/**
+ * 노드그룹을 렌더링합니다.
+ * @author 김민정
+ * @param ctx: 캔버스 포인터
+ * @param x1: 노드그룹의 x1 시작점 (A)
+ * @param y1: 노드그룹의 y1 시작점 (A)
+ * @param x2: 노드그룹의 x2 시작점 (C)
+ * @param y2: 노드그룹의 y2 시작점 (C)
+ *      B
+ * A        C
+ *      D
+ * @returns () => void
+ */
+export const paintNodeGroup: Painter.PaintArea = (ctx, x1, y1, x2, y2) => [
+  () => {
+    ctx.save();
+
+    var ratioY = (x2 - x1) / 4;
+
+    //===================노드그룹박스==================
+    ctx.fillStyle = '#BCBEFF';
+    ctx.beginPath();
+    ctx.moveTo(x1, y1 - NODEGROUP_H);
+    ctx.lineTo((x1 + x2) / 2, y1 - ratioY - NODEGROUP_H);
+    ctx.lineTo(x2, y2 - NODEGROUP_H);
+    ctx.lineTo((x1 + x2) / 2, y1 + ratioY - NODEGROUP_H);
+    ctx.fill();
+
+    //노드그룹 바닥
+    ctx.fillStyle = '#BCBEFF';
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo((x1 + x2) / 2, y1 - ratioY);
+    ctx.lineTo(x2, y2);
+    ctx.lineTo((x1 + x2) / 2, y1 + ratioY);
+    ctx.fill();
+
+    //노드그룹 왼쪽
+    ctx.fillStyle = '#BCBEFF';
+    ctx.beginPath();
+    ctx.moveTo(x1, y1 - NODEGROUP_H);
+    ctx.lineTo((x1 + x2) / 2, y1 + ratioY - NODEGROUP_H);
+    ctx.lineTo((x1 + x2) / 2, y1 + ratioY);
+    ctx.lineTo(x1, y1);
+    ctx.fill();
+
+    // //노드그룹 오른쪽
+    ctx.fillStyle = '#8E91E3';
+    ctx.beginPath();
+    ctx.lineTo((x1 + x2) / 2, y1 + ratioY - NODEGROUP_H);
+    ctx.lineTo(x2, y2 - NODEGROUP_H);
+    ctx.lineTo(x2, y2);
+    ctx.lineTo((x1 + x2) / 2, y1 + ratioY);
+    ctx.fill();
+
+    // //노드그룹 맨위 작은 네모
+    ctx.fillStyle = '#F1EDFE';
+    ctx.beginPath();
+    ctx.moveTo(x1 + (x2 - x1) / 20, y1 - NODEGROUP_H);
+    ctx.lineTo((x1 + x2) / 2, y1 - (x2 - x1) / 4.5 - NODEGROUP_H);
+    ctx.lineTo(x2 - (x2 - x1) / 20, y2 - NODEGROUP_H);
+    ctx.lineTo((x1 + x2) / 2, y1 + (x2 - x1) / 4.5 - NODEGROUP_H);
+    ctx.fill();
+
+    //노드그룹 상단의 흰색 빛
+    ctx.lineWidth = LINE_LIGHT;
+    ctx.strokeStyle = 'white';
+    ctx.beginPath();
+    ctx.moveTo(x1, y1 - NODEGROUP_H);
+    ctx.lineTo((x1 + x2) / 2, y1 + ratioY - NODEGROUP_H);
+    ctx.lineTo(x2, y2 - NODEGROUP_H);
+    ctx.stroke();
+
+    //노드그룹 상단의 흰색 빛
+    ctx.lineWidth = LINE_LIGHT;
+    ctx.strokeStyle = 'white';
+    ctx.beginPath();
+    ctx.lineTo((x1 + x2) / 2, y1 + ratioY - NODEGROUP_H);
+    ctx.lineTo((x1 + x2) / 2, y1 + ratioY);
+    ctx.stroke();
+
+    //노드그룹 이름 텍스트
+    ctx.translate((x1 + x2) / 2, y1 * 2);
+    ctx.rotate(-Math.PI / 7);
+    ctx.font = '20px Roboto';
+    ctx.fillStyle = '#B69FFA';
+    ctx.textAlign = 'left';
+    ctx.fillText(NODEGROUP_NM, 0, 0);
 
     ctx.restore();
   },
