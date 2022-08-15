@@ -25,6 +25,9 @@ const CLUSTER_DX = 200;
 const CLUSTER_DY = 100;
 
 const NAMESPACE_NM = 'Namespace';
+const CLUSTER_NM = 'Cluster';
+const NODEGROUP_NM = 'Node Group';
+const DEPLOYMENTGROUP_NM = 'Deployment Group';
 
 export const paintCube: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   () => {
