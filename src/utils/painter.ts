@@ -24,11 +24,7 @@ const CLUSTER_Y = 300;
 const CLUSTER_DX = 200;
 const CLUSTER_DY = 100;
 
-const NAMESAPCE_H = 10;
-const NAMESPACE_X = 300;
-const NAMESPACE_Y = 300;
-const NAMESAPCE_DX = 200;
-const NAMESAPCE_DY = 100;
+const NAMESPACE_NM = 'Namespace';
 
 export const paintCube: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   () => {
@@ -416,61 +412,48 @@ export const paintFlatPod: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
  * 네임스페이스 그룹을 렌더링합니다.
  * @author 김민정
  * @param ctx: 캔버스 포인터
- * @param NAMESAPCE_X: 네임스페이스 그룹의 x 시작점
- * @param NAMESAPCE_Y: 네임스페이스 그룹의 y 시작점
- * @param NAMESAPCE_DX: 네임스페이스 그룹의 x 크기
- * @param NAMESAPCE_DY: 네임스페이스 그룹의 y 크기
- * @param NAMESAPCE_H: 네임스페이스 그룹의 높이
+ * @param x1: 네임스페이스 그룹의 x1 시작점 (A)
+ * @param y1: 네임스페이스 그룹의 y1 시작점 (A)
+ * @param x2: 네임스페이스 그룹의 x2 시작점 (C)
+ * @param y2: 네임스페이스 그룹의 y2 시작점 (C)
+ *      B
+ * A         C
+ *      D
  * @returns () => void
  */
-export const paintNamespace: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
+export const paintNamespace: Painter.PaintArea = (ctx, x1, y1, x2, y2) => [
   () => {
     ctx.save();
 
-    //네임스페이스 맨위
-    ctx.fillStyle = '#F3F4FF';
+    var ratioY = (x2 - x1) / 4;
+
+    //네임스페이스
+    ctx.fillStyle = '#F1F8FF';
     ctx.beginPath();
-    ctx.moveTo(NAMESPACE_X - NAMESAPCE_DX, NAMESPACE_Y - NAMESAPCE_H);
-    ctx.lineTo(NAMESPACE_X, NAMESPACE_Y - NAMESAPCE_DY - NAMESAPCE_H);
-    ctx.lineTo(NAMESPACE_X + NAMESAPCE_DX, NAMESPACE_Y - NAMESAPCE_H);
-    ctx.lineTo(NAMESPACE_X, NAMESPACE_Y + NAMESAPCE_DY - NAMESAPCE_H);
+    ctx.moveTo(x1, y1);
+    ctx.lineTo((x1 + x2) / 2, y1 - ratioY);
+    ctx.lineTo(x2, y2);
+    ctx.lineTo((x1 + x2) / 2, y1 + ratioY);
     ctx.fill();
 
-    //네임스페이스 바닥
-    ctx.fillStyle = '#F3F4FF';
+    //네임스페이스 겉 점선 스트로크
+    ctx.strokeStyle = '#63AFFC';
     ctx.beginPath();
-    ctx.moveTo(NAMESPACE_X - NAMESAPCE_DX, NAMESPACE_Y);
-    ctx.lineTo(NAMESPACE_X, NAMESPACE_Y + NAMESAPCE_DY);
-    ctx.lineTo(NAMESPACE_X + NAMESAPCE_DX, NAMESPACE_Y);
-    ctx.lineTo(NAMESPACE_X, NAMESPACE_Y - NAMESAPCE_DY);
-    ctx.fill();
-
-    //네임스페이스 왼쪽
-    ctx.fillStyle = '#DBDDFC';
-    ctx.beginPath();
-    ctx.moveTo(NAMESPACE_X - NAMESAPCE_DX, NAMESPACE_Y - NAMESAPCE_H);
-    ctx.lineTo(NAMESPACE_X, NAMESPACE_Y + NAMESAPCE_DY - NAMESAPCE_H);
-    ctx.lineTo(NAMESPACE_X, NAMESPACE_Y + NAMESAPCE_DY);
-    ctx.lineTo(NAMESPACE_X - NAMESAPCE_DX, NAMESPACE_Y);
-    ctx.fill();
-
-    //네임스페이스 오른쪽
-    ctx.fillStyle = '#DBDDFC';
-    ctx.beginPath();
-    ctx.lineTo(NAMESPACE_X, NAMESPACE_Y + NAMESAPCE_DY - NAMESAPCE_H);
-    ctx.lineTo(NAMESPACE_X + NAMESAPCE_DX, NAMESPACE_Y - NAMESAPCE_H);
-    ctx.lineTo(NAMESPACE_X + NAMESAPCE_DX, NAMESPACE_Y);
-    ctx.lineTo(NAMESPACE_X, NAMESPACE_Y + NAMESAPCE_DY);
-    ctx.fill();
-
-    //네임스페이스 상단의 흰색 빛
-    ctx.lineWidth = LINE_BOLD;
-    ctx.strokeStyle = 'white';
-    ctx.beginPath();
-    ctx.moveTo(NAMESPACE_X - NAMESAPCE_DX, NAMESPACE_Y - NAMESAPCE_H);
-    ctx.lineTo(NAMESPACE_X, NAMESPACE_Y + NAMESAPCE_DY - NAMESAPCE_H);
-    ctx.lineTo(NAMESPACE_X + NAMESAPCE_DX, NAMESPACE_Y - NAMESAPCE_H);
+    ctx.setLineDash([3, 3]);
+    ctx.moveTo(x1, y1);
+    ctx.lineTo((x1 + x2) / 2, y1 - ratioY);
+    ctx.lineTo(x2, y2);
+    ctx.lineTo((x1 + x2) / 2, y1 + ratioY);
+    ctx.lineTo(x1, y1);
     ctx.stroke();
+
+    //네임스페이스 이름 텍스트
+    ctx.translate((x1 + x2) / 2, y1 * 2);
+    ctx.rotate(-Math.PI / 7);
+    ctx.font = '20px Roboto';
+    ctx.fillStyle = 'black';
+    ctx.textAlign = 'left';
+    ctx.fillText(NAMESPACE_NM, 0, 0);
 
     ctx.restore();
   },
