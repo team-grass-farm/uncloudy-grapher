@@ -30,6 +30,8 @@ const NAMESPACE_Y = 300;
 const NAMESAPCE_DX = 200;
 const NAMESAPCE_DY = 100;
 
+const CLUSTER_NM = 'Cluster';
+
 export const paintCube: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   () => {
     ctx.save();
@@ -229,70 +231,48 @@ export const paintFlatNode: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
  * 클러스터 그룹을 렌더링합니다.
  * @author 김민정
  * @param ctx: 캔버스 포인터
- * @param CLUSTER_X: 클러스터 그룹의 x 시작점
- * @param CLUSTER_Y: 클러스터 그룹의 y 시작점
- * @param CLUSTER_DX: 클러스터 그룹의 x 크기
- * @param CLUSTER_DY: 클러스터 그룹의 y 크기
- * @param CLUSTER_Y: 클러스터 그룹의 높이
+ * @param x1: 클러스터 그룹의 x1 시작점 (A)
+ * @param y1: 클러스터 그룹의 y1 시작점 (A)
+ * @param x2: 클러스터 그룹의 x2 시작점 (C)
+ * @param y2: 클러스터 그룹의 y2 시작점 (C)
+ *      B
+ * A        C
+ *      D
  * @returns () => void
  */
-export const paintCluster: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
+export const paintCluster: Painter.PaintArea = (ctx, x1, y1, x2, y2) => [
   () => {
     ctx.save();
 
-    //클러스터 맨위
-    ctx.fillStyle = '#BCBEFF';
+    var ratioY = (x2 - x1) / 4;
+
+    //클러스터
+    ctx.fillStyle = '#F1F3FD';
     ctx.beginPath();
-    ctx.moveTo(CLUSTER_X - CLUSTER_DX, CLUSTER_Y - CLUSTER_H);
-    ctx.lineTo(CLUSTER_X, CLUSTER_Y - CLUSTER_DY - CLUSTER_H);
-    ctx.lineTo(CLUSTER_X + CLUSTER_DX, CLUSTER_Y - CLUSTER_H);
-    ctx.lineTo(CLUSTER_X, CLUSTER_Y + CLUSTER_DY - CLUSTER_H);
+    ctx.moveTo(x1, y1);
+    ctx.lineTo((x1 + x2) / 2, y1 - ratioY);
+    ctx.lineTo(x2, y2);
+    ctx.lineTo((x1 + x2) / 2, y1 + ratioY);
     ctx.fill();
 
-    //클러스터 바닥
-    ctx.fillStyle = '#BCBEFF';
+    //클러스터 겉 점선 스트로크
+    ctx.strokeStyle = '#A5A5A5';
     ctx.beginPath();
-    ctx.moveTo(CLUSTER_X - CLUSTER_DX, CLUSTER_Y);
-    ctx.lineTo(CLUSTER_X, CLUSTER_Y + CLUSTER_DY);
-    ctx.lineTo(CLUSTER_X + CLUSTER_DX, CLUSTER_Y);
-    ctx.lineTo(CLUSTER_X, CLUSTER_Y - CLUSTER_DY);
-    ctx.fill();
-
-    //클러스터 왼쪽
-    ctx.fillStyle = '#BCBEFF';
-    ctx.beginPath();
-    ctx.moveTo(CLUSTER_X - CLUSTER_DX, CLUSTER_Y - CLUSTER_H);
-    ctx.lineTo(CLUSTER_X, CLUSTER_Y + CLUSTER_DY - CLUSTER_H);
-    ctx.lineTo(CLUSTER_X, CLUSTER_Y + CLUSTER_DY);
-    ctx.lineTo(CLUSTER_X - CLUSTER_DX, CLUSTER_Y);
-    ctx.fill();
-
-    //클러스터 오른쪽
-    ctx.fillStyle = '#8E91E3';
-    ctx.beginPath();
-    ctx.lineTo(CLUSTER_X, CLUSTER_Y + CLUSTER_DY - CLUSTER_H);
-    ctx.lineTo(CLUSTER_X + CLUSTER_DX, CLUSTER_Y - CLUSTER_H);
-    ctx.lineTo(CLUSTER_X + CLUSTER_DX, CLUSTER_Y);
-    ctx.lineTo(CLUSTER_X, CLUSTER_Y + CLUSTER_DY);
-    ctx.fill();
-
-    //클러스터 맨위 작은 마름모
-    ctx.fillStyle = '#8C82F0';
-    ctx.beginPath();
-    ctx.moveTo(CLUSTER_X - 0.92 * CLUSTER_DX, CLUSTER_Y - CLUSTER_H);
-    ctx.lineTo(CLUSTER_X, CLUSTER_Y - 0.93 * CLUSTER_DY - CLUSTER_H);
-    ctx.lineTo(CLUSTER_X + 0.92 * CLUSTER_DX, CLUSTER_Y - CLUSTER_H);
-    ctx.lineTo(CLUSTER_X, CLUSTER_Y + 0.9 * CLUSTER_DY - CLUSTER_H);
-    ctx.fill();
-
-    //클러스터 상단의 흰색 빛
-    ctx.lineWidth = LINE_LIGHT;
-    ctx.strokeStyle = 'white';
-    ctx.beginPath();
-    ctx.moveTo(CLUSTER_X - CLUSTER_DX, CLUSTER_Y - CLUSTER_H);
-    ctx.lineTo(CLUSTER_X, CLUSTER_Y + CLUSTER_DY - CLUSTER_H);
-    ctx.lineTo(CLUSTER_X + CLUSTER_DX, CLUSTER_Y - CLUSTER_H);
+    ctx.setLineDash([3, 3]);
+    ctx.moveTo(x1, y1);
+    ctx.lineTo((x1 + x2) / 2, y1 - ratioY);
+    ctx.lineTo(x2, y2);
+    ctx.lineTo((x1 + x2) / 2, y1 + ratioY);
+    ctx.lineTo(x1, y1);
     ctx.stroke();
+
+    //클러스터 이름 텍스트
+    ctx.translate((x1 + x2) / 2, y1 * 2);
+    ctx.rotate(-Math.PI / 7);
+    ctx.font = '20px Roboto';
+    ctx.fillStyle = 'black';
+    ctx.textAlign = 'left';
+    ctx.fillText(CLUSTER_NM, 0, 0);
 
     ctx.restore();
   },
