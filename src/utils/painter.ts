@@ -476,6 +476,36 @@ export const paintNamespace: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   },
 ];
 
+/**
+ * 클러스터 그룹을 렌더링합니다.
+ * @author 김민정
+ * @param ctx: 캔버스 포인터
+ * @param x1: 클러스터 그룹의 x1 시작점 (A)
+ * @param y1: 클러스터 그룹의 y1 시작점 (A)
+ * @param x2: 클러스터 그룹의 x2 시작점 (C)
+ * @param y2: 클러스터 그룹의 y2 시작점 (C)
+ *      B
+ * A        C
+ *      D
+ * @returns () => void
+ */
+export const paintFlatNodeGroup: Painter.PaintArea = (ctx, x1, y1, x2, y2) => [
+  () => {
+    ctx.save();
+
+    //노드그룹 평면도
+    ctx.fillStyle = '#F1EDFE';
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y1);
+    ctx.lineTo(x2, y2);
+    ctx.lineTo(x1, y2);
+    ctx.fill();
+
+    ctx.restore();
+  },
+];
+
 export const paintPoint: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   () => {
     ctx.save();
