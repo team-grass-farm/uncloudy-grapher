@@ -2,8 +2,8 @@ import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { usePainterEvent } from '~hooks';
 import { report } from '~utils/logger';
 import {
-    clearRendered, renderBlocks, renderGrids, renderHighlightedBlocks, renderHighlightedPoints,
-    renderPoints
+    clearRendered, renderBlocks, renderGrids, renderGroups, renderHighlightedBlocks,
+    renderHighlightedPoints, renderPoints
 } from '~utils/painter';
 import { getGridPositions, getPointPositions } from '~utils/positioner';
 
@@ -104,6 +104,7 @@ export default (): [
             // renderBlocks(ctx, ref.current, plot.blocks, true);
             break;
           case 'groups1':
+            plot.groups1 && renderGroups(ctx, ref.current, plot.groups1);
             break;
           case 'groups2':
             // data &&
