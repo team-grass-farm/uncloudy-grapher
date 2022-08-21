@@ -462,7 +462,7 @@ export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
   const maxRow = 10;
   const canvasColumn = 6;
 
-  if (!!resourceMap.deployments && !!resourceMap.namespaces) {
+  if (!!!resourceMap.deployments && !!!resourceMap.namespaces) {
     let selBox = getSelectedBox(maxRow, canvasColumn, resourceMap.pods.size);
 
     if (!!selBox) {
@@ -475,64 +475,61 @@ export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
         });
     }
   } else if (!!resourceMap.deployments && !!!resourceMap.namespaces) {
-    if (!!deployments) {
-      const maxGroup1Row = ((maxRow - 1) >> 1) - 2;
+    const maxGroup1Row = ((maxRow - 1) >> 1) - 2;
 
-      let paddingCol = 0;
-      let secondRow =
-        (resourceMap.deployments ? resourceMap.deployments.size : 0) >> 1;
+    let paddingCol = 0;
+    let secondRow =
+      (resourceMap.deployments ? resourceMap.deployments.size : 0) >> 1;
 
-      report.log('Positioner', [
-        'deployments: ',
-        resourceMap.deployments ? resourceMap.deployments.size : 0,
-      ]);
+    report.log('Positioner', [
+      'resourceMap.deployments: ',
+      resourceMap.deployments ? resourceMap.deployments.size : 0,
+    ]);
 
-      Object.entries(resourceMap.deployments ?? []).map(
-        ([deploymentId, deployment], index) => {
-          if (secondRow === index) {
-            paddingCol = 0;
-          }
-          let paddingRow = secondRow >= index ? 0 : maxGroup1Row;
-          let numPods = [...resourceMap.pods].filter(
-            ([_, pod]) => pod.deploymentId === deploymentId
-          ).length;
+    let index = 0;
+    resourceMap.deployments.forEach((deployment, deploymentId) => {
+      if (secondRow === index) paddingCol = 0;
+      let paddingRow = secondRow >= index ? 0 : maxGroup1Row;
+      let numPods = [...resourceMap.pods].filter(
+        ([_, pod]) => pod.deploymentId === deploymentId
+      ).length;
 
-          let selGroup1 = getSelectedBox(
-            ((maxRow - 1) >> 1) - 2,
-            canvasColumn - 2,
-            numPods
-          );
-
-          if (!!selGroup1) {
-            deployments.push([
-              { row: paddingRow, column: paddingCol },
-              {
-                row: paddingRow + selGroup1.row - 1,
-                column: paddingCol + selGroup1.column - 1,
-              },
-            ]);
-
-            // NOTE 디플로이먼트 박스 안 - 파드 간 간격을 설정할 지의 여부
-            // paddingRow++;
-
-            // paddingCol++;
-
-            Array.from(Array(selGroup1.row).keys())
-              .reverse()
-              .map((row) => {
-                Array.from(Array(selGroup1!.column).keys()).map((column) => {
-                  pods.push({
-                    row: paddingRow + row,
-                    column: paddingCol + column,
-                  });
-                });
-              });
-
-            paddingCol += selGroup1.column + 1;
-          }
-        }
+      let selGroup1 = getSelectedBox(
+        ((maxRow - 1) >> 1) - 2,
+        canvasColumn - 2,
+        numPods
       );
-    }
+
+      if (!!selGroup1) {
+        deployments!.push([
+          { row: paddingRow, column: paddingCol },
+          {
+            row: paddingRow + selGroup1.row - 1,
+            column: paddingCol + selGroup1.column - 1,
+          },
+        ]);
+
+        // NOTE 디플로이먼트 박스 안 - 파드 간 간격을 설정할 지의 여부
+        // paddingRow++;
+
+        // paddingCol++;
+
+        Array.from(Array(selGroup1.row).keys())
+          .reverse()
+          .map((row) => {
+            Array.from(Array(selGroup1!.column).keys()).map((column) => {
+              pods.push({
+                row: paddingRow + row,
+                column: paddingCol + column,
+              });
+            });
+          });
+
+        paddingCol += selGroup1.column + 1;
+        index++;
+      }
+    });
+    report.log('Positioner', ['deployments: ', deployments]);
   } else if (!!!resourceMap.deployments && !!resourceMap.namespaces) {
     // // NOTE This is a sample code:
     // if (maxRow * canvasColumn > dataLength) {

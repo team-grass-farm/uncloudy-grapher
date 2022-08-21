@@ -2,7 +2,7 @@ import { RefObject, useCallback, useEffect, useState } from 'react';
 import { report } from '~utils/logger';
 import { getAdminViewPositions, getDeveloperViewPositions } from '~utils/positioner';
 
-export default (
+export default <T extends string = 'type'>(
   ref: RefObject<HTMLCanvasElement>
 ): [Dimensions, Positioner.Plot | null, Positioner.Pose] => {
   const [plot, setPlot] = useState<Positioner.Plot | null>(null);
@@ -10,6 +10,7 @@ export default (
     null
   );
   const [level, setLevel] = useState<1 | 2 | 3 | null>(null);
+  const [option, setOption] = useState<T[]>(['type'] as T[]);
   const [adminPlot, setAdminPlot] = useState<Positioner.Plot | null>(null);
   const [devPlot, setDevPlot] = useState<Positioner.Plot | null>(null);
 
@@ -27,10 +28,15 @@ export default (
 
   const pose = useCallback<Positioner.Pose>(
     (resourceMap, level) => {
+      report.log('usePositioner', ['resourceMap: ', resourceMap]);
       resourceMap.type === 'admin'
         ? setAdminPlot(
             getAdminViewPositions(
-              resourceMap,
+              {
+                type: 'admin',
+                pods: option['pods'] ? resourceMap.pods : undefined,
+                nodes: option['nodes'],
+              } as Positioner.ResourceMap<'admin'>,
               dimensions.width,
               dimensions.height,
               level

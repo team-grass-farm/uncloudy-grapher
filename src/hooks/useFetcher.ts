@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { SAMPLE_NODES, SAMPLE_PODS } from '~constants';
+import { SAMPLE_DEPLOYMENTS, SAMPLE_NODES, SAMPLE_PODS } from '~constants';
 
 export default (
   type: 'production' | 'development' | 'offline' = 'production',
@@ -16,9 +16,10 @@ export default (
   );
 
   useEffect(() => {
-    if (type === 'offline') {
-      enableSamples && setPods(SAMPLE_PODS);
-      enableSamples && setNodes(SAMPLE_NODES);
+    if (type === 'offline' && enableSamples) {
+      setPods(SAMPLE_PODS);
+      setNodes(SAMPLE_NODES);
+      setDeployments(SAMPLE_DEPLOYMENTS);
     }
   }, [enableSamples]);
 
