@@ -11,3 +11,13 @@ export interface Props extends Page.ComponentProps<'div'> {
     level?: 1 | 2 | 3;
   };
 }
+
+export type ViewOption =
+  | 'CPUUsage'
+  | 'memoryUsage'
+  | 'numPods'
+  | 'nodeId'
+  | 'nodes'
+  | 'clusters'
+  | 'deployments'
+  | 'namespaces';

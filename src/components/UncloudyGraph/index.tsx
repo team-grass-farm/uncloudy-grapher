@@ -1,11 +1,10 @@
 import { Col, Row, Select } from 'antd';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePainter, usePositioner } from '~hooks';
-import { report } from '~utils/logger';
 
 import { MainBlock } from './styles';
 
-import type { Props } from './types';
+import type { Props, ViewOption } from './types';
 
 export default ({
   id,
@@ -23,17 +22,29 @@ export default ({
     setVisible,
   ] = usePainter();
   const [dimensions, plot, pose] = usePositioner(refMap.base);
+  const [viewOptions, setViewOptions] = useState<ViewOption[]>(['deployments']);
 
   useEffect(() => {
     if (!!!options.level) return;
+
     if (type === 'admin') {
       const { pods, clusters, nodes } = data;
+
       pose({ type, pods, nodes, clusters }, options.level);
     } else {
-      const { pods, deployments, namespaces } = data;
-      pose({ type, pods, deployments, namespaces }, options.level);
+      pose(
+        {
+          type,
+          pods: data.pods,
+          ...viewOptions.reduce(
+            (acc, viewOption) => ({ ...acc, [viewOption]: data[viewOption] }),
+            {}
+          ),
+        },
+        options.level
+      );
     }
-  }, [type, options.level, data]);
+  }, [type, options, data, viewOptions]);
 
   useEffect(() => (plot ? paint(plot) : undefined), [plot]);
 
@@ -44,10 +55,6 @@ export default ({
     setVisible({
       grid: showGrids ?? true,
       points: showPoints ?? true,
-      base: true,
-      blocks: showBlocks ?? true,
-      groups1: true,
-      groups2: true,
     });
     if (level !== undefined) {
       setLevelOnPainter(level);
@@ -86,19 +93,30 @@ export default ({
           }}
         >
           <Col span={6}>
-            <Select
+            <Select<ViewOption[]>
               mode="multiple"
-              onChange={(value) =>
-                report.log('UncloudyGraph', ['viewType value: ', value])
-              }
+              value={viewOptions}
+              onChange={setViewOptions}
               style={{ width: '100%' }}
               placeholder="보기 설정"
               maxTagCount="responsive"
             >
-              <Select.Option key="numPods">파드 수</Select.Option>
               <Select.Option key="CPUUsage">CPU 점유율</Select.Option>
               <Select.Option key="memoryUsage">메모리 점유율</Select.Option>
-              <Select.Option key="nodeId">노드명</Select.Option>
+              {type === 'admin' && (
+                <>
+                  <Select.Option key="numPods">파드 수</Select.Option>
+                  <Select.Option key="nodeId">노드명</Select.Option>
+                  <Select.Option key="nodes">노드 그룹</Select.Option>
+                  <Select.Option key="clusters">클러스터</Select.Option>
+                </>
+              )}
+              {type === 'dev' && (
+                <>
+                  <Select.Option key="deployments">배포 그룹</Select.Option>
+                  <Select.Option key="namespaces">네임스페이스</Select.Option>
+                </>
+              )}
             </Select>
           </Col>
         </Row>

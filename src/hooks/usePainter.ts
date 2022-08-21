@@ -46,10 +46,6 @@ export default (): [
       grid: true,
       point: true,
     }),
-    base: true,
-    groups2: true,
-    groups1: true,
-    blocks: true,
   });
 
   useEffect(() => {

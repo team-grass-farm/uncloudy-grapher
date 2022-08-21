@@ -23,7 +23,7 @@ declare namespace Painter {
     points?: RefObject<HTMLCanvasElement>;
     event: RefObject<HTMLCanvasElement>;
   }
-  interface FlagMap extends Record<Layer, boolean> {
+  interface FlagMap {
     grid?: boolean;
     points?: boolean;
   }
