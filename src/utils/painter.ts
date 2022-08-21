@@ -242,81 +242,89 @@ export const paintFlatNode: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
  *      D
  * @returns () => void
  */
-export const paintNodeGroup: Painter.PaintArea = (ctx, x1, y1, x2, y2) => [
+export const paintNodeGroup: Painter.PaintArea = (
+  ctx,
+  start,
+  end,
+  dx,
+  dy,
+  h,
+  option
+) => [
   () => {
     ctx.save();
 
-    var ratioY = (x2 - x1) / 4;
+    // var ratioY = (x2 - x1) / 4;
 
-    //===================노드그룹박스==================
-    ctx.fillStyle = '#BCBEFF';
-    ctx.beginPath();
-    ctx.moveTo(x1, y1 - NODEGROUP_H);
-    ctx.lineTo((x1 + x2) / 2, y1 - ratioY - NODEGROUP_H);
-    ctx.lineTo(x2, y2 - NODEGROUP_H);
-    ctx.lineTo((x1 + x2) / 2, y1 + ratioY - NODEGROUP_H);
-    ctx.fill();
+    // //===================노드그룹박스==================
+    // ctx.fillStyle = '#BCBEFF';
+    // ctx.beginPath();
+    // ctx.moveTo(x1, y1 - NODEGROUP_H);
+    // ctx.lineTo((x1 + x2) / 2, y1 - ratioY - NODEGROUP_H);
+    // ctx.lineTo(x2, y2 - NODEGROUP_H);
+    // ctx.lineTo((x1 + x2) / 2, y1 + ratioY - NODEGROUP_H);
+    // ctx.fill();
 
-    //노드그룹 바닥
-    ctx.fillStyle = '#BCBEFF';
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo((x1 + x2) / 2, y1 - ratioY);
-    ctx.lineTo(x2, y2);
-    ctx.lineTo((x1 + x2) / 2, y1 + ratioY);
-    ctx.fill();
+    // //노드그룹 바닥
+    // ctx.fillStyle = '#BCBEFF';
+    // ctx.beginPath();
+    // ctx.moveTo(x1, y1);
+    // ctx.lineTo((x1 + x2) / 2, y1 - ratioY);
+    // ctx.lineTo(x2, y2);
+    // ctx.lineTo((x1 + x2) / 2, y1 + ratioY);
+    // ctx.fill();
 
-    //노드그룹 왼쪽
-    ctx.fillStyle = '#BCBEFF';
-    ctx.beginPath();
-    ctx.moveTo(x1, y1 - NODEGROUP_H);
-    ctx.lineTo((x1 + x2) / 2, y1 + ratioY - NODEGROUP_H);
-    ctx.lineTo((x1 + x2) / 2, y1 + ratioY);
-    ctx.lineTo(x1, y1);
-    ctx.fill();
+    // //노드그룹 왼쪽
+    // ctx.fillStyle = '#BCBEFF';
+    // ctx.beginPath();
+    // ctx.moveTo(x1, y1 - NODEGROUP_H);
+    // ctx.lineTo((x1 + x2) / 2, y1 + ratioY - NODEGROUP_H);
+    // ctx.lineTo((x1 + x2) / 2, y1 + ratioY);
+    // ctx.lineTo(x1, y1);
+    // ctx.fill();
 
-    // //노드그룹 오른쪽
-    ctx.fillStyle = '#8E91E3';
-    ctx.beginPath();
-    ctx.lineTo((x1 + x2) / 2, y1 + ratioY - NODEGROUP_H);
-    ctx.lineTo(x2, y2 - NODEGROUP_H);
-    ctx.lineTo(x2, y2);
-    ctx.lineTo((x1 + x2) / 2, y1 + ratioY);
-    ctx.fill();
+    // // //노드그룹 오른쪽
+    // ctx.fillStyle = '#8E91E3';
+    // ctx.beginPath();
+    // ctx.lineTo((x1 + x2) / 2, y1 + ratioY - NODEGROUP_H);
+    // ctx.lineTo(x2, y2 - NODEGROUP_H);
+    // ctx.lineTo(x2, y2);
+    // ctx.lineTo((x1 + x2) / 2, y1 + ratioY);
+    // ctx.fill();
 
-    // //노드그룹 맨위 작은 네모
-    ctx.fillStyle = '#F1EDFE';
-    ctx.beginPath();
-    ctx.moveTo(x1 + (x2 - x1) / 20, y1 - NODEGROUP_H);
-    ctx.lineTo((x1 + x2) / 2, y1 - (x2 - x1) / 4.5 - NODEGROUP_H);
-    ctx.lineTo(x2 - (x2 - x1) / 20, y2 - NODEGROUP_H);
-    ctx.lineTo((x1 + x2) / 2, y1 + (x2 - x1) / 4.5 - NODEGROUP_H);
-    ctx.fill();
+    // // //노드그룹 맨위 작은 네모
+    // ctx.fillStyle = '#F1EDFE';
+    // ctx.beginPath();
+    // ctx.moveTo(x1 + (x2 - x1) / 20, y1 - NODEGROUP_H);
+    // ctx.lineTo((x1 + x2) / 2, y1 - (x2 - x1) / 4.5 - NODEGROUP_H);
+    // ctx.lineTo(x2 - (x2 - x1) / 20, y2 - NODEGROUP_H);
+    // ctx.lineTo((x1 + x2) / 2, y1 + (x2 - x1) / 4.5 - NODEGROUP_H);
+    // ctx.fill();
 
-    //노드그룹 상단의 흰색 빛
-    ctx.lineWidth = LINE_LIGHT;
-    ctx.strokeStyle = 'white';
-    ctx.beginPath();
-    ctx.moveTo(x1, y1 - NODEGROUP_H);
-    ctx.lineTo((x1 + x2) / 2, y1 + ratioY - NODEGROUP_H);
-    ctx.lineTo(x2, y2 - NODEGROUP_H);
-    ctx.stroke();
+    // //노드그룹 상단의 흰색 빛
+    // ctx.lineWidth = LINE_LIGHT;
+    // ctx.strokeStyle = 'white';
+    // ctx.beginPath();
+    // ctx.moveTo(x1, y1 - NODEGROUP_H);
+    // ctx.lineTo((x1 + x2) / 2, y1 + ratioY - NODEGROUP_H);
+    // ctx.lineTo(x2, y2 - NODEGROUP_H);
+    // ctx.stroke();
 
-    //노드그룹 상단의 흰색 빛
-    ctx.lineWidth = LINE_LIGHT;
-    ctx.strokeStyle = 'white';
-    ctx.beginPath();
-    ctx.lineTo((x1 + x2) / 2, y1 + ratioY - NODEGROUP_H);
-    ctx.lineTo((x1 + x2) / 2, y1 + ratioY);
-    ctx.stroke();
+    // //노드그룹 상단의 흰색 빛
+    // ctx.lineWidth = LINE_LIGHT;
+    // ctx.strokeStyle = 'white';
+    // ctx.beginPath();
+    // ctx.lineTo((x1 + x2) / 2, y1 + ratioY - NODEGROUP_H);
+    // ctx.lineTo((x1 + x2) / 2, y1 + ratioY);
+    // ctx.stroke();
 
-    //노드그룹 이름 텍스트
-    ctx.translate((x1 + x2) / 2, y1 * 2);
-    ctx.rotate(-Math.PI / 7);
-    ctx.font = '20px Roboto';
-    ctx.fillStyle = '#B69FFA';
-    ctx.textAlign = 'left';
-    ctx.fillText(NODEGROUP_NM, 0, 0);
+    // //노드그룹 이름 텍스트
+    // ctx.translate((x1 + x2) / 2, y1 * 2);
+    // ctx.rotate(-Math.PI / 7);
+    // ctx.font = '20px Roboto';
+    // ctx.fillStyle = '#B69FFA';
+    // ctx.textAlign = 'left';
+    // ctx.fillText(NODEGROUP_NM, 0, 0);
 
     ctx.restore();
   },
@@ -335,39 +343,47 @@ export const paintNodeGroup: Painter.PaintArea = (ctx, x1, y1, x2, y2) => [
  *      D
  * @returns () => void
  */
-export const paintCluster: Painter.PaintArea = (ctx, x1, y1, x2, y2) => [
+export const paintCluster: Painter.PaintArea = (
+  ctx,
+  start,
+  end,
+  dx,
+  dy,
+  h,
+  option
+) => [
   () => {
     ctx.save();
 
-    var ratioY = (x2 - x1) / 4;
+    // var ratioY = (x2 - x1) / 4;
 
-    //클러스터
-    ctx.fillStyle = '#F1F3FD';
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo((x1 + x2) / 2, y1 - ratioY);
-    ctx.lineTo(x2, y2);
-    ctx.lineTo((x1 + x2) / 2, y1 + ratioY);
-    ctx.fill();
+    // //클러스터
+    // ctx.fillStyle = '#F1F3FD';
+    // ctx.beginPath();
+    // ctx.moveTo(x1, y1);
+    // ctx.lineTo((x1 + x2) / 2, y1 - ratioY);
+    // ctx.lineTo(x2, y2);
+    // ctx.lineTo((x1 + x2) / 2, y1 + ratioY);
+    // ctx.fill();
 
-    //클러스터 겉 점선 스트로크
-    ctx.strokeStyle = '#A5A5A5';
-    ctx.beginPath();
-    ctx.setLineDash([3, 3]);
-    ctx.moveTo(x1, y1);
-    ctx.lineTo((x1 + x2) / 2, y1 - ratioY);
-    ctx.lineTo(x2, y2);
-    ctx.lineTo((x1 + x2) / 2, y1 + ratioY);
-    ctx.lineTo(x1, y1);
-    ctx.stroke();
+    // //클러스터 겉 점선 스트로크
+    // ctx.strokeStyle = '#A5A5A5';
+    // ctx.beginPath();
+    // ctx.setLineDash([3, 3]);
+    // ctx.moveTo(x1, y1);
+    // ctx.lineTo((x1 + x2) / 2, y1 - ratioY);
+    // ctx.lineTo(x2, y2);
+    // ctx.lineTo((x1 + x2) / 2, y1 + ratioY);
+    // ctx.lineTo(x1, y1);
+    // ctx.stroke();
 
-    //클러스터 이름 텍스트
-    ctx.translate((x1 + x2) / 2, y1 * 2);
-    ctx.rotate(-Math.PI / 7);
-    ctx.font = '20px Roboto';
-    ctx.fillStyle = 'black';
-    ctx.textAlign = 'left';
-    ctx.fillText(CLUSTER_NM, 0, 0);
+    // //클러스터 이름 텍스트
+    // ctx.translate((x1 + x2) / 2, y1 * 2);
+    // ctx.rotate(-Math.PI / 7);
+    // ctx.font = '20px Roboto';
+    // ctx.fillStyle = 'black';
+    // ctx.textAlign = 'left';
+    // ctx.fillText(CLUSTER_NM, 0, 0);
 
     ctx.restore();
   },
@@ -475,73 +491,92 @@ export const paintPod: Painter.PaintObject = (ctx, x, y, dx, dy, h, option) => [
 ];
 
 /**
- * 디플로이먼트 그룹을 렌더링합니다.
- * @author 김민정
- * @param ctx: 캔버스 포인터
- * @param x1: 디플로이먼트그룹의 x1 시작점 (A)
- * @param y1: 디플로이먼트그룹의 y1 시작점 (A)
- * @param x2: 디플로이먼트그룹의 x2 시작점 (C)
- * @param y2: 디플로이먼트그룹의 y2 시작점 (C)
- *      B
- * A        C
- *      D
- * @returns () => void
+ *
+ * @param ctx
+ * @param start
+ * @param end
+ * @param dx
+ * @param dy
+ * @param h
+ * @param option
+ * @returns {void}
  */
-export const paintDeploymentGroup: Painter.PaintArea = (
+export const paintGroup: Painter.PaintArea = (
   ctx,
-  x1,
-  y1,
-  x2,
-  y2
+  start,
+  end,
+  dx,
+  dy,
+  h,
+  option
 ) => [
   () => {
     ctx.save();
 
-    var ratioY = (x2 - x1) / 4;
+    const row = end.row - start.row;
+    const column = end.column - start.column;
+    const top = { x: start.x + row * dx, y: start.y - row * dy };
+    const bottom = { x: start.x + column * dx, y: start.y + column * dy };
 
-    //===================디플로이먼트그룹==================
-    ctx.fillStyle = '#E3F1FF';
+    const dx4 = dx >> 2,
+      dy4 = dy >> 2,
+      dx8 = dx >> 3,
+      dy16 = dy >> 4;
+
+    const lingrad = ctx.createLinearGradient(start.x, start.y, end.x, end.y);
+    lingrad.addColorStop(0, '#FFD5A5');
+    lingrad.addColorStop(1, '#FFE5B5');
+
+    ctx.fillStyle = '#FFD5A5';
     ctx.beginPath();
-    ctx.moveTo(x1, y1 - DEPLOYMENTGROUP_H);
-    ctx.lineTo((x1 + x2) / 2, y1 - ratioY - DEPLOYMENTGROUP_H);
-    ctx.lineTo(x2, y2 - DEPLOYMENTGROUP_H);
-    ctx.lineTo((x1 + x2) / 2, y1 + ratioY - DEPLOYMENTGROUP_H);
+    ctx.moveTo(start.x - dx + dx8, start.y);
+    ctx.lineTo(start.x - dx + dx8, start.y + h);
+    ctx.quadraticCurveTo(
+      start.x - dx + dx8,
+      start.y + dy16 + h,
+      start.x - dx + dx4,
+      start.y + dy4 + h
+    );
+    ctx.lineTo(bottom.x - dx4, bottom.y + dy - dy4 + h);
+    ctx.quadraticCurveTo(
+      bottom.x,
+      bottom.y + dy + h,
+      bottom.x + dx4,
+      bottom.y + dy - dy4 + h
+    );
+    ctx.lineTo(end.x + dx - dx4, end.y + dy4 + h);
+    ctx.quadraticCurveTo(
+      end.x + dx - dx8,
+      end.y + dy16 + h,
+      end.x + dx - dx8,
+      end.y + h
+    );
+    ctx.lineTo(end.x + dx - dx8, end.y);
     ctx.fill();
 
     //디플로이먼트그룹 바닥
-    ctx.fillStyle = '#E3F1FF';
+    ctx.fillStyle = '#FDF7E0';
     ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo((x1 + x2) / 2, y1 - ratioY);
-    ctx.lineTo(x2, y2);
-    ctx.lineTo((x1 + x2) / 2, y1 + ratioY);
-    ctx.fill();
+    ctx.moveTo(start.x - dx + dx4, start.y + dy4);
+    ctx.lineTo(bottom.x - dx4, bottom.y + dy - dy4);
+    ctx.quadraticCurveTo(
+      bottom.x,
+      bottom.y + dy,
+      bottom.x + dx4,
+      bottom.y + dy - dy4
+    );
+    ctx.lineTo(end.x + dx - dx4, end.y + dy4);
+    ctx.quadraticCurveTo(end.x + dx, end.y, end.x + dx - dx4, end.y - dy4);
+    ctx.lineTo(top.x, top.y - dy);
+    ctx.lineTo(start.x - dx + dx4, start.y - dy4);
+    ctx.quadraticCurveTo(
+      start.x - dx,
+      start.y,
+      start.x - dx + dx4,
+      start.y + dy4
+    );
 
-    //디플로이먼트그룹 왼쪽
-    ctx.fillStyle = '#C1E0FF';
-    ctx.beginPath();
-    ctx.moveTo(x1, y1 - DEPLOYMENTGROUP_H);
-    ctx.lineTo((x1 + x2) / 2, y1 + ratioY - DEPLOYMENTGROUP_H);
-    ctx.lineTo((x1 + x2) / 2, y1 + ratioY);
-    ctx.lineTo(x1, y1);
     ctx.fill();
-
-    // //디플로이먼트그룹 오른쪽
-    ctx.fillStyle = '#85BDF4';
-    ctx.beginPath();
-    ctx.lineTo((x1 + x2) / 2, y1 + ratioY - DEPLOYMENTGROUP_H);
-    ctx.lineTo(x2, y2 - DEPLOYMENTGROUP_H);
-    ctx.lineTo(x2, y2);
-    ctx.lineTo((x1 + x2) / 2, y1 + ratioY);
-    ctx.fill();
-
-    //디플로이먼트그룹 이름 텍스트
-    ctx.translate((x1 + x2) / 2, y1 * 2);
-    ctx.rotate(-Math.PI / 7);
-    ctx.font = '20px Roboto';
-    ctx.fillStyle = '#85BDF4';
-    ctx.textAlign = 'left';
-    ctx.fillText(DEPLOYMENTGROUP_NM, 0, 0);
 
     ctx.restore();
   },
@@ -586,39 +621,47 @@ export const paintFlatPod: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
  *      D
  * @returns () => void
  */
-export const paintNamespace: Painter.PaintArea = (ctx, x1, y1, x2, y2) => [
+export const paintNamespace: Painter.PaintArea = (
+  ctx,
+  start,
+  end,
+  dx,
+  dy,
+  h,
+  option
+) => [
   () => {
     ctx.save();
 
-    var ratioY = (x2 - x1) / 4;
+    // var ratioY = (x2 - x1) / 4;
 
-    //네임스페이스
-    ctx.fillStyle = '#F1F8FF';
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo((x1 + x2) / 2, y1 - ratioY);
-    ctx.lineTo(x2, y2);
-    ctx.lineTo((x1 + x2) / 2, y1 + ratioY);
-    ctx.fill();
+    // //네임스페이스
+    // ctx.fillStyle = '#F1F8FF';
+    // ctx.beginPath();
+    // ctx.moveTo(x1, y1);
+    // ctx.lineTo((x1 + x2) / 2, y1 - ratioY);
+    // ctx.lineTo(x2, y2);
+    // ctx.lineTo((x1 + x2) / 2, y1 + ratioY);
+    // ctx.fill();
 
-    //네임스페이스 겉 점선 스트로크
-    ctx.strokeStyle = '#63AFFC';
-    ctx.beginPath();
-    ctx.setLineDash([3, 3]);
-    ctx.moveTo(x1, y1);
-    ctx.lineTo((x1 + x2) / 2, y1 - ratioY);
-    ctx.lineTo(x2, y2);
-    ctx.lineTo((x1 + x2) / 2, y1 + ratioY);
-    ctx.lineTo(x1, y1);
-    ctx.stroke();
+    // //네임스페이스 겉 점선 스트로크
+    // ctx.strokeStyle = '#63AFFC';
+    // ctx.beginPath();
+    // ctx.setLineDash([3, 3]);
+    // ctx.moveTo(x1, y1);
+    // ctx.lineTo((x1 + x2) / 2, y1 - ratioY);
+    // ctx.lineTo(x2, y2);
+    // ctx.lineTo((x1 + x2) / 2, y1 + ratioY);
+    // ctx.lineTo(x1, y1);
+    // ctx.stroke();
 
-    //네임스페이스 이름 텍스트
-    ctx.translate((x1 + x2) / 2, y1 * 2);
-    ctx.rotate(-Math.PI / 7);
-    ctx.font = '20px Roboto';
-    ctx.fillStyle = 'black';
-    ctx.textAlign = 'left';
-    ctx.fillText(NAMESPACE_NM, 0, 0);
+    // //네임스페이스 이름 텍스트
+    // ctx.translate((x1 + x2) / 2, y1 * 2);
+    // ctx.rotate(-Math.PI / 7);
+    // ctx.font = '20px Roboto';
+    // ctx.fillStyle = 'black';
+    // ctx.textAlign = 'left';
+    // ctx.fillText(NAMESPACE_NM, 0, 0);
 
     ctx.restore();
   },
@@ -640,10 +683,12 @@ export const paintNamespace: Painter.PaintArea = (ctx, x1, y1, x2, y2) => [
  */
 export const paintFlatDeploymentGroup: Painter.PaintArea = (
   ctx,
-  x1,
-  y1,
-  x2,
-  y2
+  start,
+  end,
+  dx,
+  dy,
+  h,
+  option
 ) => [
   () => {
     ctx.save();
@@ -651,10 +696,10 @@ export const paintFlatDeploymentGroup: Painter.PaintArea = (
     //디플로이먼트 그룹 평면도
     ctx.fillStyle = '#E3F1FF';
     ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y1);
-    ctx.lineTo(x2, y2);
-    ctx.lineTo(x1, y2);
+    ctx.moveTo(start.x, start.y);
+    ctx.lineTo(end.x, start.y);
+    ctx.lineTo(end.x, end.y);
+    ctx.lineTo(start.x, end.y);
     ctx.fill();
 
     ctx.restore();
@@ -675,17 +720,25 @@ export const paintFlatDeploymentGroup: Painter.PaintArea = (
  
  * @returns () => void
  */
-export const paintFlatNodeGroup: Painter.PaintArea = (ctx, x1, y1, x2, y2) => [
+export const paintFlatNodeGroup: Painter.PaintArea = (
+  ctx,
+  start,
+  end,
+  dx,
+  dy,
+  h,
+  option
+) => [
   () => {
     ctx.save();
 
     //노드그룹 평면도
     ctx.fillStyle = '#F1EDFE';
     ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y1);
-    ctx.lineTo(x2, y2);
-    ctx.lineTo(x1, y2);
+    ctx.moveTo(start.x, start.y);
+    ctx.lineTo(end.x, start.y);
+    ctx.lineTo(end.x, end.y);
+    ctx.lineTo(start.x, end.y);
     ctx.fill();
 
     ctx.restore();
@@ -706,28 +759,36 @@ export const paintFlatNodeGroup: Painter.PaintArea = (ctx, x1, y1, x2, y2) => [
  
  * @returns () => void
  */
-export const paintFlatNamespace: Painter.PaintArea = (ctx, x1, y1, x2, y2) => [
+export const paintFlatNamespace: Painter.PaintArea = (
+  ctx,
+  start,
+  end,
+  dx,
+  dy,
+  h,
+  option
+) => [
   () => {
     ctx.save();
 
     //네임스페이스 평면도
     ctx.fillStyle = '#F1F8FF';
     ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y1);
-    ctx.lineTo(x2, y2);
-    ctx.lineTo(x1, y2);
+    ctx.moveTo(start.x, start.y);
+    ctx.lineTo(end.x, start.y);
+    ctx.lineTo(end.x, end.y);
+    ctx.lineTo(start.x, end.y);
     ctx.fill();
 
     //네임스페이스 겉 점선 스트로크
     ctx.strokeStyle = '#63AFFC';
     ctx.beginPath();
     ctx.setLineDash([3, 3]);
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y1);
-    ctx.lineTo(x2, y2);
-    ctx.lineTo(x1, y2);
-    ctx.lineTo(x1, y1);
+    ctx.moveTo(start.x, start.x);
+    ctx.lineTo(end.x, start.x);
+    ctx.lineTo(end.x, end.y);
+    ctx.lineTo(start.x, end.y);
+    ctx.lineTo(start.x, start.x);
     ctx.stroke();
 
     ctx.restore();
@@ -748,27 +809,35 @@ export const paintFlatNamespace: Painter.PaintArea = (ctx, x1, y1, x2, y2) => [
  
  * @returns () => void
  */
-export const paintFlatCluster: Painter.PaintArea = (ctx, x1, y1, x2, y2) => [
+export const paintFlatCluster: Painter.PaintArea = (
+  ctx,
+  start,
+  end,
+  dx,
+  dy,
+  h,
+  option
+) => [
   () => {
     ctx.save();
 
     ctx.fillStyle = '#F1F3FD';
     ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y1);
-    ctx.lineTo(x2, y2);
-    ctx.lineTo(x1, y2);
+    ctx.moveTo(start.x, start.y);
+    ctx.lineTo(end.x, start.y);
+    ctx.lineTo(end.x, end.y);
+    ctx.lineTo(start.x, end.y);
     ctx.fill();
 
     //클러스터 겉 점선 스트로크
     ctx.strokeStyle = '#A5A5A5';
     ctx.beginPath();
     ctx.setLineDash([3, 3]);
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y1);
-    ctx.lineTo(x2, y2);
-    ctx.lineTo(x1, y2);
-    ctx.lineTo(x1, y1);
+    ctx.moveTo(start.x, start.y);
+    ctx.lineTo(end.x, start.y);
+    ctx.lineTo(end.x, end.y);
+    ctx.lineTo(start.x, end.y);
+    ctx.lineTo(start.x, start.y);
     ctx.stroke();
 
     ctx.restore();
@@ -786,7 +855,7 @@ export const paintPoint: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   },
 ];
 
-export const paintLine: Painter.PaintArea = (ctx, x1, y1, x2, y2) => [
+export const paintLine: Painter.PaintLine = (ctx, x1, y1, x2, y2) => [
   () => {
     ctx.save();
 
@@ -1024,8 +1093,8 @@ export const renderBlocks: Painter.Render<BlockPositions> = (
   const stackPaintings: (() => void)[] = [];
 
   let paintObject: Painter.PaintObject | null = null;
-  report.log('Painter', ['positions: ', positions]);
-  switch (!!positions.data.length ? positions.data[0].type : null) {
+  report.log('Painter', ['block positions: ', positions]);
+  switch (positions.data[0]?.type) {
     case 'pod':
       paintObject = positions.viewType === 'flat' ? paintFlatPod : paintPod;
       break;
@@ -1102,9 +1171,27 @@ export const renderGroups: Painter.Render<GroupPositions> = (
 ) => {
   const stackPaintings: (() => void)[] = [];
 
-  // positions.forEach((position) => {});
+  let paintArea: Painter.PaintArea | null = null;
+  report.log('Painter', ['group positions: ', positions]);
+  switch (positions.data[0]?.type) {
+    case 'deployment':
+      paintArea = paintGroup;
+  }
 
-  // stackPaintings.push(...paintNamespace(ctx, 100, 100, 200, 200));
+  if (!!paintArea) {
+    positions.data.forEach((position) => {
+      stackPaintings.push(
+        ...paintArea!(
+          ctx,
+          position.start,
+          position.end,
+          positions.dx,
+          positions.dy,
+          positions.dz ?? 5
+        )
+      );
+    });
+  }
 
   render(ctx, dimensions, stackPaintings, true, false);
 };
