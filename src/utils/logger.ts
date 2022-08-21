@@ -17,7 +17,7 @@ export const report = [
 ].reduce<Report | {}>(
   (acc, logLevel) => ({
     ...acc,
-    [logLevel]: ((moduleName, message, color = '#aaa') => {
+    [logLevel]: ((moduleName, message, color = '#999999aa') => {
       console[logLevel](
         '%c ' + moduleName + ' %c',
         'margin-left: -0.5rem; background: ' + color + '; color: white',
