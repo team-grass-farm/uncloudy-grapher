@@ -79,14 +79,26 @@ export default (): [
             renderGrids(
               ctx,
               ref.current,
-              getGridPositions(dimensions.width, dimensions.height, level ?? 2)
+              visible.grid
+                ? getGridPositions(
+                    dimensions.width,
+                    dimensions.height,
+                    level ?? 2
+                  )
+                : []
             );
             break;
           case 'points':
             renderPoints(
               ctx,
               ref.current,
-              getPointPositions(dimensions.width, dimensions.height, level ?? 2)
+              visible.points
+                ? getPointPositions(
+                    dimensions.width,
+                    dimensions.height,
+                    level ?? 2
+                  )
+                : []
             );
             break;
           case 'blocks':
