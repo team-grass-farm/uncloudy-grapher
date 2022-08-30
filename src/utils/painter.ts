@@ -961,7 +961,6 @@ export const paintDayText: Painter.PaintObject = (
 
 const render: Painter.BaseRender = (
   ctx,
-  { width, height },
   stackPaintings,
   clearCanvas,
   animated
@@ -970,8 +969,8 @@ const render: Painter.BaseRender = (
   ctx.fillStyle = 'transparent';
   ctx.scale(1, 1);
   if (clearCanvas) {
-    ctx.clearRect(0, 0, width, height);
-    ctx.fillRect(0, 0, width, height);
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   }
 
   stackPaintings.forEach((paintObject) => paintObject());
@@ -982,20 +981,18 @@ const render: Painter.BaseRender = (
  * Render texts of legends of a graph
  * @deprecated
  * @param ctx
- * @param currentRef
  * @param dataChunks
  * @param paintingType
  */
 export const renderLegend = (
   ctx: CanvasRenderingContext2D,
-  currentRef: HTMLCanvasElement,
   dataChunks: number[][],
   paintingType: ('day' | 'month')[]
 ) => {
   const stackPaintings: (() => void)[] = [];
   const length = dataChunks.length;
-  const x0 = currentRef.width / 2 + 6 * DX;
-  const y0 = currentRef.height / 4 + 6 * DY;
+  const x0 = ctx.canvas.width / 2 + 6 * DX;
+  const y0 = ctx.canvas.height / 4 + 6 * DY;
   const height = 15;
   const a = new Date(Date.now());
   const b = new Date(a.getFullYear() + '-01-01');
@@ -1035,14 +1032,11 @@ export const renderLegend = (
       );
   }
 
-  render(ctx, currentRef, stackPaintings, true, false);
+  render(ctx, stackPaintings, true, false);
 };
 
-export const renderGrids: Painter.Render<LinePosition[]> = (
-  ctx,
-  dimensions,
-  positions
-) => {
+export const renderGrids: Painter.Render<LinePosition[]> = (ctx, positions) => {
+  if (!!!ctx) return null;
   const stackPaintings: (() => void)[] = [];
 
   positions.forEach((position) => {
@@ -1051,45 +1045,48 @@ export const renderGrids: Painter.Render<LinePosition[]> = (
     );
   });
 
-  render(ctx, dimensions, stackPaintings, true, false);
+  render(ctx, stackPaintings, true, false);
+  return null;
 };
 
 export const renderPoints: Painter.Render<PointPosition[]> = (
   ctx,
-  dimensions,
   positions
 ) => {
+  if (!!!ctx) return null;
   const stackPaintings: (() => void)[] = [];
 
   positions.forEach(({ x, y }) => {
     stackPaintings.push(...paintPoint(ctx, x, y, 0, 0, 0));
   });
 
-  render(ctx, dimensions, stackPaintings, true, false);
+  render(ctx, stackPaintings, true, false);
+  return null;
 };
 
 export const renderHighlightedPoints: Painter.Render<PointPosition[]> = (
   ctx,
-  dimensions,
   positions
 ) => {
+  if (!!!ctx) return null;
   const stackPaintings: (() => void)[] = [];
 
   positions.forEach(({ x, y }) => {
     stackPaintings.push(...paintPoint(ctx, x, y, 5, 5, 0));
   });
 
-  render(ctx, dimensions, stackPaintings, true, true);
+  render(ctx, stackPaintings, true, true);
+  return null;
 };
 
 let lastSurface: ImageData | null;
 
 export const renderBlocks: Painter.Render<BlockPositions> = (
   ctx,
-  dimensions,
   positions,
   isBaseCanvas
 ) => {
+  if (!!!ctx) return null;
   const stackPaintings: (() => void)[] = [];
 
   let paintObject: Painter.PaintObject | null = null;
@@ -1120,65 +1117,65 @@ export const renderBlocks: Painter.Render<BlockPositions> = (
     });
   }
 
-  render(ctx, dimensions, stackPaintings, true, false);
+  render(ctx, stackPaintings, true, false);
+  return ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
 };
 
 export const renderHighlightedBlocks: Painter.Render<BlockPositions | null> = (
   ctx,
-  dimensions,
   positions
 ) => {
+  if (!!!ctx) return null;
   const stackPaintings: (() => void)[] = [];
 
-  if (positions === null) {
-    return;
-  }
-
   let paintBlock: Painter.PaintObject | null = null;
-  switch (!!positions.data.length ? positions[0].type : null) {
+  switch (!!positions?.data.length ? positions[0].type : null) {
     case 'pod':
-      paintBlock = positions.viewType === 'flat' ? paintFlatPod : paintPod;
+      paintBlock = positions?.viewType === 'flat' ? paintFlatPod : paintPod;
       break;
     case 'node':
-      paintBlock = positions.viewType === 'flat' ? paintFlatNode : paintNode;
+      paintBlock = positions?.viewType === 'flat' ? paintFlatNode : paintNode;
       break;
   }
 
   !!lastSurface &&
-    ctx.putImageData(lastSurface, dimensions.width, dimensions.height);
+    ctx.putImageData(lastSurface, ctx.canvas.width, ctx.canvas.height);
 
-  positions.data.forEach((position) => {
-    stackPaintings.push(
-      ...paintBlock!(
-        ctx,
-        position.x,
-        position.y,
-        positions.dx,
-        positions.dy,
-        position.z ? (positions.dz ?? 35) * position.z : 35,
-        { selected: true }
-      )
-    );
-  });
+  if (!!positions) {
+    positions.data.forEach((position) => {
+      stackPaintings.push(
+        ...paintBlock!(
+          ctx,
+          position.x,
+          position.y,
+          positions.dx,
+          positions.dy,
+          position.z ? (positions.dz ?? 35) * position.z : 35,
+          { selected: true }
+        )
+      );
+    });
+  }
 
-  render(ctx, dimensions, stackPaintings, false, false);
+  render(ctx, stackPaintings, false, false);
+  return ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
 };
 
-export const renderGroups: Painter.Render<GroupPositions> = (
+export const renderGroups: Painter.Render<GroupPositions | null> = (
   ctx,
-  dimensions,
   positions
 ) => {
+  if (!!!ctx) return null;
   const stackPaintings: (() => void)[] = [];
 
   let paintArea: Painter.PaintArea | null = null;
   report.log('Painter', ['group positions: ', positions]);
-  switch (positions.data[0]?.type) {
+  switch (positions?.data[0]?.type) {
     case 'deployment':
       paintArea = paintGroup;
   }
 
-  if (!!paintArea) {
+  if (!!positions && !!paintArea) {
     positions.data.forEach((position) => {
       stackPaintings.push(
         ...paintArea!(
@@ -1193,9 +1190,14 @@ export const renderGroups: Painter.Render<GroupPositions> = (
     });
   }
 
-  render(ctx, dimensions, stackPaintings, true, false);
+  render(ctx, stackPaintings, true, false);
+  return ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+};
+
+export const translate: Painter.Translate = (ctx, snapshot, perspective) => {
+  snapshot && ctx.putImageData(snapshot, perspective, -(perspective >> 1));
 };
 
 export const clearRendered: Painter.ClearRendered = (ctx, dimensions) => {
-  render(ctx, dimensions, [], true, false);
+  render(ctx, [], true, false);
 };

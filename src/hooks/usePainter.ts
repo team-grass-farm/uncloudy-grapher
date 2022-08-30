@@ -1,9 +1,16 @@
 import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
+import { isNull } from 'util';
 import { usePainterEvent } from '~hooks';
 import { report } from '~utils/logger';
 import {
-    clearRendered, renderBlocks, renderGrids, renderGroups, renderHighlightedBlocks,
-    renderHighlightedPoints, renderPoints
+  clearRendered,
+  renderBlocks,
+  renderGrids,
+  renderGroups,
+  renderHighlightedBlocks,
+  renderHighlightedPoints,
+  renderPoints,
+  translate,
 } from '~utils/painter';
 import { getGridPositions, getPointPositions } from '~utils/positioner';
 
@@ -16,20 +23,20 @@ export default (): [
   React.Dispatch<React.SetStateAction<Dimensions>>,
   React.Dispatch<React.SetStateAction<Painter.FlagMap>>
 ] => {
-  // const [plot, setPlot] = useState<Positioner.Plot | null>(null);
   const [isDevMode] = useState(process.env.NODE_ENV === 'development');
   const [level, setLevel] = useState<1 | 2 | 3>(2);
   const [dimensions, setDimensions] = useState<Dimensions>({
     width: 0,
     height: 0,
   });
-
   const [
     eventRef,
+    perspective,
     highlightedPointPosition,
     highlightedBlockPositions,
     setLevelOnEvent,
   ] = usePainterEvent(dimensions);
+
   const refMap: Painter.RefMap = {
     ...(isDevMode && {
       grid: useRef<HTMLCanvasElement>(null),
@@ -41,11 +48,19 @@ export default (): [
     blocks: useRef<HTMLCanvasElement>(null),
     event: eventRef,
   };
+
   const [visible, setVisible] = useState<Painter.FlagMap>({
     ...(isDevMode && {
       grid: true,
       point: true,
     }),
+  });
+
+  const [snapshotMap, setSnapshotMap] = useState<Painter.SnapshotMap>({
+    base: null,
+    blocks: null,
+    groups1: null,
+    groups2: null,
   });
 
   useEffect(() => {
@@ -62,6 +77,23 @@ export default (): [
   const paint = useCallback(
     (plot: Positioner.Plot) => {
       report.log('usePainter', ['plot: ', plot]);
+
+      setSnapshotMap({
+        base: null,
+        blocks: renderBlocks(
+          refMap.blocks?.current?.getContext('2d') ?? null,
+          plot.blocks
+        ),
+        groups1: renderGroups(
+          refMap.groups1?.current?.getContext('2d') ?? null,
+          plot.groups1
+        ),
+        groups2: renderGroups(
+          refMap.groups2?.current?.getContext('2d') ?? null,
+          plot.groups2
+        ),
+      });
+
       (
         Object.entries(refMap) as [
           keyof Painter.RefMap,
@@ -74,7 +106,6 @@ export default (): [
           case 'grid':
             renderGrids(
               ctx,
-              ref.current,
               visible.grid
                 ? getGridPositions(
                     dimensions.width,
@@ -87,7 +118,6 @@ export default (): [
           case 'points':
             renderPoints(
               ctx,
-              ref.current,
               visible.points
                 ? getPointPositions(
                     dimensions.width,
@@ -98,13 +128,13 @@ export default (): [
             );
             break;
           case 'blocks':
-            renderBlocks(ctx, ref.current, plot.blocks);
+            // renderBlocks(ctx, plot.blocks);
             break;
           case 'base':
             // renderBlocks(ctx, ref.current, plot.blocks, true);
             break;
           case 'groups1':
-            plot.groups1 && renderGroups(ctx, ref.current, plot.groups1);
+            // renderGroups(ctx, plot.groups1);
             break;
           case 'groups2':
             // data &&
@@ -121,6 +151,19 @@ export default (): [
   );
 
   useEffect(() => {
+    translate(
+      refMap.blocks.current?.getContext('2d'),
+      snapshotMap.blocks,
+      perspective
+    );
+    translate(
+      refMap.groups1.current?.getContext('2d'),
+      snapshotMap.groups1,
+      perspective
+    );
+  }, [perspective]);
+
+  useEffect(() => {
     const ctx = refMap.event.current && refMap.event.current.getContext('2d');
     if (!refMap.event.current) return;
     else if (highlightedPointPosition === null) {
@@ -128,16 +171,14 @@ export default (): [
     }
 
     if (!!highlightedPointPosition && visible.points) {
-      renderHighlightedPoints(ctx, refMap.event.current, [
-        highlightedPointPosition,
-      ]);
+      renderHighlightedPoints(ctx, [highlightedPointPosition]);
     }
     if (!!highlightedBlockPositions) {
       report.log('usePainter', [
         'executed renderHighlightedBlocks(): ',
         highlightedBlockPositions,
       ]);
-      renderHighlightedBlocks(ctx, dimensions, highlightedBlockPositions);
+      renderHighlightedBlocks(ctx, highlightedBlockPositions);
     }
   }, [highlightedPointPosition, highlightedBlockPositions]);
 
