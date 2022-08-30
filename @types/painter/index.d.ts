@@ -28,6 +28,8 @@ declare namespace Painter {
     points?: boolean;
   }
 
+  interface SnapshotMap extends Record<Layer, ImageData | null> {}
+
   type PaintObject = (
     ctx: CanvasRenderingContext2D,
     x: number,
@@ -73,7 +75,6 @@ declare namespace Painter {
 
   type BaseRender = (
     ctx: CanvasRenderingContext2D,
-    dimensions: Dimensions,
     stackPaintings: (() => void)[],
     clearCanvas: boolean,
     animated: boolean
@@ -84,6 +85,12 @@ declare namespace Painter {
     dimensions: Dimensions
   ) => void;
 
+  type Translate = (
+    ctx: CanvasRenderingContext2D,
+    snapshot: ImageData | null,
+    perspective: number
+  ) => void;
+
   type Render<
     T extends
       | PointPosition[]
@@ -92,9 +99,8 @@ declare namespace Painter {
       | GroupPositions
       | null
   > = (
-    ctx: CanvasRenderingContext2D,
-    dimensions: Dimensions,
+    ctx: CanvasRenderingContext2D | null,
     positions: T,
     isBaseCanvas?: boolean
-  ) => void;
+  ) => ImageData | null;
 }

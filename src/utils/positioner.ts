@@ -414,20 +414,18 @@ const getGroupPositions: Positioner.GetGroupPositions = (
   };
 };
 
-const getSelectedBox = (
-  maxRow: number,
-  maxCol: number,
-  blockLength: number
-): Matrix | null => {
-  let row: number = 0;
-  let column: number = 0;
+const getSelectedBox = (maxCol: number, blockLength: number): Matrix | null => {
+  const sqrt = Math.sqrt(blockLength);
+  let row: number;
+  let column: number;
 
-  if (maxRow * maxCol > blockLength) {
-    column = maxCol - 1;
-    row = parseInt('' + blockLength / maxCol) - 1;
+  if (sqrt < maxCol) {
+    row = Math.floor(sqrt);
+    column = Math.ceil(sqrt);
   } else {
-    column = parseInt('' + blockLength / maxRow) - 1;
-    row = maxRow - 1;
+    column = maxCol;
+    row = Math.ceil(blockLength / maxCol);
+    report.log('Positioner', ['case B']);
   }
 
   return row * column > 0 ? { row, column } : null;
@@ -458,12 +456,13 @@ export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
     ? []
     : null;
 
-  // TODO: calculate maxRow, canvasColumn instead of parameters
-  const maxRow = 10;
+  // TODO: calculate maxRow and canvasColumn instead of parameters
   const canvasColumn = 6;
+  const canvasRow = 20;
+  const availableCanvasRow = 3;
 
   if (!!!resourceMap.deployments && !!!resourceMap.namespaces) {
-    let selBox = getSelectedBox(maxRow, canvasColumn, resourceMap.pods.size);
+    let selBox = getSelectedBox(canvasColumn, resourceMap.pods.size);
 
     if (!!selBox) {
       Array.from(Array(selBox.row).keys())
@@ -475,57 +474,86 @@ export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
         });
     }
   } else if (!!resourceMap.deployments && !!!resourceMap.namespaces) {
-    const maxGroup1Row = ((maxRow - 1) >> 1) - 2;
-
-    let paddingCol = 0;
-    let secondRow =
-      (resourceMap.deployments ? resourceMap.deployments.size : 0) >> 1;
-
     report.log('Positioner', [
       'resourceMap.deployments: ',
       resourceMap.deployments ? resourceMap.deployments.size : 0,
     ]);
 
-    let index = 0;
-    resourceMap.deployments.forEach((deployment, deploymentId) => {
-      if (secondRow === index) paddingCol = 0;
-      let paddingRow = secondRow >= index ? 0 : maxGroup1Row;
+    let rowCount = 0;
+    let sel1Groups: { group: Matrix; startRow: number; numPods: number }[] = [];
+
+    resourceMap.deployments.forEach((_, deploymentId) => {
       let numPods = [...resourceMap.pods].filter(
         ([_, pod]) => pod.deploymentId === deploymentId
       ).length;
+      let sel1Group = getSelectedBox(canvasColumn - 2, numPods);
 
-      let selGroup1 = getSelectedBox(
-        ((maxRow - 1) >> 1) - 2,
-        canvasColumn - 2,
-        numPods
-      );
+      report.debug('Positioner', [
+        'sel1Group: ',
+        sel1Group,
+        'numPods: ',
+        numPods,
+      ]);
 
-      if (!!selGroup1) {
+      if (!!sel1Group) {
+        sel1Groups.push({
+          group: {
+            row: sel1Group.row,
+            column: sel1Group.column,
+          },
+          startRow: rowCount,
+          numPods,
+        });
+        rowCount += sel1Group.row + 1;
+      }
+    });
+
+    report.debug('Positioner', [{ rowCount, sel1Groups }]);
+
+    let thresholdRow = Math.floor(rowCount / availableCanvasRow);
+    let paddingCol = 0;
+    let paddingRow = 0;
+    let precedingRow = 0;
+    let maxColOnRow = 0;
+    let index = 0;
+
+    sel1Groups.forEach(({ group, startRow, numPods }, deploymentId) => {
+      report.debug('Positioner', [{ group, startRow, numPods }]);
+
+      if (precedingRow > thresholdRow) {
+        report.log('Positioner', ['executed newline', { maxColOnRow }]);
+        paddingCol += 1 + maxColOnRow;
+        paddingRow += 4;
+        maxColOnRow = 0;
+        precedingRow = 0;
+      }
+
+      if (!!group) {
+        let podCount = numPods;
+        report.log('Positioner', ['podCount: ', numPods]);
+        Array.from(Array(group.row).keys())
+          .reverse()
+          .map((row) => {
+            Array.from(Array(group.column).keys()).forEach(
+              (column) =>
+                --podCount >= 0 &&
+                pods.push({
+                  row: paddingRow + precedingRow + row,
+                  column: paddingCol + column,
+                })
+            );
+          });
+
         deployments!.push([
-          { row: paddingRow, column: paddingCol },
+          { row: paddingRow + precedingRow, column: paddingCol },
           {
-            row: paddingRow + selGroup1.row - 1,
-            column: paddingCol + selGroup1.column - 1,
+            row: paddingRow + precedingRow + group.row - 1,
+            column: paddingCol + group.column - 1,
           },
         ]);
 
-        // NOTE 디플로이먼트 박스 안 - 파드 간 간격을 설정할 지의 여부
-        // paddingRow++;
-
-        // paddingCol++;
-
-        Array.from(Array(selGroup1.row).keys())
-          .reverse()
-          .map((row) => {
-            Array.from(Array(selGroup1!.column).keys()).map((column) => {
-              pods.push({
-                row: paddingRow + row,
-                column: paddingCol + column,
-              });
-            });
-          });
-
-        paddingCol += selGroup1.column + 1;
+        precedingRow += group.row + 1;
+        maxColOnRow = Math.max(maxColOnRow, group.column);
         index++;
       }
     });
