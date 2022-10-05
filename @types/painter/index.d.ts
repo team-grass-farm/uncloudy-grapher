@@ -30,6 +30,13 @@ declare namespace Painter {
 
   interface SnapshotMap extends Record<Layer, ImageData | null> {}
 
+  interface HighlightedPositionMap {
+    point: PointPosition | null;
+    block: BlockPosition | null;
+    group1: GroupPosition | null;
+    group2: GroupPosition | null;
+  }
+
   type PaintObject = (
     ctx: CanvasRenderingContext2D,
     x: number,

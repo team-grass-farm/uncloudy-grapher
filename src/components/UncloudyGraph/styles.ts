@@ -4,6 +4,7 @@ export const MainBlock = styled.div`
   width: 100%;
   min-height: 16rem;
   border: 1px solid #ddd;
+  margin: 0.5rem 0;
   transition: background-color 0.5s;
 
   &:hover {
@@ -60,5 +61,34 @@ export const MainBlock = styled.div`
     background-color: rgba(240, 240, 240, 0.3);
     padding: 0.5rem;
     backdrop-filter: blur(0.5);
+  }
+`;
+
+export const ExtrudedBlock = styled.article`
+  /* position: relative; */
+  width: calc(34% + 1px);
+  min-height: 17rem;
+  max-width: 30rem;
+  padding: 1rem;
+  margin: -17rem 0 0.5rem 66% !important;
+  background: rgba(250, 250, 250, 0.5);
+  backdrop-filter: blur(15px);
+  border: 1px solid #ddd;
+  box-shadow: -13px 0px 12px -10px rgba(200, 200, 200, 0.5);
+  overflow-wrap: normal;
+  transition: opacity 0.5s;
+
+  h2 {
+    margin: 0.5rem 0;
+  }
+
+  .close-col {
+    text-align: right;
+  }
+
+  &[hidden] {
+    display: block !important;
+    opacity: 0;
+    pointer-events: none;
   }
 `;
