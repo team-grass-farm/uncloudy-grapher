@@ -7,6 +7,8 @@ import {
 } from '~utils/painter';
 import { getGridPositions, getPointPositions } from '~utils/positioner';
 
+const isDevMode = process.env.NODE_ENV === 'development';
+
 // NOTE grid & point is skippable because these are just for debugging.
 export default (): [
   Painter.RefMap,
@@ -84,57 +86,21 @@ export default (): [
         ),
       });
 
-      (
-        Object.entries(refMap) as [
-          keyof Painter.RefMap,
-          RefObject<HTMLCanvasElement>
-        ][]
-      ).map(([refName, ref]) => {
-        const ctx = ref.current && ref.current.getContext('2d');
-        if (ctx === null || ref.current === null) return;
-        switch (refName) {
-          case 'grid':
-            renderGrids(
-              ctx,
-              visible.grid
-                ? getGridPositions(
-                    dimensions.width,
-                    dimensions.height,
-                    level ?? 2
-                  )
-                : []
-            );
-            break;
-          case 'points':
-            renderPoints(
-              ctx,
-              visible.points
-                ? getPointPositions(
-                    dimensions.width,
-                    dimensions.height,
-                    level ?? 2
-                  )
-                : []
-            );
-            break;
-          case 'blocks':
-            // renderBlocks(ctx, plot.blocks);
-            break;
-          case 'base':
-            // renderBlocks(ctx, ref.current, plot.blocks, true);
-            break;
-          case 'groups1':
-            // renderGroups(ctx, plot.groups1);
-            break;
-          case 'groups2':
-            // data &&
-            //   data.group2 &&
-            //   renderGroups(ctx, ref.current, data.group2, null, true, level);
-            break;
-          default:
-            break;
-        }
-      });
+      if (isDevMode) {
+        renderGrids(
+          refMap.grid?.current?.getContext('2d') ?? null,
+          visible.grid
+            ? getGridPositions(dimensions.width, dimensions.height, level ?? 2)
+            : []
+        );
+        renderPoints(
+          refMap.points?.current?.getContext('2d') ?? null,
+          visible.points
+            ? getPointPositions(dimensions.width, dimensions.height, level ?? 2)
+            : []
+        );
+      }
+      setRenderedPlot(plot);
       setLevelOnEvent(level);
     },
     [dimensions, level, visible]
