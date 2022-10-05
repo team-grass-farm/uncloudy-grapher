@@ -8,9 +8,12 @@ export default (
   React.RefObject<HTMLCanvasElement>,
   number,
   PointPosition | null,
+  PointPosition | null,
   React.Dispatch<1 | 2 | 3>
 ] => {
   const [level, setLevel] = useState<1 | 2 | 3>(2);
+  const [movedPointPosition, setMovedPointPosition] =
+    useState<PointPosition | null>(null);
   const [highlightedPointPosition, setHighlightedPointPosition] =
     useState<PointPosition | null>(null);
   const [perspective, setPerspective] = useState<number>(0);
@@ -18,33 +21,42 @@ export default (
 
   const ref = useRef<HTMLCanvasElement>(null);
 
-  const handleWheel = useCallback((ev: WheelEvent) => {
-    ev.preventDefault();
-    setWheelEvent(ev);
-  }, []);
+  const getPointPosition = (ev: MouseEvent): PointPosition | null => {
+    const x = ev.offsetX,
+      y = ev.offsetY;
+
+    return getCursorPosition(
+      dimensions.width,
+      dimensions.height,
+      level,
+      x,
+      y,
+      perspective,
+      1
+    );
+  };
+
+  const handleClick = useCallback(
+    (ev: MouseEvent) => {
+      setHighlightedPointPosition(getPointPosition(ev));
+    },
+    [dimensions, level, perspective]
+  );
 
   const handleMouseMove = useCallback(
     (ev: MouseEvent) => {
-      const x = ev.offsetX,
-        y = ev.offsetY;
-
-      const bounded = getCursorPosition(
-        dimensions.width,
-        dimensions.height,
-        level,
-        x,
-        y,
-        perspective,
-        1
-      );
-
-      setHighlightedPointPosition(bounded);
+      setMovedPointPosition(getPointPosition(ev));
     },
     [dimensions, level, perspective]
   );
 
   const handleMouseLeave = useCallback(() => {
-    setHighlightedPointPosition(null);
+    setMovedPointPosition(null);
+  }, []);
+
+  const handleWheel = useCallback((ev: WheelEvent) => {
+    ev.preventDefault();
+    setWheelEvent(ev);
   }, []);
 
   useEffect(() => {
@@ -58,12 +70,14 @@ export default (
     const ctx = ref.current?.getContext('2d');
     if (!!!ctx || ref.current === null) return;
 
+    ref.current.addEventListener('click', handleClick);
     ref.current.addEventListener('mousemove', handleMouseMove);
     ref.current.addEventListener('mouseleave', handleMouseLeave);
     ref.current.addEventListener('wheel', (ev) => handleWheel(ev));
 
     return () => {
       if (ref.current) {
+        ref.current.removeEventListener('click', handleClick);
         ref.current.removeEventListener('mousemove', handleMouseMove);
         ref.current.removeEventListener('mouseleave', handleMouseLeave);
         ref.current.removeEventListener('wheel', handleWheel);
@@ -72,14 +86,20 @@ export default (
   }, [dimensions, level, perspective]);
 
   useEffect(() => {
-    !!highlightedPointPosition &&
+    !!movedPointPosition &&
       report.debug('usePainterEvent', [
         'level: ',
         level,
         'boundedEvent: ',
-        highlightedPointPosition,
+        movedPointPosition,
       ]);
-  }, [highlightedPointPosition]);
+  }, [movedPointPosition]);
 
-  return [ref, perspective, highlightedPointPosition, setLevel];
+  return [
+    ref,
+    perspective,
+    movedPointPosition,
+    highlightedPointPosition,
+    setLevel,
+  ];
 };
