@@ -21,8 +21,9 @@ export const getCursorPosition: Positioner.GetCursorPosition = (
   width,
   height,
   level,
-  cx,
-  cy,
+  _cx,
+  _cy,
+  pov = 0,
   hitbox = 0
 ) => {
   const { DX, DY, x0, y0, row0, column0 } = getCanvasValues(
@@ -31,32 +32,30 @@ export const getCursorPosition: Positioner.GetCursorPosition = (
     level
   );
 
+  const cx = _cx;
+  const cy = _cy;
+
   let px: number, py: number;
   switch (level) {
     case 1:
     case 2:
-      px = cx - (x0 - (row0 + column0 + 1) * DX);
-      py = cy - (y0 + (row0 - column0) * DY);
+      px = -pov + cx - (x0 - (row0 + column0 + 1) * DX);
+      py = pov * 0.57 + cy - (y0 + (row0 - column0) * DY);
 
       // NOTE that this equations are derived from 2D affine matrix transformation.
       const column = Math.floor((DY * px + DX * py) / (2 * DX * DY));
       const row = Math.floor((DY * px - DX * py) / (2 * DX * DY));
       return { x: cx, y: cy, row, column, type: 'point' };
     case 3:
-      px = cx - x0 + (DX >> 1);
-      py = cy - y0 + (DY >> 1);
+      px = -pov + cx - x0 + (DX >> 1);
+      py = pov * 0.57 + cy - y0 + (DY >> 1);
 
       const hitboxX = DX * hitbox,
         hitboxY = DY * hitbox;
       const glitchX = hitboxX >> 1,
         glitchY = hitboxY >> 1;
 
-      if (!!!hitbox) {
-        return null;
-      } else if (
-        (px + glitchX) % DX > hitboxX ||
-        (py + glitchY) % DY > hitboxY
-      ) {
+      if ((px + glitchX) % DX > hitboxX || (py + glitchY) % DY > hitboxY) {
         return null;
       } else {
         return {
@@ -103,8 +102,8 @@ const getCanvasValues: Positioner.GetCanvasValues = (width, height, level) => {
     numColumns,
     x0,
     y0,
-    row0: 2,
-    column0: -5,
+    row0: 10,
+    column0: -10,
   };
 };
 
