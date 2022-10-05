@@ -2,8 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePainterEvent } from '~hooks';
 import { report } from '~utils/logger';
 import {
-    clearRendered, renderBlocks, renderGrids, renderGroups, renderHighlightedBlocks,
-    renderHighlightedPoints, renderPoints, translate
+  clearRendered,
+  renderBlocks,
+  renderGrids,
+  renderGroups,
+  renderHighlightedBlocks,
+  renderHighlightedPoints,
+  renderPoints,
+  translate,
 } from '~utils/painter';
 import { getGridPositions, getPointPositions } from '~utils/positioner';
 
@@ -12,7 +18,7 @@ const isDevMode = process.env.NODE_ENV === 'development';
 // NOTE grid & point is skippable because these are just for debugging.
 export default (): [
   Painter.RefMap,
-  PointPosition | null,
+  Painter.HighlightedPositionMap,
   Painter.Paint,
   React.Dispatch<1 | 2 | 3>,
   React.Dispatch<React.SetStateAction<Dimensions>>,
@@ -26,8 +32,13 @@ export default (): [
   const [renderedPlot, setRenderedPlot] = useState<Positioner.Plot | null>(
     null
   );
-  const [eventRef, perspective, highlightedPointPosition, setLevelOnEvent] =
-    usePainterEvent(dimensions);
+  const [
+    eventRef,
+    perspective,
+    movedPointPosition,
+    highlightedPointPosition,
+    setLevelOnEvent,
+  ] = usePainterEvent(dimensions);
 
   const refMap: Painter.RefMap = {
     ...(isDevMode && {
@@ -54,6 +65,14 @@ export default (): [
     groups1: null,
     groups2: null,
   });
+
+  const [highlightedPositionMap, setHighlightedPositionMap] =
+    useState<Painter.HighlightedPositionMap>({
+      point: movedPointPosition,
+      block: null,
+      group1: null,
+      group2: null,
+    });
 
   useEffect(() => {
     if (refMap.blocks.current === null) return;
@@ -109,17 +128,41 @@ export default (): [
   useEffect(() => {
     const ctx = refMap.event.current?.getContext('2d');
     if (!!!ctx) return;
-    else if (highlightedPointPosition === null) {
+    else if (movedPointPosition === null) {
       clearRendered(ctx);
     }
 
-    if (!!highlightedPointPosition && visible.points) {
-      if (visible.points) {
-        renderHighlightedPoints(ctx, [highlightedPointPosition]);
-      }
+    if (!!movedPointPosition && visible.points) {
+      renderHighlightedPoints(ctx, [movedPointPosition]);
+    }
+  }, [movedPointPosition, renderedPlot]);
 
+  useEffect(() => {
+    report.log('usePainter', [
+      { highlightedPointPosition },
+      renderedPlot,
+      renderedPlot?.blocks.data.has([0, 2]),
+    ]);
+    setHighlightedPositionMap({
+      point: highlightedPointPosition,
+      block: renderedPlot?.blocks.data.values().next() ?? null,
+      group1: null,
+      group2: null,
+    });
+  }, [highlightedPointPosition, renderedPlot]);
+
+  useEffect(() => {
+    const ctx = refMap.event.current?.getContext('2d');
+    if (!!!ctx) return;
+    // else if (highlightedPositionMap.point === null) {
+    //   clearRendered(ctx);
+    // }
+
+    report.log('usePainter', [{ highlightedPositionMap }]);
+
+    if (!!highlightedPositionMap.block && visible.points) {
       if (renderedPlot) {
-        const { row, column } = highlightedPointPosition;
+        const { row, column } = highlightedPositionMap.block;
         const highlightedBlock = renderedPlot.blocks.data.get([row, column]);
 
         if (!!highlightedBlock) {
@@ -132,9 +175,8 @@ export default (): [
           report.warn('usePainter', ['rendered.']);
         }
       }
-      // renderHighlightedBlocks(ctx, highlightedBlockPositions);
     }
-  }, [highlightedPointPosition, renderedPlot]);
+  }, [highlightedPositionMap, renderedPlot]);
 
   useEffect(() => {
     report.debug('usePainter', [{ perspective }]);
@@ -152,7 +194,7 @@ export default (): [
 
   return [
     refMap,
-    highlightedPointPosition,
+    highlightedPositionMap,
     paint,
     setLevel,
     setDimensions,
