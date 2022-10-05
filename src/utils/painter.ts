@@ -1147,6 +1147,8 @@ export const renderHighlightedBlocks: Painter.Render<BlockPositions | null> = (
       break;
   }
 
+  report.log('Painter', [{ positions }]);
+
   !!lastSurface &&
     ctx.putImageData(lastSurface, ctx.canvas.width, ctx.canvas.height);
 
