@@ -969,8 +969,13 @@ const render: Painter.BaseRender = (
   ctx.fillStyle = 'transparent';
   ctx.scale(1, 1);
   if (clearCanvas) {
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.clearRect(
+      0,
+      ctx.canvas.height >> 1,
+      ctx.canvas.width >> 1,
+      ctx.canvas.height
+    );
+    // ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   }
 
   stackPaintings.forEach((paintObject) => paintObject());
@@ -1089,22 +1094,24 @@ export const renderBlocks: Painter.Render<BlockPositions> = (
   if (!!!ctx) return null;
   const stackPaintings: (() => void)[] = [];
 
-  let paintObject: Painter.PaintObject | null = null;
+  let paintBlock: Painter.PaintObject | null = null;
   report.log('Painter', ['block positions: ', positions]);
-  switch (positions.data[0]?.type) {
+  switch (
+    (positions.data.values().next().value as PointPosition | undefined)?.type
+  ) {
     case 'pod':
-      paintObject = positions.viewType === 'flat' ? paintFlatPod : paintPod;
+      paintBlock = positions.viewType === 'flat' ? paintFlatPod : paintPod;
       break;
     case 'node':
-      paintObject = positions.viewType === 'flat' ? paintFlatNode : paintNode;
+      paintBlock = positions.viewType === 'flat' ? paintFlatNode : paintNode;
       break;
   }
 
-  if (!!paintObject) {
+  if (!!paintBlock) {
     lastSurface = null;
     positions.data.forEach((position) => {
       stackPaintings.push(
-        ...paintObject!(
+        ...paintBlock!(
           ctx,
           position.x,
           position.y,
@@ -1129,7 +1136,9 @@ export const renderHighlightedBlocks: Painter.Render<BlockPositions | null> = (
   const stackPaintings: (() => void)[] = [];
 
   let paintBlock: Painter.PaintObject | null = null;
-  switch (!!positions?.data.length ? positions[0].type : null) {
+  switch (
+    (positions?.data.values().next().value as PointPosition | undefined)?.type
+  ) {
     case 'pod':
       paintBlock = positions?.viewType === 'flat' ? paintFlatPod : paintPod;
       break;
@@ -1148,9 +1157,9 @@ export const renderHighlightedBlocks: Painter.Render<BlockPositions | null> = (
           ctx,
           position.x,
           position.y,
-          positions.dx,
-          positions.dy,
-          position.z ? (positions.dz ?? 35) * position.z : 35,
+          positions.dx * 0.45,
+          positions.dy * 0.45,
+          position.z ? (positions.dz ?? 1) * position.z : 35,
           { selected: true }
         )
       );
@@ -1195,7 +1204,7 @@ export const renderGroups: Painter.Render<GroupPositions | null> = (
 };
 
 export const translate: Painter.Translate = (ctx, snapshot, perspective) => {
-  snapshot && ctx.putImageData(snapshot, perspective, -(perspective >> 1));
+  snapshot && ctx.putImageData(snapshot, perspective, -(perspective * 0.57));
 };
 
 export const clearRendered: Painter.ClearRendered = (ctx, dimensions) => {

@@ -38,7 +38,7 @@ declare interface BlockPositions {
   dx: number;
   dy: number;
   dz?: number;
-  data: PointPosition[];
+  data: Map<[number, number], PointPosition>;
 }
 
 declare interface GroupPositions {

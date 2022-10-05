@@ -346,19 +346,33 @@ const getBlockPositions: Positioner.GetBlockPositions = (
   if (!!!matrixes) return null;
   const canvasValues = getCanvasValues(width, height, level);
   let highest = 50;
+
+  const data: Map<[number, number], PointPosition> = new Map(
+    Array.from(matrixes.entries(), ([_, matrix]) => [
+      [matrix.row, matrix.column],
+      getPointPosition(
+        canvasValues,
+        matrix,
+        type,
+        highest - (Math.random() * 20 + 5)
+      ),
+    ])
+  );
+
   return {
     viewType: level === 3 ? 'flat' : 'normal',
     dx: canvasValues.DX,
     dy: canvasValues.DY,
     dz: 1,
-    data: matrixes.map((matrix) => {
-      return getPointPosition(
-        canvasValues,
-        matrix,
-        type,
-        highest - (Math.random() * 20 + 5)
-      );
-    }),
+    data,
+    // data: matrixes.map((matrix) => {
+    //   return getPointPosition(
+    //     canvasValues,
+    //     matrix,
+    //     type,
+    //     highest - (Math.random() * 20 + 5)
+    //   );
+    // }),
   };
 };
 
