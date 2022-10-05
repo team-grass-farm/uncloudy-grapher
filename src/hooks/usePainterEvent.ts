@@ -8,36 +8,23 @@ export default (
   React.RefObject<HTMLCanvasElement>,
   number,
   PointPosition | null,
-  BlockPositions | null,
   React.Dispatch<1 | 2 | 3>
 ] => {
   const [level, setLevel] = useState<1 | 2 | 3>(2);
   const [highlightedPointPosition, setHighlightedPointPosition] =
     useState<PointPosition | null>(null);
-  const [highlightedBlockPositions, setHighlightedBlockPositions] =
-    useState<BlockPositions | null>(null);
   const [perspective, setPerspective] = useState<number>(0);
+  const [wheelEvent, setWheelEvent] = useState<WheelEvent | null>(null);
 
   const ref = useRef<HTMLCanvasElement>(null);
 
-  useEffect(() => {
-    report.log('usePainterEvent', ['perspective: ', perspective]);
-  }, [perspective]);
+  const handleWheel = useCallback((ev: WheelEvent) => {
+    ev.preventDefault();
+    setWheelEvent(ev);
+  }, []);
 
-  const handleWheel = useCallback(
-    (ev: WheelEvent) => {
-      report.log('usePainterEvent', ['event: ', ev, perspective]);
-      ev.preventDefault();
-      setPerspective(perspective + ev.deltaX + ev.deltaY);
-    },
-    [perspective]
-  );
-
-  useEffect(() => {
-    const ctx = ref.current && ref.current.getContext('2d');
-    if (ctx === null || ref.current === null) return;
-
-    const handleMouseMove = (ev: MouseEvent) => {
+  const handleMouseMove = useCallback(
+    (ev: MouseEvent) => {
       const x = ev.offsetX,
         y = ev.offsetY;
 
@@ -47,17 +34,29 @@ export default (
         level,
         x,
         y,
+        perspective,
         1
       );
 
       setHighlightedPointPosition(bounded);
-      // setHighlightedBlockPositions(bounded);
-    };
+    },
+    [dimensions, level, perspective]
+  );
 
-    const handleMouseLeave = () => {
-      setHighlightedPointPosition(null);
-      setHighlightedBlockPositions(null);
-    };
+  const handleMouseLeave = useCallback(() => {
+    setHighlightedPointPosition(null);
+  }, []);
+
+  useEffect(() => {
+    wheelEvent &&
+      setPerspective(
+        Math.min(0, perspective + wheelEvent.deltaX + wheelEvent.deltaY)
+      );
+  }, [wheelEvent]);
+
+  useEffect(() => {
+    const ctx = ref.current?.getContext('2d');
+    if (!!!ctx || ref.current === null) return;
 
     ref.current.addEventListener('mousemove', handleMouseMove);
     ref.current.addEventListener('mouseleave', handleMouseLeave);
@@ -67,10 +66,10 @@ export default (
       if (ref.current) {
         ref.current.removeEventListener('mousemove', handleMouseMove);
         ref.current.removeEventListener('mouseleave', handleMouseLeave);
-        ref.current.removeEventListener('wheel', () => handleWheel);
+        ref.current.removeEventListener('wheel', handleWheel);
       }
     };
-  }, [dimensions, level]);
+  }, [dimensions, level, perspective]);
 
   useEffect(() => {
     !!highlightedPointPosition &&
@@ -82,11 +81,5 @@ export default (
       ]);
   }, [highlightedPointPosition]);
 
-  return [
-    ref,
-    perspective,
-    highlightedPointPosition,
-    highlightedBlockPositions,
-    setLevel,
-  ];
+  return [ref, perspective, highlightedPointPosition, setLevel];
 };
