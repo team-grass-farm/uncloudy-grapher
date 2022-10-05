@@ -39,6 +39,7 @@ declare namespace Positioner {
     level: 1 | 2 | 3,
     cx: number,
     cy: number,
+    perspective?: number,
     hitbox?: number
   ) => PointPosition | null;
 
