@@ -10,11 +10,38 @@ export const MainBlock = styled.div`
     background-color: #f8f8f8;
   }
 
-  & > canvas {
-    display: block;
+  & > section {
     width: 100%;
     height: 16rem;
+    overflow: hidden;
     margin-bottom: -16rem;
+
+    canvas {
+      display: block;
+      margin-top: -16rem;
+      margin-bottom: -32rem;
+      width: 200%;
+      height: 32rem;
+
+      /* TODO Split canvas size into these: */
+      /* &#groups2,
+      &#groups1,
+      &#blocks {
+        margin-top: -32rem;
+        margin-bottom: -16rem;
+        width: 200%;
+        height: 200%;
+      }
+
+      &#base,
+      &#grid,
+      &#points,
+      &#event {
+        margin-bottom: -16rem;
+        width: 100%;
+        height: 100%;
+      } */
+    }
   }
 
   #tooltip-pos {

@@ -63,27 +63,29 @@ export default ({
 
   return (
     <MainBlock id={id} {...otherProps}>
-      {Object.entries(refMap).map(([refName, ref]) => (
-        <canvas
-          ref={ref}
-          id={refName}
-          key={'c-' + refName}
-          style={{
-            marginBottom: ref.current ? -ref.current.clientHeight : 0,
-          }}
-        />
-      ))}
-      {!!options.showPoints && !!selectedPoint && (
-        <div
-          id="tooltip-pos"
-          style={{
-            marginTop: selectedPoint.y + 15 + 'px',
-            marginLeft: selectedPoint.x + 15 + 'px',
-          }}
-        >
-          <span>{`row: ${selectedPoint.row}, col: ${selectedPoint.column}`}</span>
-        </div>
-      )}
+      <section>
+        {Object.entries(refMap).map(([refName, ref]) => (
+          <canvas
+            ref={ref}
+            id={refName}
+            key={'c-' + refName}
+            // style={{
+            //   marginBottom: ref.current ? -ref.current.clientHeight : 0,
+            // }}
+          />
+        ))}
+        {!!options.showPoints && !!selectedPoint && (
+          <div
+            id="tooltip-pos"
+            style={{
+              marginTop: selectedPoint.y + 15 + 'px',
+              marginLeft: selectedPoint.x + 15 + 'px',
+            }}
+          >
+            <span>{`row: ${selectedPoint.row}, col: ${selectedPoint.column}`}</span>
+          </div>
+        )}
+      </section>
 
       <aside>
         <Row
