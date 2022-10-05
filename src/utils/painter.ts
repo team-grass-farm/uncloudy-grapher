@@ -1207,6 +1207,6 @@ export const translate: Painter.Translate = (ctx, snapshot, perspective) => {
   snapshot && ctx.putImageData(snapshot, perspective, -(perspective * 0.57));
 };
 
-export const clearRendered: Painter.ClearRendered = (ctx, dimensions) => {
+export const clearRendered: Painter.ClearRendered = (ctx) => {
   render(ctx, [], true, false);
 };

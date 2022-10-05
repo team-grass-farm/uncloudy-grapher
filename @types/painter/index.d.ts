@@ -80,10 +80,7 @@ declare namespace Painter {
     animated: boolean
   ) => void;
 
-  type ClearRendered = (
-    ctx: CanvasRenderingContext2D,
-    dimensions: Dimensions
-  ) => void;
+  type ClearRendered = (ctx: CanvasRenderingContext2D) => void;
 
   type Translate = (
     ctx: CanvasRenderingContext2D,
