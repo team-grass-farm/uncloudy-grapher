@@ -30,11 +30,11 @@ declare namespace Painter {
 
   interface SnapshotMap extends Record<Layer, ImageData | null> {}
 
-  interface HighlightedPositionMap {
+  interface Positions {
     point: PointPosition | null;
-    block: BlockPosition | null;
-    group1: GroupPosition | null;
-    group2: GroupPosition | null;
+    block: BlockPositions | BlockPosition | null;
+    group1: GroupPosition[] | GroupPosition | null;
+    group2: GroupPosition[] | GroupPosition | null;
   }
 
   type PaintObject = (
@@ -100,6 +100,7 @@ declare namespace Painter {
       | PointPosition[]
       | LinePosition[]
       | BlockPositions
+      | BlockPosition
       | GroupPositions
       | null
   > = (

@@ -81,15 +81,15 @@ export default ({
               // }}
             />
           ))}
-          {!!options.showPoints && !!highlighted.block && (
+          {!!options.showPoints && !!highlighted.point && (
             <div
               id="tooltip-pos"
               style={{
-                marginTop: highlighted.block.y + 15 + 'px',
-                marginLeft: highlighted.block.x + 15 + 'px',
+                marginTop: highlighted.point.y + 15 + 'px',
+                marginLeft: highlighted.point.x + 15 + 'px',
               }}
             >
-              <span>{`row: ${highlighted.block.row}, col: ${highlighted.block.column}`}</span>
+              <span>{`row: ${highlighted.point.row}, col: ${highlighted.point.column}`}</span>
             </div>
           )}
         </section>
