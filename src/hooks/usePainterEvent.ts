@@ -12,7 +12,7 @@ export default (
   React.Dispatch<1 | 2 | 3>
 ] => {
   const [level, setLevel] = useState<1 | 2 | 3>(2);
-  const [movedPointPosition, setMovedPointPosition] =
+  const [hoveredPointPosition, setHoveredPointPosition] =
     useState<PointPosition | null>(null);
   const [highlightedPointPosition, setHighlightedPointPosition] =
     useState<PointPosition | null>(null);
@@ -45,13 +45,13 @@ export default (
 
   const handleMouseMove = useCallback(
     (ev: MouseEvent) => {
-      setMovedPointPosition(getPointPosition(ev));
+      setHoveredPointPosition(getPointPosition(ev));
     },
     [dimensions, level, perspective]
   );
 
   const handleMouseLeave = useCallback(() => {
-    setMovedPointPosition(null);
+    setHoveredPointPosition(null);
   }, []);
 
   const handleWheel = useCallback((ev: WheelEvent) => {
@@ -86,19 +86,19 @@ export default (
   }, [dimensions, level, perspective]);
 
   useEffect(() => {
-    !!movedPointPosition &&
+    !!hoveredPointPosition &&
       report.debug('usePainterEvent', [
         'level: ',
         level,
         'boundedEvent: ',
-        movedPointPosition,
+        hoveredPointPosition,
       ]);
-  }, [movedPointPosition]);
+  }, [hoveredPointPosition]);
 
   return [
     ref,
     perspective,
-    movedPointPosition,
+    hoveredPointPosition,
     highlightedPointPosition,
     setLevel,
   ];

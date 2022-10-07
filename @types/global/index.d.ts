@@ -18,6 +18,14 @@ declare interface PointPosition {
   type: PointType;
 }
 
+declare interface BlockPosition {
+  viewType: 'flat' | 'normal';
+  dx: number;
+  dy: number;
+  dz?: number;
+  data: PointPosition;
+}
+
 declare interface LinePosition {
   x1: number;
   y1: number;
@@ -33,12 +41,12 @@ declare interface GroupPosition {
   type: GroupType;
 }
 
-declare interface BlockPositions {
+declare interface BlockPositions extends BlockPosition {
   viewType: 'flat' | 'normal';
   dx: number;
   dy: number;
   dz?: number;
-  data: Map<[number, number], PointPosition>;
+  data: Map<string, PointPosition>;
 }
 
 declare interface GroupPositions {
