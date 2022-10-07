@@ -346,9 +346,9 @@ const getBlockPositions: Positioner.GetBlockPositions = (
   const canvasValues = getCanvasValues(width, height, level);
   let highest = 50;
 
-  const data: Map<[number, number], PointPosition> = new Map(
+  const data: Map<string, PointPosition> = new Map(
     Array.from(matrixes.entries(), ([_, matrix]) => [
-      [matrix.row, matrix.column],
+      [matrix.row, matrix.column].toString(),
       getPointPosition(
         canvasValues,
         matrix,

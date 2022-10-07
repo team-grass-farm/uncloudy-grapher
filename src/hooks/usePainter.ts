@@ -7,7 +7,8 @@ import {
   renderGrids,
   renderGroups,
   renderHighlightedBlocks,
-  renderHighlightedPoints,
+  renderHoveredBlocks,
+  renderHoveredPoints,
   renderPoints,
   translate,
 } from '~utils/painter';
@@ -18,7 +19,7 @@ const isDevMode = process.env.NODE_ENV === 'development';
 // NOTE grid & point is skippable because these are just for debugging.
 export default (): [
   Painter.RefMap,
-  Painter.HighlightedPositionMap,
+  Painter.Positions,
   Painter.Paint,
   React.Dispatch<1 | 2 | 3>,
   React.Dispatch<React.SetStateAction<Dimensions>>,
@@ -35,7 +36,7 @@ export default (): [
   const [
     eventRef,
     perspective,
-    movedPointPosition,
+    hoveredPointPosition,
     highlightedPointPosition,
     setLevelOnEvent,
   ] = usePainterEvent(dimensions);
@@ -66,9 +67,9 @@ export default (): [
     groups2: null,
   });
 
-  const [highlightedPositionMap, setHighlightedPositionMap] =
-    useState<Painter.HighlightedPositionMap>({
-      point: movedPointPosition,
+  const [highlightedPositions, setHighlightedPositions] =
+    useState<Painter.Positions>({
+      point: null,
       block: null,
       group1: null,
       group2: null,
@@ -128,55 +129,53 @@ export default (): [
   useEffect(() => {
     const ctx = refMap.event.current?.getContext('2d');
     if (!!!ctx) return;
-    else if (movedPointPosition === null) {
+    else if (hoveredPointPosition === null) {
       clearRendered(ctx);
     }
 
-    if (!!movedPointPosition && visible.points) {
-      renderHighlightedPoints(ctx, [movedPointPosition]);
+    if (!!hoveredPointPosition) {
+      if (visible.points) {
+        renderHoveredPoints(ctx, [hoveredPointPosition]);
+      }
     }
-  }, [movedPointPosition, renderedPlot]);
+  }, [hoveredPointPosition, renderedPlot]);
 
   useEffect(() => {
-    report.log('usePainter', [
-      { highlightedPointPosition },
-      renderedPlot,
-      renderedPlot?.blocks.data.has([0, 2]),
-    ]);
-    setHighlightedPositionMap({
-      point: highlightedPointPosition,
-      block: renderedPlot?.blocks.data.values().next() ?? null,
-      group1: null,
-      group2: null,
-    });
+    if (!!!renderedPlot) {
+      setHighlightedPositions({
+        point: null,
+        block: null,
+        group1: null,
+        group2: null,
+      });
+    } else if (!!renderedPlot.blocks) {
+      const { blocks } = renderedPlot;
+      const itVal = blocks.data.get('2,0') ?? null;
+
+      report.log('usePainter', [
+        { blocks, itVal, value: blocks.data.values().next().value },
+      ]);
+
+      setHighlightedPositions({
+        point: highlightedPointPosition,
+        block: !!itVal ? { ...blocks, data: itVal } : null,
+        group1: null,
+        group2: null,
+      });
+    }
   }, [highlightedPointPosition, renderedPlot]);
 
   useEffect(() => {
     const ctx = refMap.event.current?.getContext('2d');
     if (!!!ctx) return;
-    // else if (highlightedPositionMap.point === null) {
-    //   clearRendered(ctx);
-    // }
 
-    report.log('usePainter', [{ highlightedPositionMap }]);
+    report.log('usePainter', [{ highlightedPositions }]);
 
-    if (!!highlightedPositionMap.block && visible.points) {
-      if (renderedPlot) {
-        const { row, column } = highlightedPositionMap.block;
-        const highlightedBlock = renderedPlot.blocks.data.get([row, column]);
-
-        if (!!highlightedBlock) {
-          renderHighlightedBlocks(ctx, {
-            ...renderedPlot.blocks,
-            data: new Map([
-              [[row, column] as [number, number], highlightedBlock],
-            ]),
-          });
-          report.warn('usePainter', ['rendered.']);
-        }
-      }
+    if (!!highlightedPositions.block && !!renderedPlot?.blocks) {
+      renderHighlightedBlocks(ctx, highlightedPositions.block);
+      report.warn('usePainter', ['rendered.']);
     }
-  }, [highlightedPositionMap, renderedPlot]);
+  }, [highlightedPositions]);
 
   useEffect(() => {
     report.debug('usePainter', [{ perspective }]);
@@ -194,7 +193,7 @@ export default (): [
 
   return [
     refMap,
-    highlightedPositionMap,
+    highlightedPositions,
     paint,
     setLevel,
     setDimensions,
