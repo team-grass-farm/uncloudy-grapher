@@ -1,5 +1,8 @@
 declare namespace Painter {
-  type Layer = 'blocks' | 'groups1' | 'groups2' | 'base';
+  type ObjectLayer = 'blocks' | 'groups1' | 'groups2';
+  type SubLayer = 'base' | 'stage' | 'cutton';
+  type DebuggingLayer = 'grid' | 'points';
+
   type Paint = (plot: Positioner.Plot) => void;
   type Option =
     | {
@@ -18,17 +21,19 @@ declare namespace Painter {
         selected: boolean;
       };
 
-  interface RefMap extends Record<Layer, RefObject<HTMLCanvasElement>> {
+  interface Ref
+    extends Record<
+      ObjectLayer | SubLayer | DebuggingLayer,
+      RefObject<HTMLCanvasElement>
+    > {
     grid?: RefObject<HTMLCanvasElement>;
     points?: RefObject<HTMLCanvasElement>;
     event: RefObject<HTMLCanvasElement>;
   }
-  interface FlagMap {
-    grid?: boolean;
-    points?: boolean;
-  }
+  interface Flag extends Partial<Record<DebuggingLayer, boolean>> {}
 
-  interface SnapshotMap extends Record<Layer, ImageData | null> {}
+  interface ObjectSnapshot extends Record<ObjectLayer, ImageData | null> {}
+  interface SubSnapshot extends Record<SubLayer, Image | null> {}
 
   interface Positions {
     point: PointPosition | null;

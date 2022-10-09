@@ -18,12 +18,13 @@ const isDevMode = process.env.NODE_ENV === 'development';
 
 // NOTE grid & point is skippable because these are just for debugging.
 export default (): [
-  Painter.RefMap,
+  Painter.Ref,
+  PointPosition | null,
   Painter.Positions,
   Painter.Paint,
   React.Dispatch<1 | 2 | 3>,
   React.Dispatch<React.SetStateAction<Dimensions>>,
-  React.Dispatch<React.SetStateAction<Painter.FlagMap>>
+  React.Dispatch<React.SetStateAction<Painter.Flag>>
 ] => {
   const [level, setLevel] = useState<1 | 2 | 3>(2);
   const [dimensions, setDimensions] = useState<Dimensions>({
@@ -41,7 +42,7 @@ export default (): [
     setLevelOnEvent,
   ] = usePainterEvent(dimensions);
 
-  const refMap: Painter.RefMap = {
+  const refMap: Painter.Ref = {
     ...(isDevMode && {
       grid: useRef<HTMLCanvasElement>(null),
       points: useRef<HTMLCanvasElement>(null),
@@ -50,21 +51,28 @@ export default (): [
     groups2: useRef<HTMLCanvasElement>(null),
     groups1: useRef<HTMLCanvasElement>(null),
     blocks: useRef<HTMLCanvasElement>(null),
+    stage: useRef<HTMLCanvasElement>(null),
+    cutton: useRef<HTMLCanvasElement>(null),
     event: eventRef,
   };
 
-  const [visible, setVisible] = useState<Painter.FlagMap>({
+  const [visible, setVisible] = useState<Painter.Flag>({
     ...(isDevMode && {
       grid: true,
       point: true,
     }),
   });
 
-  const [snapshotMap, setSnapshotMap] = useState<Painter.SnapshotMap>({
-    base: null,
-    blocks: null,
-    groups1: null,
+  const [objectSnapshot, setObjectSnapshot] = useState<Painter.ObjectSnapshot>({
     groups2: null,
+    groups1: null,
+    blocks: null,
+  });
+
+  const [subSnapshot, setSubSnapshot] = useState<Painter.SubSnapshot>({
+    base: null,
+    stage: null,
+    cutton: null,
   });
 
   const [highlightedPositions, setHighlightedPositions] =
@@ -90,19 +98,18 @@ export default (): [
     (plot: Positioner.Plot) => {
       report.log('usePainter', ['plot: ', plot]);
 
-      setSnapshotMap({
-        base: null,
-        blocks: renderBlocks(
-          refMap.blocks?.current?.getContext('2d') ?? null,
-          plot.blocks
+      setObjectSnapshot({
+        groups2: renderGroups(
+          refMap.groups2?.current?.getContext('2d') ?? null,
+          plot.groups2
         ),
         groups1: renderGroups(
           refMap.groups1?.current?.getContext('2d') ?? null,
           plot.groups1
         ),
-        groups2: renderGroups(
-          refMap.groups2?.current?.getContext('2d') ?? null,
-          plot.groups2
+        blocks: renderBlocks(
+          refMap.blocks?.current?.getContext('2d') ?? null,
+          plot.blocks
         ),
       });
 
@@ -150,15 +157,27 @@ export default (): [
       });
     } else if (!!renderedPlot.blocks) {
       const { blocks } = renderedPlot;
-      const itVal = blocks.data.get('2,0') ?? null;
+      const { row, column } = highlightedPointPosition ?? {
+        row: -1,
+        column: -1,
+      };
+      const itVal = blocks.data.get(row + ',' + column) ?? null;
+
+      report.log('usePainter', [{ highlightedPointPosition }]);
 
       report.log('usePainter', [
         { blocks, itVal, value: blocks.data.values().next().value },
       ]);
 
+      // TODO apply perspective parameter on setHighlightedPositions()
       setHighlightedPositions({
         point: highlightedPointPosition,
-        block: !!itVal ? { ...blocks, data: itVal } : null,
+        block: !!itVal
+          ? ({
+              ...blocks,
+              data: itVal,
+            } as BlockPosition)
+          : null,
         group1: null,
         group2: null,
       });
@@ -166,14 +185,17 @@ export default (): [
   }, [highlightedPointPosition, renderedPlot]);
 
   useEffect(() => {
-    const ctx = refMap.event.current?.getContext('2d');
+    const ctx = refMap.stage.current?.getContext('2d');
     if (!!!ctx) return;
 
     report.log('usePainter', [{ highlightedPositions }]);
 
     if (!!highlightedPositions.block && !!renderedPlot?.blocks) {
-      renderHighlightedBlocks(ctx, highlightedPositions.block);
-      report.warn('usePainter', ['rendered.']);
+      setSubSnapshot({
+        base: null,
+        stage: renderHighlightedBlocks(ctx, highlightedPositions.block),
+        cutton: null,
+      });
     }
   }, [highlightedPositions]);
 
@@ -181,18 +203,29 @@ export default (): [
     report.debug('usePainter', [{ perspective }]);
     translate(
       refMap.blocks.current?.getContext('2d'),
-      snapshotMap.blocks,
+      objectSnapshot.blocks,
       perspective
     );
     translate(
       refMap.groups1.current?.getContext('2d'),
-      snapshotMap.groups1,
+      objectSnapshot.groups1,
+      perspective
+    );
+    translate(
+      refMap.stage.current?.getContext('2d'),
+      subSnapshot.stage,
+      perspective
+    );
+    translate(
+      refMap.cutton.current?.getContext('2d'),
+      subSnapshot.cutton,
       perspective
     );
   }, [perspective]);
 
   return [
     refMap,
+    hoveredPointPosition,
     highlightedPositions,
     paint,
     setLevel,

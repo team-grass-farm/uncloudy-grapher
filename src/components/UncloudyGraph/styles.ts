@@ -23,6 +23,7 @@ export const MainBlock = styled.div`
       margin-bottom: -32rem;
       width: 200%;
       height: 32rem;
+      transition: filter 0.5s;
 
       /* TODO Split canvas size into these: */
       /* &#groups2,
@@ -42,6 +43,25 @@ export const MainBlock = styled.div`
         width: 100%;
         height: 100%;
       } */
+    }
+
+    &:hover canvas {
+      // SHOULD Care these post-calculated css's order, 'none' things due to the canvas layers' order
+      &#blocks {
+        filter: ${'saturate(0.2)'};
+      }
+
+      &#stage {
+        filter: ${'saturate(1)'};
+      }
+
+      &#cutton {
+        filter: ${'saturate(0.2)'};
+      }
+
+      &#event {
+        filter: ${'saturate(1)'};
+      }
     }
   }
 
@@ -75,7 +95,7 @@ export const ExtrudedBlock = styled.article`
   backdrop-filter: blur(15px);
   border: 1px solid #ddd;
   box-shadow: -13px 0px 12px -10px rgba(200, 200, 200, 0.5);
-  overflow-wrap: normal;
+  overflow-wrap: break-word;
   transition: opacity 0.5s;
 
   h2 {

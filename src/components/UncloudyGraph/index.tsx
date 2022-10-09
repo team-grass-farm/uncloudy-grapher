@@ -15,14 +15,15 @@ export default ({
   ...otherProps
 }: Props) => {
   const [
-    refMap,
+    ref,
+    hoveredPoint,
     highlighted,
     paint,
     setLevelOnPainter,
     setDimensions,
     setVisible,
   ] = usePainter();
-  const [dimensions, plot, pose] = usePositioner(refMap.base);
+  const [dimensions, plot, pose] = usePositioner(ref.base);
   const [showExtruded, setShowExtruded] = useState<boolean>(false);
   const [viewOptions, setViewOptions] = useState<ViewOption[]>(['deployments']);
 
@@ -71,7 +72,7 @@ export default ({
     <>
       <MainBlock id={id} {...otherProps}>
         <section>
-          {Object.entries(refMap).map(([refName, ref]) => (
+          {Object.entries(ref).map(([refName, ref]) => (
             <canvas
               ref={ref}
               id={refName}
@@ -81,15 +82,15 @@ export default ({
               // }}
             />
           ))}
-          {!!options.showPoints && !!highlighted.point && (
+          {!!options.showPoints && !!hoveredPoint && (
             <div
               id="tooltip-pos"
               style={{
-                marginTop: highlighted.point.y + 15 + 'px',
-                marginLeft: highlighted.point.x + 15 + 'px',
+                marginTop: hoveredPoint.y + 15 + 'px',
+                marginLeft: hoveredPoint.x + 15 + 'px',
               }}
             >
-              <span>{`row: ${highlighted.point.row}, col: ${highlighted.point.column}`}</span>
+              <span>{`row: ${hoveredPoint.row}, col: ${hoveredPoint.column}`}</span>
             </div>
           )}
         </section>
