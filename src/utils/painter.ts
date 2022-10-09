@@ -1135,7 +1135,7 @@ export const renderHoveredBlocks: Painter.Render<
   const stackPaintings: (() => void)[] = [];
 
   let paintBlock: Painter.PaintObject | null = null;
-  report.log('painter', [{ positions }, positions.data instanceof Map]);
+  report.log('Painter', [{ positions }, positions.data instanceof Map]);
   const type =
     positions.data instanceof Map
       ? (positions.data.values().next().value as PointPosition | undefined)
@@ -1148,8 +1148,6 @@ export const renderHoveredBlocks: Painter.Render<
       paintBlock = positions?.viewType === 'flat' ? paintFlatNode : paintNode;
       break;
   }
-
-  report.log('Painter', [{ positions }]);
 
   !!lastSurface &&
     ctx.putImageData(lastSurface, ctx.canvas.width, ctx.canvas.height);
@@ -1178,7 +1176,7 @@ export const renderHoveredBlocks: Painter.Render<
           positions.data.y,
           positions.dx * 0.45,
           positions.dy * 0.45,
-          35,
+          positions.data.z ? (positions.dz ?? 1) * positions.data.z : 35,
           { selected: true }
         )
       );
@@ -1196,7 +1194,7 @@ export const renderHighlightedBlocks: Painter.Render<
   const stackPaintings: (() => void)[] = [];
 
   let paintBlock: Painter.PaintObject | null = null;
-  report.log('painter', [{ positions }, positions.data instanceof Map]);
+  report.log('Painter', [{ positions }, positions.data instanceof Map]);
   const type =
     positions.data instanceof Map
       ? (positions.data.values().next().value as PointPosition | undefined)
@@ -1239,7 +1237,7 @@ export const renderHighlightedBlocks: Painter.Render<
           positions.data.y,
           positions.dx * 0.45,
           positions.dy * 0.45,
-          35,
+          positions.data.z ? (positions.dz ?? 1) * positions.data.z : 35,
           { selected: true }
         )
       );
