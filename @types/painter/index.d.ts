@@ -5,21 +5,8 @@ declare namespace Painter {
 
   type Paint = (plot: Positioner.Plot) => void;
   type Option =
-    | {
-        text: string;
-        color?: never;
-        selected?: never;
-      }
-    | {
-        text?: never;
-        color: string;
-        selected?: never;
-      }
-    | {
-        text?: never;
-        color?: never;
-        selected: boolean;
-      };
+    | { text: string; selected?: never }
+    | { text?: never; selected: boolean };
 
   interface Ref
     extends Record<
@@ -35,8 +22,13 @@ declare namespace Painter {
   interface ObjectSnapshot extends Record<ObjectLayer, ImageData | null> {}
   interface SubSnapshot extends Record<SubLayer, Image | null> {}
 
+  interface Position {
+    block: BlockPosition | null;
+    group1: GroupPosition | null;
+    group2: GroupPosition | null;
+  }
+
   interface Positions {
-    point: PointPosition | null;
     block: BlockPositions | BlockPosition | null;
     group1: GroupPosition[] | GroupPosition | null;
     group2: GroupPosition[] | GroupPosition | null;
@@ -102,10 +94,11 @@ declare namespace Painter {
 
   type Render<
     T extends
+      | PointPosition
       | PointPosition[]
       | LinePosition[]
-      | BlockPositions
       | BlockPosition
+      | BlockPositions
       | GroupPositions
       | null
   > = (

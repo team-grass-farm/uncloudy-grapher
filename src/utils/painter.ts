@@ -391,8 +391,6 @@ export const paintCluster: Painter.PaintArea = (
 
 /**
  * 파드 블럭을 렌더링합니다.
- * 타원 사용법: ellipse (x, y, radiusX, radiusY, rotation, startAngle, endAngle, 반 시계 방향)
- * @author 김민정
  * @param ctx: 캔버스 포인터
  * @param x: 파드 블럭의 x 시작점
  * @param y: 파드 블럭의 y 시작점
@@ -416,7 +414,7 @@ export const paintPod: Painter.PaintObject = (ctx, x, y, dx, dy, h, option) => [
     whitegrad.addColorStop(1, '#EFEFEF');
 
     if (!greyscale) {
-      //=========================기둥부=================
+      // 기둥부
       ctx.fillStyle = option && option.selected ? lingrad : whitegrad;
       ctx.beginPath();
       ctx.moveTo(x - dx, y);
@@ -443,9 +441,6 @@ export const paintPod: Painter.PaintObject = (ctx, x, y, dx, dy, h, option) => [
     ctx.ellipse(x, y - body_h, dx, dy, 0, 0, Math.PI * 2);
     ctx.stroke();
 
-    // ======================머리부======================
-    //ellipse (x, y, radiusX, radiusY, rotation, startAngle, endAngle, 반 시계 방향)
-
     // 머리의 몸통
     ctx.fillStyle = lingrad;
     ctx.beginPath();
@@ -466,29 +461,26 @@ export const paintPod: Painter.PaintObject = (ctx, x, y, dx, dy, h, option) => [
     ctx.ellipse(x, y - h, dx, dy, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // //머리 작은 뚜껑
-    // ctx.fillStyle = greyscale ? '#BBBBBB' : '#16BFC0';
-    // ctx.beginPath();
-    // ctx.ellipse(x, y - h, 0.75 * dx, 0.6 * dy, 0, 0, Math.PI * 2);
-    // ctx.fill();
-
-    //===================흰색 음영 라인==================
-
-    // ctx.lineWidth = 0;
-    // ctx.strokeStyle = greyscale ? '#BBBBBB' : '#16BFC0';
-    // ctx.beginPath();
-    // ctx.ellipse(x, y - h, 0.75 * dx, 0.6 * dy, 0, 0, Math.PI * 2);
-    // ctx.stroke();
-
-    // ctx.lineWidth = 0;
-    // ctx.strokeStyle = greyscale ? '#BBBBBB' : '#16BFC0';
-    // ctx.beginPath();
-    // ctx.ellipse(x, y - h, dx, dy, 0, 0, Math.PI * 2);
-    // ctx.stroke();
-
     ctx.restore();
   },
 ];
+
+export const paintAnimatedPod: Painter.PaintObject = (
+  ctx,
+  x,
+  y,
+  dx,
+  dy,
+  h,
+  option
+) => {
+  const ret: (() => void)[] = [];
+
+  for (let currentHeight = h; currentHeight > 0; --currentHeight) {
+    ret.push(...paintPod(ctx, x, y, dx, dy, currentHeight, option));
+  }
+  return ret;
+};
 
 /**
  *
@@ -978,8 +970,41 @@ const render: Painter.BaseRender = (
     // ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   }
 
-  stackPaintings.forEach((paintObject) => paintObject());
-  // animated && requestAnimationFrame(this);
+  report.debug('Painter', [{ stackPaintings }]);
+  stackPaintings.forEach((paintObject) => {
+    paintObject();
+  });
+};
+
+const renderA: Painter.BaseRender = (
+  ctx,
+  stackPaintings,
+  clearCanvas,
+  animated
+) => {
+  ctx.lineJoin = 'round';
+  ctx.fillStyle = 'transparent';
+  ctx.scale(1, 1);
+
+  report.debug('Painter', [{ stackPaintings }]);
+  const frames = stackPaintings.entries();
+  const runner = setInterval(() => {
+    const frame = frames.next();
+    if (frame.done) {
+      clearInterval(runner);
+      report.log('Painter', ['runner finished.']);
+    } else {
+      if (clearCanvas) {
+        ctx.clearRect(
+          0,
+          ctx.canvas.height >> 1,
+          ctx.canvas.width >> 1,
+          ctx.canvas.height
+        );
+      }
+      requestAnimationFrame(frame.value[1]);
+    }
+  }, 10);
 };
 
 /**
@@ -1069,16 +1094,14 @@ export const renderPoints: Painter.Render<PointPosition[]> = (
   return null;
 };
 
-export const renderHoveredPoints: Painter.Render<PointPosition[]> = (
+export const renderHoveredPoint: Painter.Render<PointPosition | null> = (
   ctx,
-  positions
+  position
 ) => {
-  if (!!!ctx) return null;
+  if (!!!ctx || !!!position) return null;
   const stackPaintings: (() => void)[] = [];
 
-  positions.forEach(({ x, y }) => {
-    stackPaintings.push(...paintPoint(ctx, x, y, 5, 5, 0));
-  });
+  stackPaintings.push(...paintPoint(ctx, position.x, position.y, 5, 5, 0));
 
   render(ctx, stackPaintings, true, true);
   return null;
@@ -1124,66 +1147,97 @@ export const renderBlocks: Painter.Render<BlockPositions> = (
     });
   }
 
-  render(ctx, stackPaintings, true, false);
+  render(ctx, stackPaintings, true, true);
   return ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
 };
 
-export const renderHoveredBlocks: Painter.Render<
-  BlockPositions | BlockPosition | null
+export const renderHoveredBlock: Painter.Render<BlockPosition | null> = (
+  ctx,
+  position
+) => {
+  if (!!!ctx || !!!position) return null;
+  const stackPaintings: (() => void)[] = [];
+
+  let paintBlock: Painter.PaintObject | null = null;
+  report.log('Painter', [
+    { position, arePositionsMap: position.data instanceof Map },
+  ]);
+  const type =
+    position.data instanceof Map
+      ? (position.data.values().next().value as PointPosition | undefined)
+      : position.data.type;
+  switch (type) {
+    case 'pod':
+      paintBlock =
+        position?.viewType === 'flat' ? paintFlatPod : paintAnimatedPod;
+      break;
+    case 'node':
+      paintBlock = position?.viewType === 'flat' ? paintFlatNode : paintNode;
+      break;
+  }
+
+  // !!lastSurface &&
+  //   ctx.putImageData(lastSurface, ctx.canvas.width, ctx.canvas.height);
+
+  if (!!position) {
+    stackPaintings.push(
+      ...paintBlock!(
+        ctx,
+        position.data.x,
+        position.data.y,
+        position.dx * 0.45,
+        position.dy * 0.45,
+        position.data.z ? (position.dz ?? 1) * position.data.z : 35,
+        { selected: true }
+      )
+    );
+  }
+
+  renderA(ctx, stackPaintings, true, true);
+  return ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+};
+
+export const renderShrinkingBlock: Painter.Render<
+  BlockPosition | BlockPositions | null
 > = (ctx, positions) => {
   if (!!!ctx || !!!positions) return null;
   const stackPaintings: (() => void)[] = [];
 
   let paintBlock: Painter.PaintObject | null = null;
-  report.log('Painter', [{ positions }, positions.data instanceof Map]);
-  const type =
-    positions.data instanceof Map
-      ? (positions.data.values().next().value as PointPosition | undefined)
-      : positions.data.type;
-  switch (type) {
-    case 'pod':
-      paintBlock = positions?.viewType === 'flat' ? paintFlatPod : paintPod;
-      break;
-    case 'node':
-      paintBlock = positions?.viewType === 'flat' ? paintFlatNode : paintNode;
-      break;
-  }
-
-  !!lastSurface &&
-    ctx.putImageData(lastSurface, ctx.canvas.width, ctx.canvas.height);
 
   if (!!positions) {
     if (positions.data instanceof Map) {
       const { dx, dy, dz } = positions;
+      report.info('Painter', [{ msg: 'shrinking', positions }]);
       positions.data.forEach((position) => {
+        // report.info('Painter', [{ position }]);
         stackPaintings.push(
-          ...paintBlock!(
+          ...paintAnimatedPod!(
             ctx,
             position.x,
             position.y,
             dx * 0.45,
             dy * 0.45,
-            position.z ? (dz ?? 1) * position.z : 35,
-            { selected: true }
+            position.z ? (dz ?? 1) * position.z : 35
           )
         );
       });
     } else {
-      stackPaintings.push(
-        ...paintBlock!(
-          ctx,
-          positions.data.x,
-          positions.data.y,
-          positions.dx * 0.45,
-          positions.dy * 0.45,
-          positions.data.z ? (positions.dz ?? 1) * positions.data.z : 35,
-          { selected: true }
-        )
-      );
+      // stackPaintings.push(
+      //   ...paintAnimatedPod(
+      //     ctx,
+      //     positions.data.x,
+      //     positions.data.y,
+      //     positions.dx * 0.45,
+      //     positions.dy * 0.45,
+      //     positions.data.z ? (positions.dz ?? 1) * positions.data.z : 35,
+      //     { selected: true }
+      //   )
+      // );
     }
   }
 
-  render(ctx, stackPaintings, false, false);
+  renderA(ctx, stackPaintings, true, true);
   return ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
 };
 
@@ -1194,7 +1248,9 @@ export const renderHighlightedBlocks: Painter.Render<
   const stackPaintings: (() => void)[] = [];
 
   let paintBlock: Painter.PaintObject | null = null;
-  report.log('Painter', [{ positions }, positions.data instanceof Map]);
+  report.log('Painter', [
+    { positions, arePositionsMap: positions.data instanceof Map },
+  ]);
   const type =
     positions.data instanceof Map
       ? (positions.data.values().next().value as PointPosition | undefined)
@@ -1207,8 +1263,6 @@ export const renderHighlightedBlocks: Painter.Render<
       paintBlock = positions?.viewType === 'flat' ? paintFlatNode : paintNode;
       break;
   }
-
-  report.log('Painter', [{ positions }]);
 
   !!lastSurface &&
     ctx.putImageData(lastSurface, ctx.canvas.width, ctx.canvas.height);
@@ -1244,7 +1298,7 @@ export const renderHighlightedBlocks: Painter.Render<
     }
   }
 
-  render(ctx, stackPaintings, false, false);
+  renderA(ctx, stackPaintings, true, true);
   return ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
 };
 
