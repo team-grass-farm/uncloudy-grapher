@@ -2,14 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePainterEvent } from '~hooks';
 import { report } from '~utils/logger';
 import {
-  clearRendered,
   renderBlocks,
   renderGrids,
   renderGroups,
   renderHighlightedBlocks,
-  renderHoveredBlocks,
-  renderHoveredPoints,
+  renderHoveredBlock,
+  renderHoveredPoint,
   renderPoints,
+  renderShrinkingBlock,
   translate,
 } from '~utils/painter';
 import { getGridPositions, getPointPositions } from '~utils/positioner';
@@ -37,22 +37,22 @@ export default (): [
   const [
     eventRef,
     perspective,
-    hoveredPointPosition,
-    highlightedPointPosition,
+    hoveredPoint,
+    highlightedPoint,
     setLevelOnEvent,
   ] = usePainterEvent(dimensions);
 
-  const refMap: Painter.Ref = {
+  const canvasRef: Painter.Ref = {
     ...(isDevMode && {
-      grid: useRef<HTMLCanvasElement>(null),
-      points: useRef<HTMLCanvasElement>(null),
+      grid: useRef<HTMLCanvasElement | null>(null),
+      points: useRef<HTMLCanvasElement | null>(null),
     }),
-    base: useRef<HTMLCanvasElement>(null),
-    groups2: useRef<HTMLCanvasElement>(null),
-    groups1: useRef<HTMLCanvasElement>(null),
-    blocks: useRef<HTMLCanvasElement>(null),
-    stage: useRef<HTMLCanvasElement>(null),
-    cutton: useRef<HTMLCanvasElement>(null),
+    base: useRef<HTMLCanvasElement | null>(null),
+    groups2: useRef<HTMLCanvasElement | null>(null),
+    groups1: useRef<HTMLCanvasElement | null>(null),
+    blocks: useRef<HTMLCanvasElement | null>(null),
+    stage: useRef<HTMLCanvasElement | null>(null),
+    cutton: useRef<HTMLCanvasElement | null>(null),
     event: eventRef,
   };
 
@@ -62,6 +62,22 @@ export default (): [
       point: true,
     }),
   });
+
+  const [hoveredPosition, setHoveredPosition] = useState<Painter.Position>({
+    block: null,
+    group1: null,
+    group2: null,
+  });
+
+  const [shrinkedPositions, setShrinkedPositions] =
+    useState<BlockPositions | null>(null);
+
+  const [highlightedPositions, setHighlightedPositions] =
+    useState<Painter.Positions>({
+      block: null,
+      group1: null,
+      group2: null,
+    });
 
   const [objectSnapshot, setObjectSnapshot] = useState<Painter.ObjectSnapshot>({
     groups2: null,
@@ -75,18 +91,13 @@ export default (): [
     cutton: null,
   });
 
-  const [highlightedPositions, setHighlightedPositions] =
-    useState<Painter.Positions>({
-      point: null,
-      block: null,
-      group1: null,
-      group2: null,
-    });
-
+  /**
+   * Synchronize canvas' client size to their elements' size
+   */
   useEffect(() => {
-    if (refMap.blocks.current === null) return;
+    if (canvasRef.blocks.current === null) return;
     report.log('usePainter', ['dimensions changed:', dimensions]);
-    Object.values(refMap).forEach((ref) => {
+    Object.values(canvasRef).forEach((ref) => {
       if (ref.current) {
         ref.current.width = ref.current.clientWidth;
         ref.current.height = ref.current.clientHeight;
@@ -94,34 +105,37 @@ export default (): [
     });
   }, [dimensions]);
 
+  /**
+   * Paint if new plot is accepted.
+   */
   const paint = useCallback(
     (plot: Positioner.Plot) => {
       report.log('usePainter', ['plot: ', plot]);
 
       setObjectSnapshot({
         groups2: renderGroups(
-          refMap.groups2?.current?.getContext('2d') ?? null,
+          canvasRef.groups2?.current?.getContext('2d') ?? null,
           plot.groups2
         ),
         groups1: renderGroups(
-          refMap.groups1?.current?.getContext('2d') ?? null,
+          canvasRef.groups1?.current?.getContext('2d') ?? null,
           plot.groups1
         ),
         blocks: renderBlocks(
-          refMap.blocks?.current?.getContext('2d') ?? null,
+          canvasRef.blocks?.current?.getContext('2d') ?? null,
           plot.blocks
         ),
       });
 
       if (isDevMode) {
         renderGrids(
-          refMap.grid?.current?.getContext('2d') ?? null,
+          canvasRef.grid?.current?.getContext('2d') ?? null,
           visible.grid
             ? getGridPositions(dimensions.width, dimensions.height, level ?? 2)
             : []
         );
         renderPoints(
-          refMap.points?.current?.getContext('2d') ?? null,
+          canvasRef.points?.current?.getContext('2d') ?? null,
           visible.points
             ? getPointPositions(dimensions.width, dimensions.height, level ?? 2)
             : []
@@ -133,99 +147,173 @@ export default (): [
     [dimensions, level, visible]
   );
 
+  /**
+   * Update hovered position using hoveredPointPosition from usePainterEvent().
+   */
   useEffect(() => {
-    const ctx = refMap.event.current?.getContext('2d');
-    if (!!!ctx) return;
-    else if (hoveredPointPosition === null) {
-      clearRendered(ctx);
-    }
-
-    if (!!hoveredPointPosition) {
-      if (visible.points) {
-        renderHoveredPoints(ctx, [hoveredPointPosition]);
-      }
-    }
-  }, [hoveredPointPosition, renderedPlot]);
-
-  useEffect(() => {
-    if (!!!renderedPlot) {
-      setHighlightedPositions({
-        point: null,
-        block: null,
-        group1: null,
-        group2: null,
-      });
-    } else if (!!renderedPlot.blocks) {
+    if (!!renderedPlot) {
       const { blocks } = renderedPlot;
-      const { row, column } = highlightedPointPosition ?? {
+      const { row, column } = hoveredPoint ?? {
         row: -1,
         column: -1,
       };
-      const itVal = blocks.data.get(row + ',' + column) ?? null;
+      const data = blocks.data.get(row + ',' + column) ?? null;
+      const hiddenIndexes = [row - 1 + ',' + (column + 1)];
+      const hiddenData = new Map(
+        hiddenIndexes
+          .map((strIndex): [string, any] => {
+            return [strIndex, blocks.data.get(strIndex) ?? null];
+          })
+          .filter((datum) => !!datum[1])
+      );
 
-      report.log('usePainter', [{ highlightedPointPosition }]);
+      report.debug('usePainter', [{ hoveredPoint, blocks, data, hiddenData }]);
 
-      report.log('usePainter', [
-        { blocks, itVal, value: blocks.data.values().next().value },
-      ]);
-
-      // TODO apply perspective parameter on setHighlightedPositions()
-      setHighlightedPositions({
-        point: highlightedPointPosition,
-        block: !!itVal
-          ? ({
-              ...blocks,
-              data: itVal,
-            } as BlockPosition)
-          : null,
+      setHoveredPosition({
+        block: !!data ? ({ ...blocks, data } as BlockPosition) : null,
         group1: null,
         group2: null,
       });
+      setShrinkedPositions(
+        hiddenData.size > 0
+          ? ({ ...blocks, data: hiddenData } as BlockPositions)
+          : null
+      );
+      return;
     }
-  }, [highlightedPointPosition, renderedPlot]);
 
+    setHoveredPosition({
+      block: null,
+      group1: null,
+      group2: null,
+    });
+    setShrinkedPositions(null);
+  }, [hoveredPoint, renderedPlot]);
+
+  // useEffect(() => {
+  //   const ctx = canvasRef.event.current?.getContext('2d');
+  //   if (!!!ctx) return;
+  //   else if (hoveredPointPosition === null) {
+  //     // clearRendered(ctx);
+  //   }
+
+  //   if (!!hoveredPointPosition) {
+  //     if (visible.points) {
+  //       renderHoveredPoint(ctx, hoveredPointPosition);
+  //     }
+  //   }
+  // }, [hoveredPointPosition, renderedPlot]);
+
+  /**
+   * Render hovered position if changed;
+   */
   useEffect(() => {
-    const ctx = refMap.stage.current?.getContext('2d');
+    const ctxStage = canvasRef.stage.current?.getContext('2d');
+    const ctxCutton = canvasRef.cutton.current?.getContext('2d');
+    if (!!!ctxStage || !!!ctxCutton) return;
+
+    // TODO Enable renderHoveredPoint (NOT WORK NOW)
+    // renderHoveredPoint(ctxCutton, hoveredPosition.point);
+
+    report.log('usePainter', [{ hoveredBlock: hoveredPosition.block }]);
+    // renderHoveredBlock(ctxCutton, hoveredPosition.block);
+    renderShrinkingBlock(ctxCutton, shrinkedPositions);
+
+    // TODO Apply subSnapshot correctly
+    // setSubSnapshot({
+    //   base: null,
+    //   stage: renderHoveredBlock(ctxStage, hoveredPosition.block),
+    //   cutton: visible.points
+    //     ? renderHoveredPoint(ctxCutton, hoveredPosition.point)
+    //     : null,
+    // });
+  }, [hoveredPosition]);
+
+  /**
+   * Update highlighted positions using highlightedPointPosition from usePainterEvent()
+   */
+  useEffect(() => {
+    if (!!renderedPlot) {
+      if (!!renderedPlot.blocks) {
+        const { blocks } = renderedPlot;
+        const { row, column } = highlightedPoint ?? {
+          row: -1,
+          column: -1,
+        };
+        const data = blocks.data.get(row + ',' + column) ?? null;
+
+        report.log('usePainter', [
+          {
+            highlightedPoint,
+            blocks,
+            data,
+          },
+        ]);
+
+        // TODO apply perspective parameter on setHighlightedPositions()
+        setHighlightedPositions({
+          block: !!data ? ({ ...blocks, data } as BlockPosition) : null,
+          group1: null,
+          group2: null,
+        });
+        return;
+      }
+    }
+
+    setHighlightedPositions({
+      block: null,
+      group1: null,
+      group2: null,
+    });
+  }, [highlightedPoint, renderedPlot]);
+
+  /**
+   * Render highlighted positions if changed.
+   */
+  useEffect(() => {
+    const ctx: CanvasRenderingContext2D =
+      canvasRef.stage.current?.getContext('2d');
     if (!!!ctx) return;
 
     report.log('usePainter', [{ highlightedPositions }]);
 
-    if (!!highlightedPositions.block && !!renderedPlot?.blocks) {
-      setSubSnapshot({
-        base: null,
-        stage: renderHighlightedBlocks(ctx, highlightedPositions.block),
-        cutton: null,
-      });
-    }
+    setSubSnapshot({
+      base: null,
+      stage: renderHighlightedBlocks(ctx, highlightedPositions.block),
+      cutton: null,
+    });
   }, [highlightedPositions]);
 
+  /**
+   * Translate canvases if perspective has changed.
+   */
   useEffect(() => {
     report.debug('usePainter', [{ perspective }]);
     translate(
-      refMap.blocks.current?.getContext('2d'),
+      canvasRef.blocks.current?.getContext('2d'),
       objectSnapshot.blocks,
       perspective
     );
     translate(
-      refMap.groups1.current?.getContext('2d'),
+      canvasRef.groups1.current?.getContext('2d'),
       objectSnapshot.groups1,
       perspective
     );
     translate(
-      refMap.stage.current?.getContext('2d'),
+      canvasRef.stage.current?.getContext('2d'),
       subSnapshot.stage,
       perspective
     );
     translate(
-      refMap.cutton.current?.getContext('2d'),
+      canvasRef.cutton.current?.getContext('2d'),
       subSnapshot.cutton,
       perspective
     );
   }, [perspective]);
 
   return [
-    refMap,
-    hoveredPointPosition,
+    canvasRef,
+    hoveredPoint,
     highlightedPositions,
     paint,
     setLevel,
