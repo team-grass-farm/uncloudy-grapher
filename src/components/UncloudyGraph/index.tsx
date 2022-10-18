@@ -65,7 +65,7 @@ export default ({
   }, [options]);
 
   useEffect(() => {
-    !!highlighted.block && setShowExtruded(true);
+    !!highlighted.blocks && setShowExtruded(true);
   }, [highlighted]);
 
   return (
@@ -145,7 +145,7 @@ export default ({
           </Col>
         </Row>
         <li>
-          {highlighted.block ? JSON.stringify(highlighted.block) : 'none'}
+          {highlighted.blocks ? JSON.stringify(highlighted.blocks) : 'none'}
         </li>
       </ExtrudedBlock>
     </>

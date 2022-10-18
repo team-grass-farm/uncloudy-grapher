@@ -2,22 +2,52 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { report } from '~utils/logger';
 import { getCursorPosition } from '~utils/positioner';
 
+const IsSameMatrix = (a: Matrix | null, b: Matrix | null): boolean =>
+  !!a && !!b && a.row === b.row && a.column === b.column;
+
 export default (
   dimensions: Record<'width' | 'height', number>
 ): [
   React.RefObject<HTMLCanvasElement>,
   number,
+  Painter.Position,
+  Painter.Positions,
+  Painter.Positions,
   PointPosition | null,
-  PointPosition | null,
-  React.Dispatch<1 | 2 | 3>
+  React.Dispatch<1 | 2 | 3>,
+  React.Dispatch<Positioner.Plot | null>
 ] => {
   const [level, setLevel] = useState<1 | 2 | 3>(2);
+  const [perspective, setPerspective] = useState<number>(0);
+  const [renderedPlot, setRenderedPlot] = useState<Positioner.Plot | null>(
+    null
+  );
+
   const [hoveredPointPosition, setHoveredPointPosition] =
     useState<PointPosition | null>(null);
-  const [highlightedPointPosition, setHighlightedPointPosition] =
+  const [highlightedPointPosition, setHighlightedPointPositions] =
     useState<PointPosition | null>(null);
-  const [perspective, setPerspective] = useState<number>(0);
-  const [wheelEvent, setWheelEvent] = useState<WheelEvent | null>(null);
+  const [hoveredPosition, setHoveredPosition] = useState<Painter.Position>({
+    matrix: null,
+    block: null,
+    group1: null,
+    group2: null,
+  });
+  const [shrinkedPositions, setShrinkedPositions] = useState<Painter.Positions>(
+    {
+      matrix: null,
+      blocks: null,
+      groups1: null,
+      groups2: null,
+    }
+  );
+  const [highlightedPositions, setHighlightedPositions] =
+    useState<Painter.Positions>({
+      matrix: null,
+      blocks: null,
+      groups1: null,
+      groups2: null,
+    });
 
   const ref = useRef<HTMLCanvasElement>(null);
 
@@ -38,33 +68,128 @@ export default (
 
   const handleClick = useCallback(
     (ev: MouseEvent) => {
-      setHighlightedPointPosition(getPointPosition(ev));
+      const point = getPointPosition(ev);
+
+      testHandling();
+
+      if (!IsSameMatrix(point, highlightedPointPosition)) {
+        if (!!point && !!renderedPlot) {
+          const { blocks } = renderedPlot;
+          const targetBlockData =
+            blocks.data.get(point!.row + ',' + point!.column) ?? null;
+
+          report.debug('usePainterEvent', [
+            {
+              msg: 'onHandleClick()',
+              blocks,
+              targetBlockData,
+            },
+          ]);
+
+          setHighlightedPositions({
+            matrix: null,
+            blocks: !!targetBlockData
+              ? ({ ...blocks, data: targetBlockData } as BlockPosition)
+              : null,
+            groups1: null,
+            groups2: null,
+          });
+        } else {
+          report.log('usePainterEvent', [
+            {
+              msg: 'one of point & renderedPlot does not exist',
+              point,
+              renderedPlot,
+            },
+          ]);
+        }
+      } else {
+        report.log('usePainterEvent', [{ msg: 'not same onHandleClick()' }]);
+      }
+      setHighlightedPointPositions(point);
     },
-    [dimensions, level, perspective]
+    [dimensions, level, perspective, renderedPlot, highlightedPointPosition]
   );
+
+  useEffect(() => {
+    report.log('usePainterEvent', [
+      { msg: 'renderedPlot changed.', renderedPlot },
+    ]);
+    testHandling();
+  }, [renderedPlot]);
+
+  const testHandling = useCallback(() => {
+    report.log('usePainterEvent', [{ msg: 'testHandling()', renderedPlot }]);
+  }, [renderedPlot]);
 
   const handleMouseMove = useCallback(
     (ev: MouseEvent) => {
-      setHoveredPointPosition(getPointPosition(ev));
+      const point = getPointPosition(ev);
+
+      if (!IsSameMatrix(point, highlightedPointPosition)) {
+        if (!!point && !!renderedPlot) {
+          const { blocks } = renderedPlot;
+          const targetBlockData =
+            blocks.data.get(point.row + ',' + point.column) ?? null;
+          const forwardIndexes = [point.row - 1 + ',' + (point.column + 1)];
+          const forwardBlockData = new Map(
+            forwardIndexes
+              .map((strIndex): [string, any] => {
+                return [strIndex, blocks.data.get(strIndex) ?? null];
+              })
+              .filter((datum) => !!datum[1])
+          );
+
+          report.debug('usePainterEvent', [
+            {
+              msg: 'onHandleMouseMove()',
+              point,
+              blocks,
+              targetBlockData,
+              forwardBlockData,
+            },
+          ]);
+
+          setHoveredPosition({
+            matrix: null,
+            block: !!targetBlockData
+              ? ({ ...blocks, data: targetBlockData } as BlockPosition)
+              : null,
+            group1: null,
+            group2: null,
+          });
+          setShrinkedPositions({
+            matrix: null,
+            blocks:
+              forwardBlockData.size > 0
+                ? ({ ...blocks, data: forwardBlockData } as BlockPositions)
+                : null,
+            groups1: null,
+            groups2: null,
+          });
+        }
+      }
+      setHoveredPointPosition(point);
     },
-    [dimensions, level, perspective]
+    [dimensions, level, perspective, renderedPlot, hoveredPointPosition]
   );
 
   const handleMouseLeave = useCallback(() => {
-    setHoveredPointPosition(null);
+    setHoveredPosition({
+      matrix: null,
+      block: null,
+      group1: null,
+      group2: null,
+    });
   }, []);
 
-  const handleWheel = useCallback((ev: WheelEvent) => {
-    ev.preventDefault();
-    setWheelEvent(ev);
-  }, []);
-
-  useEffect(() => {
-    wheelEvent &&
-      setPerspective(
-        Math.min(0, perspective + wheelEvent.deltaX + wheelEvent.deltaY)
-      );
-  }, [wheelEvent]);
+  const handleWheel = useCallback(
+    (ev: WheelEvent) => {
+      ev.preventDefault();
+      setPerspective(Math.min(0, perspective + ev.deltaX + ev.deltaY));
+    },
+    [perspective]
+  );
 
   useEffect(() => {
     const ctx = ref.current?.getContext('2d');
@@ -73,7 +198,7 @@ export default (
     ref.current.addEventListener('click', handleClick);
     ref.current.addEventListener('mousemove', handleMouseMove);
     ref.current.addEventListener('mouseleave', handleMouseLeave);
-    ref.current.addEventListener('wheel', (ev) => handleWheel(ev));
+    ref.current.addEventListener('wheel', handleWheel);
 
     return () => {
       if (ref.current) {
@@ -85,21 +210,14 @@ export default (
     };
   }, [dimensions, level, perspective]);
 
-  useEffect(() => {
-    !!hoveredPointPosition &&
-      report.debug('usePainterEvent', [
-        'level: ',
-        level,
-        'boundedEvent: ',
-        hoveredPointPosition,
-      ]);
-  }, [hoveredPointPosition]);
-
   return [
     ref,
     perspective,
+    hoveredPosition,
+    shrinkedPositions,
+    highlightedPositions,
     hoveredPointPosition,
-    highlightedPointPosition,
     setLevel,
+    setRenderedPlot,
   ];
 };
