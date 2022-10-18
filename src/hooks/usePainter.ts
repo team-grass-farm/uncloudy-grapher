@@ -6,8 +6,6 @@ import {
   renderGrids,
   renderGroups,
   renderHighlightedBlocks,
-  renderHoveredBlock,
-  renderHoveredPoint,
   renderPoints,
   renderShrinkingBlock,
   translate,
@@ -31,15 +29,18 @@ export default (): [
     width: 0,
     height: 0,
   });
-  const [renderedPlot, setRenderedPlot] = useState<Positioner.Plot | null>(
-    null
-  );
+  // const [renderedPlot, setRenderedPlot] = useState<Positioner.Plot | null>(
+  //   null
+  // );
   const [
     eventRef,
     perspective,
-    hoveredPoint,
-    highlightedPoint,
+    hoveredPosition,
+    shrinkedPositions,
+    highlightedPositions,
+    hoveredPointPosition,
     setLevelOnEvent,
+    setRenderedPlotOnEvent,
   ] = usePainterEvent(dimensions);
 
   const canvasRef: Painter.Ref = {
@@ -62,22 +63,6 @@ export default (): [
       point: true,
     }),
   });
-
-  const [hoveredPosition, setHoveredPosition] = useState<Painter.Position>({
-    block: null,
-    group1: null,
-    group2: null,
-  });
-
-  const [shrinkedPositions, setShrinkedPositions] =
-    useState<BlockPositions | null>(null);
-
-  const [highlightedPositions, setHighlightedPositions] =
-    useState<Painter.Positions>({
-      block: null,
-      group1: null,
-      group2: null,
-    });
 
   const [objectSnapshot, setObjectSnapshot] = useState<Painter.ObjectSnapshot>({
     groups2: null,
@@ -141,68 +126,11 @@ export default (): [
             : []
         );
       }
-      setRenderedPlot(plot);
       setLevelOnEvent(level);
+      setRenderedPlotOnEvent(plot);
     },
     [dimensions, level, visible]
   );
-
-  /**
-   * Update hovered position using hoveredPointPosition from usePainterEvent().
-   */
-  useEffect(() => {
-    if (!!renderedPlot) {
-      const { blocks } = renderedPlot;
-      const { row, column } = hoveredPoint ?? {
-        row: -1,
-        column: -1,
-      };
-      const data = blocks.data.get(row + ',' + column) ?? null;
-      const hiddenIndexes = [row - 1 + ',' + (column + 1)];
-      const hiddenData = new Map(
-        hiddenIndexes
-          .map((strIndex): [string, any] => {
-            return [strIndex, blocks.data.get(strIndex) ?? null];
-          })
-          .filter((datum) => !!datum[1])
-      );
-
-      report.debug('usePainter', [{ hoveredPoint, blocks, data, hiddenData }]);
-
-      setHoveredPosition({
-        block: !!data ? ({ ...blocks, data } as BlockPosition) : null,
-        group1: null,
-        group2: null,
-      });
-      setShrinkedPositions(
-        hiddenData.size > 0
-          ? ({ ...blocks, data: hiddenData } as BlockPositions)
-          : null
-      );
-      return;
-    }
-
-    setHoveredPosition({
-      block: null,
-      group1: null,
-      group2: null,
-    });
-    setShrinkedPositions(null);
-  }, [hoveredPoint, renderedPlot]);
-
-  // useEffect(() => {
-  //   const ctx = canvasRef.event.current?.getContext('2d');
-  //   if (!!!ctx) return;
-  //   else if (hoveredPointPosition === null) {
-  //     // clearRendered(ctx);
-  //   }
-
-  //   if (!!hoveredPointPosition) {
-  //     if (visible.points) {
-  //       renderHoveredPoint(ctx, hoveredPointPosition);
-  //     }
-  //   }
-  // }, [hoveredPointPosition, renderedPlot]);
 
   /**
    * Render hovered position if changed;
@@ -217,7 +145,7 @@ export default (): [
 
     report.log('usePainter', [{ hoveredBlock: hoveredPosition.block }]);
     // renderHoveredBlock(ctxCutton, hoveredPosition.block);
-    renderShrinkingBlock(ctxCutton, shrinkedPositions);
+    renderShrinkingBlock(ctxCutton, shrinkedPositions.blocks);
 
     // TODO Apply subSnapshot correctly
     // setSubSnapshot({
@@ -228,44 +156,6 @@ export default (): [
     //     : null,
     // });
   }, [hoveredPosition]);
-
-  /**
-   * Update highlighted positions using highlightedPointPosition from usePainterEvent()
-   */
-  useEffect(() => {
-    if (!!renderedPlot) {
-      if (!!renderedPlot.blocks) {
-        const { blocks } = renderedPlot;
-        const { row, column } = highlightedPoint ?? {
-          row: -1,
-          column: -1,
-        };
-        const data = blocks.data.get(row + ',' + column) ?? null;
-
-        report.log('usePainter', [
-          {
-            highlightedPoint,
-            blocks,
-            data,
-          },
-        ]);
-
-        // TODO apply perspective parameter on setHighlightedPositions()
-        setHighlightedPositions({
-          block: !!data ? ({ ...blocks, data } as BlockPosition) : null,
-          group1: null,
-          group2: null,
-        });
-        return;
-      }
-    }
-
-    setHighlightedPositions({
-      block: null,
-      group1: null,
-      group2: null,
-    });
-  }, [highlightedPoint, renderedPlot]);
 
   /**
    * Render highlighted positions if changed.
@@ -279,7 +169,7 @@ export default (): [
 
     setSubSnapshot({
       base: null,
-      stage: renderHighlightedBlocks(ctx, highlightedPositions.block),
+      stage: renderHighlightedBlocks(ctx, highlightedPositions.blocks),
       cutton: null,
     });
   }, [highlightedPositions]);
@@ -313,7 +203,7 @@ export default (): [
 
   return [
     canvasRef,
-    hoveredPoint,
+    hoveredPointPosition,
     highlightedPositions,
     paint,
     setLevel,
