@@ -1,7 +1,8 @@
 declare namespace Painter {
-  type ObjectLayer = 'blocks' | 'groups1' | 'groups2';
-  type SubLayer = 'base' | 'stage' | 'cutton';
-  type DebuggingLayer = 'grid' | 'points';
+  type ObjectName = 'block' | 'group1' | 'group2';
+  type ObjectLayerName = 'blocks' | 'groups1' | 'groups2';
+  type CalculatedLayerName = 'base' | 'stage' | 'cutton';
+  type DebuggingLayerName = 'grid' | 'points';
 
   type Paint = (plot: Positioner.Plot) => void;
   type Option =
@@ -10,28 +11,30 @@ declare namespace Painter {
 
   interface Ref
     extends Record<
-      ObjectLayer | SubLayer | DebuggingLayer,
+      ObjectLayerName | CalculatedLayerName | DebuggingLayerName,
       RefObject<HTMLCanvasElement>
     > {
     grid?: RefObject<HTMLCanvasElement>;
     points?: RefObject<HTMLCanvasElement>;
     event: RefObject<HTMLCanvasElement>;
   }
-  interface Flag extends Partial<Record<DebuggingLayer, boolean>> {}
+  interface Flag extends Partial<Record<DebuggingLayerName, boolean>> {}
 
-  interface ObjectSnapshot extends Record<ObjectLayer, ImageData | null> {}
-  interface SubSnapshot extends Record<SubLayer, Image | null> {}
+  interface ObjectSnapshot extends Record<ObjectLayerName, ImageData | null> {}
+  interface SubSnapshot extends Record<CalculatedLayerName, Image | null> {}
 
-  interface Position {
+  interface Position extends Record<ObjectName, any> {
+    matrix: Matrix | null;
     block: BlockPosition | null;
     group1: GroupPosition | null;
     group2: GroupPosition | null;
   }
 
-  interface Positions {
-    block: BlockPositions | BlockPosition | null;
-    group1: GroupPosition[] | GroupPosition | null;
-    group2: GroupPosition[] | GroupPosition | null;
+  interface Positions extends Record<ObjectLayerName, any> {
+    matrix: Matrix[] | null;
+    blocks: BlockPositions | BlockPosition | null;
+    groups1: GroupPosition[] | GroupPosition | null;
+    groups2: GroupPosition[] | GroupPosition | null;
   }
 
   type PaintObject = (
