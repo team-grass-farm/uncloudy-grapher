@@ -21,7 +21,8 @@ declare namespace Painter {
   interface Flag extends Partial<Record<DebuggingLayerName, boolean>> {}
 
   interface ObjectSnapshot extends Record<ObjectLayerName, ImageData | null> {}
-  interface SubSnapshot extends Record<CalculatedLayerName, Image | null> {}
+  interface SubSnapshot
+    extends Record<CalculatedLayerName, (() => void) | null> {}
 
   interface Position extends Record<ObjectName, any> {
     matrix: Matrix | null;
@@ -95,18 +96,23 @@ declare namespace Painter {
     perspective: number
   ) => void;
 
-  type Render<
-    T extends
-      | PointPosition
-      | PointPosition[]
-      | LinePosition[]
-      | BlockPosition
-      | BlockPositions
-      | GroupPositions
-      | null
-  > = (
+  type RenderType =
+    | PointPosition
+    | PointPosition[]
+    | LinePosition[]
+    | BlockPosition
+    | BlockPositions
+    | GroupPositions
+    | null;
+
+  type Render<T extends RenderType> = (
     ctx: CanvasRenderingContext2D | null,
-    positions: T,
-    isBaseCanvas?: boolean
+    positions: T
   ) => ImageData | null;
+
+  type QuickRender<T extends RenderType> = (
+    ctx: CanvasRenderingContext2D,
+    positions: T,
+    backCtx?: CanvasRenderingContext2D | null
+  ) => [ImageData, () => void] | [null, null];
 }

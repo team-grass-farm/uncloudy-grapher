@@ -6,6 +6,7 @@ import {
   renderGrids,
   renderGroups,
   renderHighlightedBlocks,
+  renderHoveredBlock,
   renderPoints,
   renderShrinkingBlock,
   translate,
@@ -70,11 +71,14 @@ export default (): [
     blocks: null,
   });
 
-  const [subSnapshot, setSubSnapshot] = useState<Painter.SubSnapshot>({
-    base: null,
-    stage: null,
-    cutton: null,
-  });
+  const [stageSnapshot, setStageSnapshot] = useState<ImageData | null>(null);
+  const [cuttonSnapshot, setCuttonSnapshot] = useState<ImageData | null>(null);
+
+  // const [subSnapshot, setSubSnapshot] = useState<Painter.SubSnapshot>({
+  //   base: null,
+  //   stage: null,
+  //   cutton: null,
+  // });
 
   /**
    * Synchronize canvas' client size to their elements' size
@@ -137,25 +141,51 @@ export default (): [
    */
   useEffect(() => {
     const ctxStage = canvasRef.stage.current?.getContext('2d');
-    const ctxCutton = canvasRef.cutton.current?.getContext('2d');
-    if (!!!ctxStage || !!!ctxCutton) return;
+    if (!!!ctxStage) return;
 
-    // TODO Enable renderHoveredPoint (NOT WORK NOW)
-    // renderHoveredPoint(ctxCutton, hoveredPosition.point);
+    const [image, callbackFn] = renderHoveredBlock(
+      ctxStage,
+      hoveredPosition.block
+    );
 
-    report.log('usePainter', [{ hoveredBlock: hoveredPosition.block }]);
-    // renderHoveredBlock(ctxCutton, hoveredPosition.block);
-    renderShrinkingBlock(ctxCutton, shrinkedPositions.blocks);
+    !!image && setStageSnapshot(image);
 
-    // TODO Apply subSnapshot correctly
-    // setSubSnapshot({
-    //   base: null,
-    //   stage: renderHoveredBlock(ctxStage, hoveredPosition.block),
-    //   cutton: visible.points
-    //     ? renderHoveredPoint(ctxCutton, hoveredPosition.point)
-    //     : null,
-    // });
+    return () => {
+      callbackFn && callbackFn();
+    };
   }, [hoveredPosition]);
+
+  /**
+   * Render shrinking positions if changed.
+   */
+  useEffect(() => {
+    const ctxBlock = canvasRef.blocks.current?.getContext('2d');
+    const ctxCutton = canvasRef.cutton.current?.getContext('2d');
+    if (!!!ctxCutton || !!!ctxBlock) return;
+
+    !!shrinkedPositions.blocks &&
+      shrinkedPositions.blocks.data instanceof Map &&
+      report.log('usePainter', [
+        {
+          msg: `shrinking ${[
+            ...shrinkedPositions.blocks?.data.keys(),
+          ].toString()}`,
+          shrinkedBlockData: shrinkedPositions.blocks?.data,
+        },
+      ]);
+
+    const [image, callbackFn] = renderShrinkingBlock(
+      ctxCutton,
+      shrinkedPositions.blocks,
+      ctxBlock
+    );
+
+    !!image && setCuttonSnapshot(image);
+
+    return () => {
+      callbackFn && callbackFn();
+    };
+  }, [shrinkedPositions]);
 
   /**
    * Render highlighted positions if changed.
@@ -167,11 +197,7 @@ export default (): [
 
     report.log('usePainter', [{ highlightedPositions }]);
 
-    setSubSnapshot({
-      base: null,
-      stage: renderHighlightedBlocks(ctx, highlightedPositions.blocks),
-      cutton: null,
-    });
+    // TODO code renderHighlightedBlock()
   }, [highlightedPositions]);
 
   /**
@@ -189,14 +215,15 @@ export default (): [
       objectSnapshot.groups1,
       perspective
     );
+    // TODO Find a way to get ImageData on return callback function of subSnapShot
     translate(
       canvasRef.stage.current?.getContext('2d'),
-      subSnapshot.stage,
+      stageSnapshot,
       perspective
     );
     translate(
       canvasRef.cutton.current?.getContext('2d'),
-      subSnapshot.cutton,
+      cuttonSnapshot,
       perspective
     );
   }, [perspective]);

@@ -476,7 +476,7 @@ export const paintAnimatedPod: Painter.PaintObject = (
 ) => {
   const ret: (() => void)[] = [];
 
-  for (let currentHeight = h; currentHeight > 0; --currentHeight) {
+  for (let currentHeight = h; currentHeight > HEAD_H; --currentHeight) {
     ret.push(...paintPod(ctx, x, y, dx, dy, currentHeight, option));
   }
   return ret;
@@ -986,11 +986,21 @@ const renderA: Painter.BaseRender = (
   ctx.fillStyle = 'transparent';
   ctx.scale(1, 1);
 
+  if (clearCanvas) {
+    ctx.clearRect(
+      0,
+      ctx.canvas.height >> 1,
+      ctx.canvas.width >> 1,
+      ctx.canvas.height
+    );
+  }
+
   report.debug('Painter', [{ stackPaintings }]);
   const frames = stackPaintings.entries();
   const runner = setInterval(() => {
     const frame = frames.next();
-    if (frame.done) {
+    if (!!!frame) {
+    } else if (frame.done) {
       clearInterval(runner);
       report.log('Painter', ['runner finished.']);
     } else {
@@ -1111,8 +1121,7 @@ let lastSurface: ImageData | null;
 
 export const renderBlocks: Painter.Render<BlockPositions> = (
   ctx,
-  positions,
-  isBaseCanvas
+  positions
 ) => {
   if (!!!ctx) return null;
   const stackPaintings: (() => void)[] = [];
@@ -1140,8 +1149,7 @@ export const renderBlocks: Painter.Render<BlockPositions> = (
           position.y,
           positions.dx * 0.45,
           positions.dy * 0.45,
-          position.z ? (positions.dz ?? 1) * position.z : 35,
-          isBaseCanvas ? { selected: true } : undefined
+          position.z ? (positions.dz ?? 1) * position.z : 35
         )
       );
     });
@@ -1151,35 +1159,32 @@ export const renderBlocks: Painter.Render<BlockPositions> = (
   return ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
 };
 
-export const renderHoveredBlock: Painter.Render<BlockPosition | null> = (
+export const renderHoveredBlock: Painter.QuickRender<BlockPosition | null> = (
   ctx,
   position
 ) => {
-  if (!!!ctx || !!!position) return null;
+  if (!!!ctx) return [null, null];
   const stackPaintings: (() => void)[] = [];
 
   let paintBlock: Painter.PaintObject | null = null;
-  report.log('Painter', [
-    { position, arePositionsMap: position.data instanceof Map },
-  ]);
-  const type =
-    position.data instanceof Map
-      ? (position.data.values().next().value as PointPosition | undefined)
-      : position.data.type;
-  switch (type) {
-    case 'pod':
-      paintBlock =
-        position?.viewType === 'flat' ? paintFlatPod : paintAnimatedPod;
-      break;
-    case 'node':
-      paintBlock = position?.viewType === 'flat' ? paintFlatNode : paintNode;
-      break;
-  }
-
-  // !!lastSurface &&
-  //   ctx.putImageData(lastSurface, ctx.canvas.width, ctx.canvas.height);
 
   if (!!position) {
+    report.log('Painter', [
+      { position, arePositionsMap: position.data instanceof Map },
+    ]);
+    const type =
+      position.data instanceof Map
+        ? (position.data.values().next().value as PointPosition | undefined)
+        : position.data.type;
+    switch (type) {
+      case 'pod':
+        paintBlock = position?.viewType === 'flat' ? paintFlatPod : paintPod;
+        break;
+      case 'node':
+        paintBlock = position?.viewType === 'flat' ? paintFlatNode : paintNode;
+        break;
+    }
+
     stackPaintings.push(
       ...paintBlock!(
         ctx,
@@ -1194,13 +1199,20 @@ export const renderHoveredBlock: Painter.Render<BlockPosition | null> = (
   }
 
   renderA(ctx, stackPaintings, true, true);
-  return ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+  return [
+    ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height),
+    () => {},
+  ];
 };
 
-export const renderShrinkingBlock: Painter.Render<
+export const renderShrinkingBlock: Painter.QuickRender<
   BlockPosition | BlockPositions | null
-> = (ctx, positions) => {
-  if (!!!ctx || !!!positions) return null;
+> = (ctx, positions, backCtx) => {
+  if (!!!ctx) return [null, null];
+
+  let backImageData: ImageData | null = null;
+  let backRect: [number, number, number, number] | null = null;
+
   const stackPaintings: (() => void)[] = [];
 
   let paintBlock: Painter.PaintObject | null = null;
@@ -1208,19 +1220,41 @@ export const renderShrinkingBlock: Painter.Render<
   if (!!positions) {
     if (positions.data instanceof Map) {
       const { dx, dy, dz } = positions;
-      report.info('Painter', [{ msg: 'shrinking', positions }]);
       positions.data.forEach((position) => {
-        // report.info('Painter', [{ position }]);
-        stackPaintings.push(
-          ...paintAnimatedPod!(
-            ctx,
-            position.x,
-            position.y,
-            dx * 0.45,
-            dy * 0.45,
-            position.z ? (dz ?? 1) * position.z : 35
-          )
-        );
+        report.debug('Painter', [
+          {
+            msg: 'shrinking',
+            row: position.row,
+            column: position.column,
+            position,
+          },
+        ]);
+
+        if (!!backCtx) {
+          backRect = [position.x - (dx >> 1), position.y - dy * 3, dx, 3 * dy];
+          backImageData = backCtx.getImageData(...backRect);
+          backCtx.clearRect(...backRect);
+        }
+
+        const height = position.z ? (dz ?? 1) * position.z : 35;
+        const dxPod = dx * 0.45,
+          dyPod = dy * 0.45;
+
+        for (let h = height; h > Math.max(height >> 1, height - 10); --h) {
+          stackPaintings.push(
+            ...paintPod(ctx, position.x, position.y, dxPod, dyPod, h)
+          );
+        }
+        // stackPaintings.push(
+        //   ...paintAnimatedPod!(
+        //     ctx,
+        //     position.x,
+        //     position.y,
+        //     dx * 0.45,
+        //     dy * 0.45,
+        //     position.z ? (dz ?? 1) * position.z : 35
+        //   )
+        // );
       });
     } else {
       // stackPaintings.push(
@@ -1238,7 +1272,18 @@ export const renderShrinkingBlock: Painter.Render<
   }
 
   renderA(ctx, stackPaintings, true, true);
-  return ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+  // return ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+  return [
+    ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height),
+    () => {
+      if (!!backCtx && !!backImageData && !!backRect) {
+        report.debug('Painter', [
+          { msg: 'restoring backCtx', backCtx, backImageData, backRect },
+        ]);
+        backCtx.putImageData(backImageData!, backRect![0], backRect![1]);
+      }
+    },
+  ];
 };
 
 export const renderHighlightedBlocks: Painter.Render<
