@@ -25,8 +25,9 @@ export default (
 
   const [hoveredPointPosition, setHoveredPointPosition] =
     useState<PointPosition | null>(null);
-  const [highlightedPointPosition, setHighlightedPointPositions] =
+  const [highlightedPointPosition, setHighlightedPointPosition] =
     useState<PointPosition | null>(null);
+
   const [hoveredPosition, setHoveredPosition] = useState<Painter.Position>({
     matrix: null,
     block: null,
@@ -70,8 +71,6 @@ export default (
     (ev: MouseEvent) => {
       const point = getPointPosition(ev);
 
-      testHandling();
-
       if (!IsSameMatrix(point, highlightedPointPosition)) {
         if (!!point && !!renderedPlot) {
           const { blocks } = renderedPlot;
@@ -103,30 +102,21 @@ export default (
             },
           ]);
         }
+        setHighlightedPointPosition(point);
       } else {
-        report.log('usePainterEvent', [{ msg: 'not same onHandleClick()' }]);
+        report.log('usePainterEvent', [
+          { msg: 'already executed block onHandleClick()' },
+        ]);
       }
-      setHighlightedPointPositions(point);
     },
     [dimensions, level, perspective, renderedPlot, highlightedPointPosition]
   );
-
-  useEffect(() => {
-    report.log('usePainterEvent', [
-      { msg: 'renderedPlot changed.', renderedPlot },
-    ]);
-    testHandling();
-  }, [renderedPlot]);
-
-  const testHandling = useCallback(() => {
-    report.log('usePainterEvent', [{ msg: 'testHandling()', renderedPlot }]);
-  }, [renderedPlot]);
 
   const handleMouseMove = useCallback(
     (ev: MouseEvent) => {
       const point = getPointPosition(ev);
 
-      if (!IsSameMatrix(point, highlightedPointPosition)) {
+      if (!IsSameMatrix(point, hoveredPointPosition)) {
         if (!!point && !!renderedPlot) {
           const { blocks } = renderedPlot;
           const targetBlockData =
@@ -144,6 +134,7 @@ export default (
             {
               msg: 'onHandleMouseMove()',
               point,
+              hoveredPointPosition,
               blocks,
               targetBlockData,
               forwardBlockData,
@@ -158,21 +149,53 @@ export default (
             group1: null,
             group2: null,
           });
-          setShrinkedPositions({
-            matrix: null,
-            blocks:
-              forwardBlockData.size > 0
-                ? ({ ...blocks, data: forwardBlockData } as BlockPositions)
-                : null,
-            groups1: null,
-            groups2: null,
-          });
+
+          if (!!targetBlockData && !!forwardBlockData.size) {
+            setShrinkedPositions({
+              matrix: null,
+              blocks:
+                forwardBlockData.size > 0
+                  ? ({ ...blocks, data: forwardBlockData } as BlockPositions)
+                  : null,
+              groups1: null,
+              groups2: null,
+            });
+          } else {
+            setShrinkedPositions({
+              matrix: null,
+              blocks: null,
+              groups1: null,
+              groups2: null,
+            });
+          }
+        } else {
+          // setHoveredPosition({
+          //   matrix: null,
+          //   block: null,
+          //   group1: null,
+          //   group2: null,
+          // });
+          // setShrinkedPositions({
+          //   matrix: null,
+          //   blocks: null,
+          //   groups1: null,
+          //   groups2: null,
+          // });
         }
+        setHoveredPointPosition(point);
       }
-      setHoveredPointPosition(point);
     },
-    [dimensions, level, perspective, renderedPlot, hoveredPointPosition]
+    [renderedPlot, hoveredPointPosition]
   );
+
+  useEffect(() => {
+    report.log('usePainterEvent', [
+      {
+        isNull: Object.values(shrinkedPositions).every((val) => !!!val),
+        shrinkedPositions,
+      },
+    ]);
+  }, [shrinkedPositions]);
 
   const handleMouseLeave = useCallback(() => {
     setHoveredPosition({
@@ -192,22 +215,28 @@ export default (
   );
 
   useEffect(() => {
-    const ctx = ref.current?.getContext('2d');
-    if (!!!ctx || ref.current === null) return;
-
-    ref.current.addEventListener('click', handleClick);
+    if (ref.current === null) return;
     ref.current.addEventListener('mousemove', handleMouseMove);
     ref.current.addEventListener('mouseleave', handleMouseLeave);
-    ref.current.addEventListener('wheel', handleWheel);
 
     return () => {
-      if (ref.current) {
-        ref.current.removeEventListener('click', handleClick);
-        ref.current.removeEventListener('mousemove', handleMouseMove);
-        ref.current.removeEventListener('mouseleave', handleMouseLeave);
-        ref.current.removeEventListener('wheel', handleWheel);
-      }
+      ref.current!.removeEventListener('mousemove', handleMouseMove);
+      ref.current!.removeEventListener('mouseleave', handleMouseLeave);
     };
+  }, [dimensions, level, renderedPlot, hoveredPointPosition]);
+
+  useEffect(() => {
+    if (ref.current === null) return;
+    ref.current.addEventListener('click', handleClick);
+
+    return () => ref.current!.removeEventListener('click', handleClick);
+  }, [dimensions, level, renderedPlot, highlightedPointPosition]);
+
+  useEffect(() => {
+    if (ref.current === null) return;
+    ref.current.addEventListener('wheel', handleWheel);
+
+    return () => ref.current!.removeEventListener('wheel', handleWheel);
   }, [dimensions, level, perspective]);
 
   return [
