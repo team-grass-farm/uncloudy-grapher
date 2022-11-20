@@ -3,6 +3,7 @@
  */
 import { DAYS, GRID_SIZE, POS_ZANDIS, SPACING } from '~constants';
 import { report } from '~utils/logger';
+import { isBlockPosition } from '~utils/typeChecker';
 
 const DX = 2 * (GRID_SIZE + SPACING);
 const DY = GRID_SIZE + SPACING;
@@ -33,10 +34,6 @@ const NODEGROUP_H = 10;
 
 const DEPLOYMENTGROUP_NM = 'Deployment Group';
 const DEPLOYMENTGROUP_H = 5;
-
-const isBlockPosition = <T extends BlockPosition | BlockPositions>(
-  positions: any | T
-): positions is BlockPosition => !!!(positions.data instanceof Map);
 
 export const paintCube: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   () => {
@@ -1201,7 +1198,9 @@ export const renderHoveredBlock: Painter.QuickRender<BlockPosition | null> = (
   renderA(ctx, stackPaintings, true, true);
   return [
     ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height),
-    () => {},
+    () => {
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    },
   ];
 };
 
@@ -1233,14 +1232,14 @@ export const renderShrinkingBlocks: Painter.QuickRender<
     } else {
       const { dx, dy, dz } = positions;
       positions.data.forEach((position) => {
-        report.debug('Painter', [
-          {
-            msg: 'shrinking',
-            row: position.row,
-            column: position.column,
-            position,
-          },
-        ]);
+        // report.debug('Painter', [
+        //   {
+        //     msg: 'shrinking',
+        //     row: position.row,
+        //     column: position.column,
+        //     position,
+        //   },
+        // ]);
 
         if (!!backCtx) {
           backRect = [position.x - (dx >> 1), position.y - dy * 3, dx, 3 * dy];
@@ -1252,7 +1251,7 @@ export const renderShrinkingBlocks: Painter.QuickRender<
         const dxPod = dx * 0.45,
           dyPod = dy * 0.45;
 
-        for (let h = height; h > Math.max(height >> 1, height - 10); --h) {
+        for (let h = height; h > 20; --h) {
           stackPaintings.push(
             ...paintPod(ctx, position.x, position.y, dxPod, dyPod, h)
           );
