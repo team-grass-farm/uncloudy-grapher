@@ -35,7 +35,7 @@ export default (): [
     eventRef,
     perspective,
     hoveredPosition,
-    shrinkedPositions,
+    shrankPositions,
     highlightedPositions,
     hoveredPointPosition,
     setLevelOnEvent,
@@ -71,6 +71,8 @@ export default (): [
 
   const [stageSnapshot, setStageSnapshot] = useState<ImageData | null>(null);
   const [cuttonSnapshot, setCuttonSnapshot] = useState<ImageData | null>(null);
+
+  const [testingFn, setTestingFn] = useState<(() => void) | null>(null);
 
   /**
    * Synchronize canvas' client size to their elements' size
@@ -128,56 +130,99 @@ export default (): [
     [dimensions, level, visible]
   );
 
-  /**
-   * Render hovered position if changed;
-   */
-  useEffect(() => {
-    const ctxStage = canvasRef.stage.current?.getContext('2d');
-    if (!!!ctxStage) return;
+  // const renderHoveredPosition = useCallback(
+  //   async (
+  //     ctxStage: CanvasRenderingContext2D,
+  //     hoveredBlockPosition: BlockPosition | null
+  //   ) => {
+  //     const [image, callbackFn] = await renderHoveredBlock(
+  //       ctxStage,
+  //       hoveredBlockPosition
+  //     );
 
-    const [image, callbackFn] = renderHoveredBlock(
-      ctxStage,
-      hoveredPosition.block
+  //     !!image && setStageSnapshot(image);
+
+  //     return () => {
+  //       callbackFn && callbackFn();
+  //     };
+  //   },
+  //   []
+  // );
+
+  // /**
+  //  * Render hovered position if changed;
+  //  */
+  // useEffect(() => {
+  //   const ctxStage = canvasRef.stage.current?.getContext('2d');
+  //   if (!!!ctxStage) return;
+
+  //   renderHoveredPosition(ctxStage, hoveredPosition.block);
+  // }, [hoveredPosition]);
+
+  const renderShrankPositions = async () => {
+    const ctxBlock = canvasRef.blocks.current?.getContext('2d', {
+      willReadFrequently: true,
+    });
+    const ctxCutton = canvasRef.cutton.current?.getContext('2d', {
+      willReadFrequently: true,
+    });
+    if (!!!ctxCutton || !!!ctxBlock) return;
+
+    report.log('usePainter', [
+      { msg: 'shranked', ctxBlock: ctxBlock.getImageData(0, 0, 10, 10) },
+    ]);
+    const [image, callbackFn] = await renderShrinkingBlocks(
+      ctxCutton,
+      shrankPositions.cutton.blocks,
+      ctxBlock
     );
 
-    !!image && setStageSnapshot(image);
-
-    return () => {
-      callbackFn && callbackFn();
-    };
-  }, [hoveredPosition]);
+    !!image && setCuttonSnapshot(image);
+    setTestingFn(callbackFn);
+  };
 
   /**
    * Render shrinking positions if changed.
    */
   useEffect(() => {
-    const ctxBlock = canvasRef.blocks.current?.getContext('2d');
-    const ctxCutton = canvasRef.cutton.current?.getContext('2d');
-    if (!!!ctxCutton || !!!ctxBlock) return;
-
-    // !!shrinkedPositions.blocks &&
-    //   !isBlockPosition(shrinkedPositions.blocks) &&
+    // !!shrankPositions.blocks &&
+    //   !isBlockPosition(shrankPositions.blocks) &&
     //   report.log('usePainter', [
     //     {
     //       msg: `shrinking ${[
-    //         ...shrinkedPositions.blocks.data.keys(),
+    //         ...shrankPositions.blocks.data.keys(),
     //       ].toString()}`,
-    //       shrinkedBlockData: shrinkedPositions.blocks?.data,
+    //       shrinkedBlockData: shrankPositions.blocks?.data,
     //     },
     //   ]);
 
-    const [image, callbackFn] = renderShrinkingBlocks(
-      ctxCutton,
-      shrinkedPositions.blocks,
-      ctxBlock
-    );
+    // async () => {
+    //   const [image, callbackShrinkingFn] = renderShrinkingBlocks(
+    //     ctxCutton,
+    //     shrankPositions.cutton.blocks,
+    //     ctxBlock
+    //   );
 
-    !!image && setCuttonSnapshot(image);
+    //   !!image && setCuttonSnapshot(image);
+    // };
 
+    // return () => {
+    //   callbackShrinkingFn && callbackShrinkingFn();
+    // };
+
+    if (!!shrankPositions.cutton.blocks) {
+      renderShrankPositions();
+    }
+  }, [shrankPositions]);
+
+  useEffect(() => {
     return () => {
-      callbackFn && callbackFn();
+      if (!!shrankPositions.cutton.blocks) {
+        report.info('usePainter', ['executed TestingFn', testingFn]);
+        !!testingFn && testingFn();
+      }
     };
-  }, [shrinkedPositions]);
+  }, [shrankPositions, testingFn, canvasRef.blocks]);
 
   /**
    * Render highlighted positions if changed.

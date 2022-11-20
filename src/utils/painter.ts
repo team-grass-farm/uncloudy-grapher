@@ -908,118 +908,130 @@ export const paintGrasses: Painter.PaintObject = (
   return stack;
 };
 
-export const paintMonthText: Painter.PaintObject = (
-  ctx,
-  x,
-  y,
-  dx,
-  dy,
-  h,
-  option
-) => [
-  () => {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.textAlign = 'left';
-    ctx.font = dx + 'px non-serif';
-    ctx.fillStyle = 'rgb(40, 60, 50)';
-    const cos = Math.cos(Math.PI / 6);
-    const sin = Math.sin(Math.PI / 6);
-    ctx.transform(1, 0.5, -1, 0.5, 0, 0);
-    ctx.scale(1, 0.75);
-    ctx.fillText(!!option ? option.text + '월' : '', dx, dy * 2);
-    ctx.restore();
-  },
-];
+/**
+ * @deprecated
+ */
+// export const paintMonthText: Painter.PaintObject = (
+//   ctx,
+//   x,
+//   y,
+//   dx,
+//   dy,
+//   h,
+//   option
+// ) => [
+//   () => {
+//     ctx.save();
+//     ctx.translate(x, y);
+//     ctx.textAlign = 'left';
+//     ctx.font = dx + 'px non-serif';
+//     ctx.fillStyle = 'rgb(40, 60, 50)';
+//     const cos = Math.cos(Math.PI / 6);
+//     const sin = Math.sin(Math.PI / 6);
+//     ctx.transform(1, 0.5, -1, 0.5, 0, 0);
+//     ctx.scale(1, 0.75);
+//     ctx.fillText(!!option ? option.text + '월' : '', dx, dy * 2);
+//     ctx.restore();
+//   },
+// ];
 
-export const paintDayText: Painter.PaintObject = (
-  ctx,
-  x,
-  y,
-  dx,
-  dy,
-  h,
-  option
-) => [
-  () => {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.textAlign = 'left';
-    ctx.font = dx + 'px non-serif';
-    ctx.fillStyle = 'rgb(40, 60, 50)';
-    const cos = Math.cos(Math.PI / 6);
-    const sin = Math.sin(Math.PI / 6);
-    ctx.transform(1, 0.5, -1, 0.5, 0, 0);
-    ctx.fillText(!!option ? option.text ?? '' : '', dx, dy * 2);
-    ctx.restore();
-  },
-];
+/**
+ * @deprecated
+ */
+// export const paintDayText: Painter.PaintObject = (
+//   ctx,
+//   x,
+//   y,
+//   dx,
+//   dy,
+//   h,
+//   option
+// ) => [
+//   () => {
+//     ctx.save();
+//     ctx.translate(x, y);
+//     ctx.textAlign = 'left';
+//     ctx.font = dx + 'px non-serif';
+//     ctx.fillStyle = 'rgb(40, 60, 50)';
+//     const cos = Math.cos(Math.PI / 6);
+//     const sin = Math.sin(Math.PI / 6);
+//     ctx.transform(1, 0.5, -1, 0.5, 0, 0);
+//     ctx.fillText(!!option ? option.text ?? '' : '', dx, dy * 2);
+//     ctx.restore();
+//   },
+// ];
 
-const render: Painter.BaseRender = (
-  ctx,
-  stackPaintings,
-  clearCanvas,
-  animated
-) => {
-  ctx.lineJoin = 'round';
-  ctx.fillStyle = 'transparent';
-  ctx.scale(1, 1);
-  if (clearCanvas) {
-    ctx.clearRect(
-      0,
-      ctx.canvas.height >> 1,
-      ctx.canvas.width >> 1,
-      ctx.canvas.height
-    );
-    // ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  }
-
-  report.debug('Painter', [{ stackPaintings }]);
-  stackPaintings.forEach((paintObject) => {
-    paintObject();
-  });
-};
-
-const renderA: Painter.BaseRender = (
+const render: Painter.BaseRender = async (
   ctx,
   stackPaintings,
   clearCanvas,
   animated
-) => {
-  ctx.lineJoin = 'round';
-  ctx.fillStyle = 'transparent';
-  ctx.scale(1, 1);
-
-  if (clearCanvas) {
-    ctx.clearRect(
-      0,
-      ctx.canvas.height >> 1,
-      ctx.canvas.width >> 1,
-      ctx.canvas.height
-    );
-  }
-
-  report.debug('Painter', [{ stackPaintings }]);
-  const frames = stackPaintings.entries();
-  const runner = setInterval(() => {
-    const frame = frames.next();
-    if (!!!frame) {
-    } else if (frame.done) {
-      clearInterval(runner);
-      report.log('Painter', ['runner finished.']);
-    } else {
-      if (clearCanvas) {
-        ctx.clearRect(
-          0,
-          ctx.canvas.height >> 1,
-          ctx.canvas.width >> 1,
-          ctx.canvas.height
-        );
-      }
-      requestAnimationFrame(frame.value[1]);
+) =>
+  await (() => {
+    ctx.lineJoin = 'round';
+    ctx.fillStyle = 'transparent';
+    ctx.scale(1, 1);
+    if (clearCanvas) {
+      ctx.clearRect(
+        0,
+        ctx.canvas.height >> 1,
+        ctx.canvas.width >> 1,
+        ctx.canvas.height
+      );
+      // ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     }
-  }, 10);
-};
+
+    report.debug('Painter', [{ stackPaintings }]);
+    stackPaintings.forEach((paintObject) => {
+      paintObject();
+    });
+  })();
+
+const renderAnimated: Painter.BaseRender = async (
+  ctx,
+  stackPaintings,
+  clearCanvas,
+  animated
+) =>
+  await new Promise((resolve) => {
+    ctx.lineJoin = 'round';
+    ctx.fillStyle = 'transparent';
+    ctx.scale(1, 1);
+
+    if (clearCanvas) {
+      ctx.clearRect(
+        0,
+        ctx.canvas.height >> 1,
+        ctx.canvas.width >> 1,
+        ctx.canvas.height
+      );
+    }
+
+    report.debug('Painter', [{ stackPaintings }]);
+    if (!!!stackPaintings.length) resolve();
+    else {
+      const frames = stackPaintings.entries();
+      const runner = setInterval(() => {
+        const frame = frames.next();
+        if (!!!frame) {
+        } else if (frame.done) {
+          clearInterval(runner);
+          report.log('Painter', ['runner finished.']);
+          resolve();
+        } else {
+          if (clearCanvas) {
+            ctx.clearRect(
+              0,
+              ctx.canvas.height >> 1,
+              ctx.canvas.width >> 1,
+              ctx.canvas.height
+            );
+          }
+          requestAnimationFrame(frame.value[1]);
+        }
+      }, 10);
+    }
+  });
 
 /**
  * Render texts of legends of a graph
@@ -1043,37 +1055,38 @@ export const renderLegend = (
 
   if (paintingType.includes('month')) {
     dataChunks.map((_, y) =>
-      stackPaintings.push(
-        ...paintMonthText(
-          ctx,
-          x0 - (-1 + y) * DX,
-          y0 + (y + 1) * DY,
-          2 * GRID_SIZE,
-          GRID_SIZE,
-          height,
-          // NOTE this is teamorary state for a sample data.
-          y % 4 === 0
-            ? { text: '' + (a.getMonth() + 1 - parseInt('' + y / 4, 10)) }
-            : undefined
-        )
-      )
+      stackPaintings
+        .push
+        // ...paintMonthText(
+        //   ctx,
+        //   x0 - (-1 + y) * DX,
+        //   y0 + (y + 1) * DY,
+        //   2 * GRID_SIZE,
+        //   GRID_SIZE,
+        //   height,
+        //   // NOTE this is teamorary state for a sample data.
+        //   y % 4 === 0
+        //     ? { text: '' + (a.getMonth() + 1 - parseInt('' + y / 4, 10)) }
+        //     : undefined
+        // )
+        ()
     );
   }
   if (paintingType.includes('day')) {
-    !!dataChunks[0] &&
-      dataChunks[0].map((_, x) =>
-        stackPaintings.push(
-          ...paintDayText(
-            ctx,
-            x0 - (x + length) * DX,
-            y0 + (length - x) * DY,
-            2 * GRID_SIZE,
-            GRID_SIZE,
-            height,
-            { text: DAYS[x] }
-          )
-        )
-      );
+    // !!dataChunks[0] &&
+    //   dataChunks[0].map((_, x) =>
+    //     stackPaintings.push(
+    //       ...paintDayText(
+    //         ctx,
+    //         x0 - (x + length) * DX,
+    //         y0 + (length - x) * DY,
+    //         2 * GRID_SIZE,
+    //         GRID_SIZE,
+    //         height,
+    //         { text: DAYS[x] }
+    //       )
+    //     )
+    //   );
   }
 
   render(ctx, stackPaintings, true, false);
@@ -1161,10 +1174,9 @@ export const renderBlocks: Painter.Render<BlockPositions> = (
   return ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
 };
 
-export const renderHoveredBlock: Painter.QuickRender<BlockPosition | null> = (
-  ctx,
-  position
-) => {
+export const renderHoveredBlock: Painter.QuickRender<
+  BlockPosition | null
+> = async (ctx, position) => {
   if (!!!ctx) return [null, null];
   const stackPaintings: (() => void)[] = [];
 
@@ -1195,18 +1207,16 @@ export const renderHoveredBlock: Painter.QuickRender<BlockPosition | null> = (
     );
   }
 
-  renderA(ctx, stackPaintings, true, true);
+  renderAnimated(ctx, stackPaintings, true, true);
   return [
     ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height),
-    () => {
-      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    },
+    () => {},
   ];
 };
 
 export const renderShrinkingBlocks: Painter.QuickRender<
   BlockPosition | BlockPositions | null
-> = (ctx, positions, backCtx) => {
+> = async (ctx, positions, backCtx) => {
   if (!!!ctx) return [null, null];
 
   let backImageData: ImageData | null = null;
@@ -1232,19 +1242,26 @@ export const renderShrinkingBlocks: Painter.QuickRender<
     } else {
       const { dx, dy, dz } = positions;
       positions.data.forEach((position) => {
-        // report.debug('Painter', [
-        //   {
-        //     msg: 'shrinking',
-        //     row: position.row,
-        //     column: position.column,
-        //     position,
-        //   },
-        // ]);
+        report.debug('Painter', [
+          {
+            msg: 'shrinking',
+            row: position.row,
+            column: position.column,
+            position,
+          },
+        ]);
 
         if (!!backCtx) {
           backRect = [position.x - (dx >> 1), position.y - dy * 3, dx, 3 * dy];
           backImageData = backCtx.getImageData(...backRect);
           backCtx.clearRect(...backRect);
+          report.debug('Painter', [
+            {
+              msg: 'shrinking',
+              backCtx,
+              backImageData,
+            },
+          ]);
         }
 
         const height = position.z ? (dz ?? 1) * position.z : 35;
@@ -1270,7 +1287,10 @@ export const renderShrinkingBlocks: Painter.QuickRender<
     }
   }
 
-  renderA(ctx, stackPaintings, true, true);
+  report.log('Painter', [{ msg: 'try shrinking' }]);
+
+  await renderAnimated(ctx, stackPaintings, true, true);
+
   // return ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
   return [
     ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height),
@@ -1338,7 +1358,7 @@ export const renderHighlightedBlocks: Painter.Render<
     }
   }
 
-  renderA(ctx, stackPaintings, true, true);
+  renderAnimated(ctx, stackPaintings, true, true);
   return ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
 };
 

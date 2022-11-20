@@ -5,9 +5,9 @@ declare namespace Painter {
   type DebuggingLayerName = 'grid' | 'points';
 
   type Paint = (plot: Positioner.Plot) => void;
-  type Option =
-    | { text: string; selected?: never }
-    | { text?: never; selected: boolean };
+  type Option = { selected?: boolean };
+  type BlockOption = { renderTopHalfOnly?: boolean } & Option;
+  type GroupOption = { text?: string } & Option;
 
   interface Ref
     extends Record<
@@ -38,6 +38,9 @@ declare namespace Painter {
     groups2: GroupPosition[] | GroupPosition | null;
   }
 
+  interface ShrankPositions
+    extends Record<'cutton' | 'pillar', Painter.Positions> {}
+
   type PaintObject = (
     ctx: CanvasRenderingContext2D,
     x: number,
@@ -45,7 +48,7 @@ declare namespace Painter {
     dx: number,
     dy: number,
     h: number,
-    option?: Option
+    option?: BlockOption
   ) => (() => void)[];
 
   type PaintLine = (
@@ -64,7 +67,7 @@ declare namespace Painter {
     dx: number,
     dy: number,
     h: number,
-    option?: Option
+    option?: GroupOption
   ) => (() => void)[];
 
   type PaintCallback = (
@@ -86,7 +89,7 @@ declare namespace Painter {
     stackPaintings: (() => void)[],
     clearCanvas: boolean,
     animated: boolean
-  ) => void;
+  ) => Promise<void>;
 
   type ClearRendered = (ctx: CanvasRenderingContext2D) => void;
 
@@ -114,5 +117,5 @@ declare namespace Painter {
     ctx: CanvasRenderingContext2D,
     positions: T,
     backCtx?: CanvasRenderingContext2D | null
-  ) => [ImageData, () => void] | [null, null];
+  ) => Promise<[ImageData, () => void] | [null, null]>;
 }
