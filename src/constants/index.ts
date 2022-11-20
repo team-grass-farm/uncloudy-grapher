@@ -26,6 +26,9 @@ export const DELTA: Array<Record<'DX' | 'DY' | 'A', number>> = [
   { DX: 2 * GRID_SIZE3 + SPACING, DY: 2 * GRID_SIZE3 + SPACING, A: 1 },
 ];
 
+// export const LOGGER_BLACKLIST = ['usePainterEvent', 'Painter'];
+export const LOGGER_BLACKLIST = ['Painter'];
+
 // ! Deprecated, just for an example from grass-grapher
 export const POS_ZANDIS: Array<Array<[number, number]>> = [
   [
