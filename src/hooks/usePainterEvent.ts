@@ -117,6 +117,7 @@ export default (
 
   const handleMouseMove = useCallback(
     (ev: MouseEvent) => {
+      if (Math.abs(ev.movementX * ev.movementY) > 8) return;
       const point = getPointPosition(ev);
 
       if (!IsSameMatrix(point, hoveredPointPosition)) {
@@ -217,7 +218,8 @@ export default (
   const handleWheel = useCallback(
     (ev: WheelEvent) => {
       ev.preventDefault();
-      setPerspective(Math.min(0, perspective + ev.deltaX + ev.deltaY));
+      report.log('usePainterEvent', [{ ev, delta: ev['wheelDelta'] }]);
+      setPerspective(Math.min(0, perspective + (ev['wheelDelta'] >> 1)));
     },
     [perspective]
   );
