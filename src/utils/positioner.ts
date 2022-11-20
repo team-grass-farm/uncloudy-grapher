@@ -135,7 +135,6 @@ export const getPointPositions: Positioner.GetPointPositions = (
               y: y0 + py * 2 * DY + (px % 2 ? DY : 0),
               row: row0 - py + (px >> 1),
               column: column0 + py + (px >> 1),
-              type: 'point',
             });
           } else {
             ret.push({
@@ -143,7 +142,6 @@ export const getPointPositions: Positioner.GetPointPositions = (
               y: y0 + py * 2 * DY + (px % 2 ? DY : 0),
               row: row0 - py + (px >> 1),
               column: column0 + py + ((px + 1) >> 1),
-              type: 'point',
             });
           }
         });
@@ -157,7 +155,6 @@ export const getPointPositions: Positioner.GetPointPositions = (
             y: y0 + py * DY,
             row: row0 + py,
             column: column0 + px,
-            type: 'point',
           });
         });
       });
@@ -319,11 +316,11 @@ export const getGridPositions: Positioner.GetLinePositions = (
  * @returns {PointPosition}
  * @see @types/positioner/index.d.ts
  */
-const getPointPosition: Positioner.GetPointPosition = (c, matrix, type, z) => {
+const getPointPosition: Positioner.GetPointPosition = (c, matrix, z) => {
   const { row, column } = matrix;
   const x = c.x0 + (row - c.row0 + column - c.column0) * c.DX;
   const y = c.y0 + (-row + c.row0 + column - c.column0) * c.DY;
-  return { x, y, z, row, column, type };
+  return { x, y, z, row, column };
 };
 
 /**
@@ -340,7 +337,7 @@ const getBlockPositions: Positioner.GetBlockPositions = (
   height,
   level,
   matrixes,
-  type
+  kind
 ) => {
   if (!!!matrixes) return null;
   const canvasValues = getCanvasValues(width, height, level);
@@ -352,26 +349,18 @@ const getBlockPositions: Positioner.GetBlockPositions = (
       getPointPosition(
         canvasValues,
         matrix,
-        type,
         highest - (Math.random() * 20 + 5)
       ),
     ])
   );
 
   return {
+    kind,
     viewType: level === 3 ? 'flat' : 'normal',
     dx: canvasValues.DX,
     dy: canvasValues.DY,
     dz: 1,
     data,
-    // data: matrixes.map((matrix) => {
-    //   return getPointPosition(
-    //     canvasValues,
-    //     matrix,
-    //     type,
-    //     highest - (Math.random() * 20 + 5)
-    //   );
-    // }),
   };
 };
 
@@ -390,40 +379,33 @@ const getGroupPositions: Positioner.GetGroupPositions = (
   height,
   level,
   matrixes,
-  type
+  kind
 ) => {
   if (!!!matrixes) return null;
-  const { DX, DY, x0, y0, row0, column0 } = getCanvasValues(
-    width,
-    height,
-    level
-  );
+  const canvasValues = getCanvasValues(width, height, level);
+
+  const data: Map<string, { start: PointPosition; end: PointPosition }> =
+    new Map(
+      Array.from(matrixes.entries(), ([_, matrixSet]) => [
+        [
+          matrixSet[0].row,
+          matrixSet[0].column,
+          matrixSet[1].row,
+          matrixSet[1].column,
+        ].toString(),
+        {
+          start: getPointPosition(canvasValues, matrixSet[0]),
+          end: getPointPosition(canvasValues, matrixSet[1]),
+        },
+      ])
+    );
 
   return {
+    kind,
     viewType: level === 3 ? 'flat' : 'normal',
-    dx: DX,
-    dy: DY,
-    dz: undefined,
-    data: matrixes.map(([m1, m2]): GroupPosition => {
-      return {
-        start: {
-          x: x0 + (m1.row - row0 + m1.column - column0) * DX,
-          y: y0 + (-m1.row + row0 + m1.column - column0) * DY,
-          row: m1.row,
-          column: m1.column,
-          type: 'point',
-        },
-        end: {
-          x: x0 + (m2.row - row0 + m2.column - column0) * DX,
-          y: y0 + (-m2.row + row0 + m2.column - column0) * DY,
-          row: m2.row,
-          column: m2.column,
-          type: 'point',
-        },
-        zIndex: 0,
-        type,
-      };
-    }),
+    dx: canvasValues.DX,
+    dy: canvasValues.DY,
+    data,
   };
 };
 
@@ -596,9 +578,15 @@ export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
   }
 
   return {
-    blocks: getBlockPositions(width, height, level, pods, 'pod')!,
-    groups1: getGroupPositions(width, height, level, deployments, 'deployment'),
-    groups2: getGroupPositions(width, height, level, namespaces, 'namespace'),
+    blocks: getBlockPositions(width, height, level, pods, 'pods')!,
+    groups1: getGroupPositions(
+      width,
+      height,
+      level,
+      deployments,
+      'deployments'
+    ),
+    groups2: getGroupPositions(width, height, level, namespaces, 'namespaces'),
   };
 };
 
@@ -654,15 +642,15 @@ export const getAdminViewPositions: Positioner.GetViewPositions<'admin'> = (
 
   if (!!resourceMap.pods) {
     return {
-      blocks: getBlockPositions(width, height, level, pods, 'pod')!,
+      blocks: getBlockPositions(width, height, level, pods, 'pods')!,
       groups1: getGroupPositions(
         width,
         height,
         level,
         nodes as [Matrix, Matrix][],
-        'node'
+        'nodes'
       ),
-      groups2: getGroupPositions(width, height, level, clusters, 'cluster'),
+      groups2: getGroupPositions(width, height, level, clusters, 'clusters'),
     };
   } else {
     return {
@@ -671,14 +659,14 @@ export const getAdminViewPositions: Positioner.GetViewPositions<'admin'> = (
         height,
         level,
         nodes as Matrix[],
-        'node'
+        'nodes'
       )!,
       groups1: getGroupPositions(
         width,
         height,
         level,
         nodes as [Matrix, Matrix][],
-        'node'
+        'nodes'
       ),
       groups2: null,
     };

@@ -1,29 +1,12 @@
 declare type Dimensions = Record<'width' | 'height', number>;
 
-declare type PointType = 'pod' | 'node' | 'point';
 declare type LineType = 'grid';
-declare type GroupType = 'deployment' | 'namespace' | 'cluster' | 'node';
+declare type BlockKind = 'pod' | 'node';
+declare type GroupKind = 'deployment' | 'namespace' | 'cluster' | 'node';
 
 declare interface Matrix {
   row: number;
   column: number;
-}
-
-declare interface PointPosition {
-  x: number;
-  y: number;
-  z?: number;
-  row: number;
-  column: number;
-  type: PointType;
-}
-
-declare interface BlockPosition {
-  viewType: 'flat' | 'normal';
-  dx: number;
-  dy: number;
-  dz?: number;
-  data: PointPosition;
 }
 
 declare interface LinePosition {
@@ -34,14 +17,32 @@ declare interface LinePosition {
   type: LineType;
 }
 
+declare interface PointPosition {
+  x: number;
+  y: number;
+  z?: number;
+  row: number;
+  column: number;
+}
+
+declare interface BlockPosition {
+  kind: BlockKind;
+  viewType: 'flat' | 'normal';
+  dx: number;
+  dy: number;
+  dz?: number;
+  data: PointPosition;
+}
+
 declare interface GroupPosition {
-  start: PointPosition;
-  end: PointPosition;
+  kind: GroupKind;
+  viewType: 'flat' | 'normal';
   zIndex: number;
-  type: GroupType;
+  data: { start: PointPosition; end: PointPosition };
 }
 
 declare interface BlockPositions extends BlockPosition {
+  kind: `${BlockKind}s`;
   viewType: 'flat' | 'normal';
   dx: number;
   dy: number;
@@ -50,9 +51,9 @@ declare interface BlockPositions extends BlockPosition {
 }
 
 declare interface GroupPositions {
+  kind: `${GroupKind}s`;
   viewType: 'flat' | 'normal';
   dx: number;
   dy: number;
-  dz?: number;
-  data: GroupPosition[];
+  data: Map<string, { start: PointPosition; end: PointPosition }>;
 }

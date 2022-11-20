@@ -74,6 +74,7 @@ export default (
       if (!IsSameMatrix(point, highlightedPointPosition)) {
         if (!!point && !!renderedPlot) {
           const { blocks } = renderedPlot;
+          const targetKind = blocks.kind.slice(0, -1) as BlockKind;
           const targetBlockData =
             blocks.data.get(point!.row + ',' + point!.column) ?? null;
 
@@ -88,7 +89,11 @@ export default (
           setHighlightedPositions({
             matrix: null,
             blocks: !!targetBlockData
-              ? ({ ...blocks, data: targetBlockData } as BlockPosition)
+              ? ({
+                  ...blocks,
+                  kind: targetKind,
+                  data: targetBlockData,
+                } as BlockPosition)
               : null,
             groups1: null,
             groups2: null,
@@ -119,6 +124,7 @@ export default (
       if (!IsSameMatrix(point, hoveredPointPosition)) {
         if (!!point && !!renderedPlot) {
           const { blocks } = renderedPlot;
+          const targetKind = blocks.kind.slice(0, -1) as BlockKind;
           const targetBlockData =
             blocks.data.get(point.row + ',' + point.column) ?? null;
           const forwardIndexes = [point.row - 1 + ',' + (point.column + 1)];
@@ -144,7 +150,11 @@ export default (
           setHoveredPosition({
             matrix: null,
             block: !!targetBlockData
-              ? ({ ...blocks, data: targetBlockData } as BlockPosition)
+              ? ({
+                  ...blocks,
+                  kind: targetKind,
+                  data: targetBlockData,
+                } as BlockPosition)
               : null,
             group1: null,
             group2: null,

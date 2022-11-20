@@ -90,7 +90,6 @@ declare namespace Positioner {
       column0: number;
     },
     matrix: Matrix,
-    type: PointType,
     z?: number
   ) => PointPosition;
 
@@ -99,7 +98,7 @@ declare namespace Positioner {
     height: number,
     level: 1 | 2 | 3,
     matrixes: Matrix[] | null,
-    type: PointType & ('node' | 'pod')
+    kind: `${BlockKind}s`
   ) => BlockPositions | null;
 
   type GetGroupPositions = (
@@ -107,7 +106,7 @@ declare namespace Positioner {
     height: number,
     level: 1 | 2 | 3,
     matrixes: [Matrix, Matrix][] | null,
-    type: GroupType
+    type: `${GroupKind}s`
   ) => GroupPositions | null;
 
   type GetViewPositions<T extends 'dev' | 'admin'> = (
