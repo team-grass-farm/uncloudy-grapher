@@ -1,3 +1,5 @@
+import { LOGGER_BLACKLIST } from '~constants';
+
 /**
  * @module logger
  */
@@ -18,12 +20,13 @@ export const report = [
   (acc, logLevel) => ({
     ...acc,
     [logLevel]: ((moduleName, message, color = '#999999aa') => {
-      console[logLevel](
-        '%c ' + moduleName + ' %c',
-        'margin-left: -0.5rem; background: ' + color + '; color: white',
-        'background: unset; color: unset',
-        ...message
-      );
+      !LOGGER_BLACKLIST.some((b) => moduleName === b) &&
+        console[logLevel](
+          '%c ' + moduleName + ' %c',
+          'margin-left: -0.5rem; background: ' + color + '; color: white',
+          'background: unset; color: unset',
+          ...message
+        );
     }) as CallbackFn,
   }),
   {}
