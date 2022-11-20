@@ -8,7 +8,7 @@ import {
   renderHighlightedBlocks,
   renderHoveredBlock,
   renderPoints,
-  renderShrinkingBlock,
+  renderShrinkingBlocks,
   translate,
 } from '~utils/painter';
 import { getGridPositions, getPointPositions } from '~utils/positioner';
@@ -30,9 +30,7 @@ export default (): [
     width: 0,
     height: 0,
   });
-  // const [renderedPlot, setRenderedPlot] = useState<Positioner.Plot | null>(
-  //   null
-  // );
+
   const [
     eventRef,
     perspective,
@@ -73,12 +71,6 @@ export default (): [
 
   const [stageSnapshot, setStageSnapshot] = useState<ImageData | null>(null);
   const [cuttonSnapshot, setCuttonSnapshot] = useState<ImageData | null>(null);
-
-  // const [subSnapshot, setSubSnapshot] = useState<Painter.SubSnapshot>({
-  //   base: null,
-  //   stage: null,
-  //   cutton: null,
-  // });
 
   /**
    * Synchronize canvas' client size to their elements' size
@@ -174,7 +166,7 @@ export default (): [
         },
       ]);
 
-    const [image, callbackFn] = renderShrinkingBlock(
+    const [image, callbackFn] = renderShrinkingBlocks(
       ctxCutton,
       shrinkedPositions.blocks,
       ctxBlock
