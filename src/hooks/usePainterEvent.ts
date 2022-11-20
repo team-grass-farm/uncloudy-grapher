@@ -9,7 +9,7 @@ export default (
   React.RefObject<HTMLCanvasElement>,
   number,
   Painter.Position,
-  Painter.Positions,
+  Painter.ShrankPositions,
   Painter.Positions,
   PointPosition | null,
   React.Dispatch<1 | 2 | 3>,
@@ -32,14 +32,12 @@ export default (
     group1: null,
     group2: null,
   });
-  const [shrinkedPositions, setShrinkedPositions] = useState<Painter.Positions>(
-    {
-      matrix: null,
-      blocks: null,
-      groups1: null,
-      groups2: null,
-    }
-  );
+  const [shrankPositions, setShrankPositions] =
+    useState<Painter.ShrankPositions>({
+      cutton: { matrix: null, blocks: null, groups1: null, groups2: null },
+      pillar: { matrix: null, blocks: null, groups1: null, groups2: null },
+    });
+
   const [highlightedPositions, setHighlightedPositions] =
     useState<Painter.Positions>({
       matrix: null,
@@ -47,6 +45,8 @@ export default (
       groups1: null,
       groups2: null,
     });
+
+  const [supportsPassive, setSupportsPassive] = useState(false);
 
   const ref = useRef<HTMLCanvasElement>(null);
 
@@ -72,25 +72,25 @@ export default (
       if (!IsSameMatrix(point, highlightedPointPosition)) {
         if (!!point && !!renderedPlot) {
           const { blocks } = renderedPlot;
-          const targetKind = blocks.kind.slice(0, -1) as BlockKind;
-          const targetBlockData =
+          const hoveredKind = blocks.kind.slice(0, -1) as BlockKind;
+          const hoveredData =
             blocks.data.get(point!.row + ',' + point!.column) ?? null;
 
           report.debug('usePainterEvent', [
             {
               msg: 'onHandleClick()',
               blocks,
-              targetBlockData,
+              hoveredData,
             },
           ]);
 
           setHighlightedPositions({
             matrix: null,
-            blocks: !!targetBlockData
+            blocks: !!hoveredData
               ? ({
                   ...blocks,
-                  kind: targetKind,
-                  data: targetBlockData,
+                  kind: hoveredKind,
+                  data: hoveredData,
                 } as BlockPosition)
               : null,
             groups1: null,
@@ -117,64 +117,106 @@ export default (
 
   const handleMouseMove = useCallback(
     (ev: MouseEvent) => {
-      if (Math.abs(ev.movementX * ev.movementY) > 8) return;
+      if (Math.abs(ev.movementX * ev.movementY) > 10) {
+        setHoveredPosition({
+          matrix: null,
+          block: null,
+          group1: null,
+          group2: null,
+        });
+        setShrankPositions({
+          cutton: { matrix: null, blocks: null, groups1: null, groups2: null },
+          pillar: { matrix: null, blocks: null, groups1: null, groups2: null },
+        });
+        return;
+      }
       const point = getPointPosition(ev);
 
       if (!IsSameMatrix(point, hoveredPointPosition)) {
         if (!!point && !!renderedPlot) {
           const { blocks } = renderedPlot;
-          const targetKind = blocks.kind.slice(0, -1) as BlockKind;
-          const targetBlockData =
+          const kind = blocks.kind.slice(0, -1) as BlockKind;
+          const hoveredData =
             blocks.data.get(point.row + ',' + point.column) ?? null;
-          const forwardIndexes = [point.row - 1 + ',' + (point.column + 1)];
-          const forwardBlockData = new Map(
-            forwardIndexes
+
+          const cuttonData = new Map(
+            [point.row - 1 + ',' + (point.column + 1)]
+              .map((strIndex): [string, any] => {
+                return [strIndex, blocks.data.get(strIndex) ?? null];
+              })
+              .filter((datum) => !!datum[1])
+          );
+          const pillarData = new Map(
+            [point.row - 2 + ',' + (point.column + 2)]
               .map((strIndex): [string, any] => {
                 return [strIndex, blocks.data.get(strIndex) ?? null];
               })
               .filter((datum) => !!datum[1])
           );
 
-          report.debug('usePainterEvent', [
-            {
-              msg: 'onHandleMouseMove()',
-              point,
-              hoveredPointPosition,
-              blocks,
-              targetBlockData,
-              forwardBlockData,
-            },
-          ]);
+          // report.debug('usePainterEvent', [
+          //   {
+          //     msg: 'onHandleMouseMove()',
+          //     point,
+          //     hoveredPointPosition,
+          //     blocks,
+          //     hoveredData,
+          //     cuttonData,
+          //   },
+          // ]);
 
           setHoveredPosition({
             matrix: null,
-            block: !!targetBlockData
-              ? ({
-                  ...blocks,
-                  kind: targetKind,
-                  data: targetBlockData,
-                } as BlockPosition)
+            block: !!hoveredData
+              ? ({ ...blocks, kind, data: hoveredData } as BlockPosition)
               : null,
             group1: null,
             group2: null,
           });
 
-          if (!!targetBlockData && !!forwardBlockData.size) {
-            setShrinkedPositions({
-              matrix: null,
-              blocks:
-                forwardBlockData.size > 0
-                  ? ({ ...blocks, data: forwardBlockData } as BlockPositions)
-                  : null,
-              groups1: null,
-              groups2: null,
+          if (!!hoveredData && !!cuttonData.size) {
+            setShrankPositions({
+              cutton: {
+                matrix: null,
+                blocks:
+                  cuttonData.size > 0
+                    ? ({
+                        ...blocks,
+                        kind: blocks.kind,
+                        data: cuttonData,
+                      } as BlockPositions)
+                    : null,
+                groups1: null,
+                groups2: null,
+              },
+              pillar: {
+                matrix: null,
+                blocks:
+                  pillarData.size > 0
+                    ? ({
+                        ...blocks,
+                        kind: blocks.kind,
+                        data: pillarData,
+                      } as BlockPositions)
+                    : null,
+                groups1: null,
+                groups2: null,
+              },
             });
           } else {
-            setShrinkedPositions({
-              matrix: null,
-              blocks: null,
-              groups1: null,
-              groups2: null,
+            setShrankPositions({
+              cutton: {
+                matrix: null,
+                blocks: null,
+                groups1: null,
+                groups2: null,
+              },
+              pillar: {
+                matrix: null,
+                blocks: null,
+                groups1: null,
+                groups2: null,
+              },
             });
           }
         } else {
@@ -197,15 +239,6 @@ export default (
     [renderedPlot, hoveredPointPosition]
   );
 
-  useEffect(() => {
-    report.log('usePainterEvent', [
-      {
-        isNull: Object.values(shrinkedPositions).every((val) => !!!val),
-        shrinkedPositions,
-      },
-    ]);
-  }, [shrinkedPositions]);
-
   const handleMouseLeave = useCallback(() => {
     setHoveredPosition({
       matrix: null,
@@ -217,11 +250,11 @@ export default (
 
   const handleWheel = useCallback(
     (ev: WheelEvent) => {
-      ev.preventDefault();
-      report.log('usePainterEvent', [{ ev, delta: ev['wheelDelta'] }]);
-      setPerspective(Math.min(0, perspective + (ev['wheelDelta'] >> 1)));
+      !supportsPassive && ev.preventDefault();
+      report.log('usePainterEvent', [{ ev, delta: -ev['wheelDelta'] }]);
+      setPerspective(Math.min(0, perspective - (ev['wheelDelta'] >> 1)));
     },
-    [perspective]
+    [perspective, supportsPassive]
   );
 
   useEffect(() => {
@@ -242,18 +275,36 @@ export default (
     return () => ref.current!.removeEventListener('click', handleClick);
   }, [dimensions, level, renderedPlot, highlightedPointPosition]);
 
+  // https://github.com/WICG/EventListenerOptions/blob/gh-pages/explainer.md
+  useEffect(() => {
+    // Test via a getter in the options object to see if the passive property is accessed
+    try {
+      const opts = Object.defineProperty({}, 'passive', {
+        get: function () {
+          setSupportsPassive(true);
+        },
+      });
+      window.addEventListener('testPassive', () => {}, opts);
+      window.removeEventListener('testPassive', () => {}, opts);
+    } catch (e) {}
+  }, []);
+
   useEffect(() => {
     if (ref.current === null) return;
-    ref.current.addEventListener('wheel', handleWheel);
+    ref.current.addEventListener(
+      'wheel',
+      handleWheel,
+      supportsPassive ? { passive: true } : false
+    );
 
     return () => ref.current!.removeEventListener('wheel', handleWheel);
-  }, [dimensions, level, perspective]);
+  }, [dimensions, level, perspective, supportsPassive]);
 
   return [
     ref,
     perspective,
     hoveredPosition,
-    shrinkedPositions,
+    shrankPositions,
     highlightedPositions,
     hoveredPointPosition,
     setLevel,
