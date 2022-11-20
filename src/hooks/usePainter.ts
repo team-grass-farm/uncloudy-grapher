@@ -155,16 +155,16 @@ export default (): [
     const ctxCutton = canvasRef.cutton.current?.getContext('2d');
     if (!!!ctxCutton || !!!ctxBlock) return;
 
-    !!shrinkedPositions.blocks &&
-      shrinkedPositions.blocks.data instanceof Map &&
-      report.log('usePainter', [
-        {
-          msg: `shrinking ${[
-            ...shrinkedPositions.blocks?.data.keys(),
-          ].toString()}`,
-          shrinkedBlockData: shrinkedPositions.blocks?.data,
-        },
-      ]);
+    // !!shrinkedPositions.blocks &&
+    //   !isBlockPosition(shrinkedPositions.blocks) &&
+    //   report.log('usePainter', [
+    //     {
+    //       msg: `shrinking ${[
+    //         ...shrinkedPositions.blocks.data.keys(),
+    //       ].toString()}`,
+    //       shrinkedBlockData: shrinkedPositions.blocks?.data,
+    //     },
+    //   ]);
 
     const [image, callbackFn] = renderShrinkingBlocks(
       ctxCutton,
@@ -187,7 +187,7 @@ export default (): [
       canvasRef.stage.current?.getContext('2d');
     if (!!!ctx) return;
 
-    report.log('usePainter', [{ highlightedPositions }]);
+    report.log('usePainter', [highlightedPositions]);
 
     // TODO code renderHighlightedBlock()
   }, [highlightedPositions]);
@@ -196,7 +196,6 @@ export default (): [
    * Translate canvases if perspective has changed.
    */
   useEffect(() => {
-    report.debug('usePainter', [{ perspective }]);
     translate(
       canvasRef.blocks.current?.getContext('2d'),
       objectSnapshot.blocks,
