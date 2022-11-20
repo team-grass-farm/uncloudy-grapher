@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { report } from '~utils/logger';
 import { getCursorPosition } from '~utils/positioner';
-
-const IsSameMatrix = (a: Matrix | null, b: Matrix | null): boolean =>
-  !!a && !!b && a.row === b.row && a.column === b.column;
+import { IsSameMatrix } from '~utils/typeChecker';
 
 export default (
   dimensions: Record<'width' | 'height', number>
