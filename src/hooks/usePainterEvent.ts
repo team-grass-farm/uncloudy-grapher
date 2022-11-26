@@ -76,13 +76,11 @@ export default (
           const hoveredData =
             blocks.data.get(point!.row + ',' + point!.column) ?? null;
 
-          report.debug('usePainterEvent', [
-            {
-              msg: 'onHandleClick()',
-              blocks,
-              hoveredData,
-            },
-          ]);
+          report.debug('usePainterEvent', {
+            msg: 'onHandleClick()',
+            blocks,
+            hoveredData,
+          });
 
           setHighlightedPositions({
             matrix: null,
@@ -97,19 +95,17 @@ export default (
             groups2: null,
           });
         } else {
-          report.log('usePainterEvent', [
-            {
-              msg: 'one of point & renderedPlot does not exist',
-              point,
-              renderedPlot,
-            },
-          ]);
+          report.log('usePainterEvent', {
+            msg: 'one of point & renderedPlot does not exist',
+            point,
+            renderedPlot,
+          });
         }
         setHighlightedPointPosition(point);
       } else {
-        report.log('usePainterEvent', [
-          { msg: 'already executed block onHandleClick()' },
-        ]);
+        report.log('usePainterEvent', {
+          msg: 'already executed block onHandleClick()',
+        });
       }
     },
     [dimensions, level, perspective, renderedPlot, highlightedPointPosition]
@@ -251,7 +247,11 @@ export default (
   const handleWheel = useCallback(
     (ev: WheelEvent) => {
       !supportsPassive && ev.preventDefault();
-      report.log('usePainterEvent', [{ ev, delta: -ev['wheelDelta'] }]);
+      report.log('usePainterEvent', {
+        msg: 'new perspective ser',
+        ev,
+        delta: -ev['wheelDelta'],
+      });
       setPerspective(Math.min(0, perspective - (ev['wheelDelta'] >> 1)));
     },
     [perspective, supportsPassive]

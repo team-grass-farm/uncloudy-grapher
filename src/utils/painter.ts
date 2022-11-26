@@ -901,7 +901,7 @@ export const paintGrasses: Painter.PaintObject = (
   };
 
   POS_ZANDIS[parseInt('' + Math.random() * 2, 10)].forEach((posZandi) => {
-    report.log('Painter', ['pos: ', posZandi]);
+    report.log('Painter', { msg: 'pos on paintGresses()', posZandi });
     stack.push(paintGrass(ctx, x + posZandi[0], y + posZandi[1], dx, dy, h));
   });
 
@@ -981,7 +981,7 @@ const render: Painter.BaseRender = async (
       // ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     }
 
-    report.debug('Painter', [{ stackPaintings }]);
+    report.debug('Painter', { msg: 'onRender()', stackPaintings });
     stackPaintings.forEach((paintObject) => {
       paintObject();
     });
@@ -1007,7 +1007,7 @@ const renderAnimated: Painter.BaseRender = async (
       );
     }
 
-    report.debug('Painter', [{ stackPaintings }]);
+    report.debug('Painter', { msg: 'on renderAnimated()', stackPaintings });
     if (!!!stackPaintings.length) resolve();
     else {
       const frames = stackPaintings.entries();
@@ -1016,7 +1016,7 @@ const renderAnimated: Painter.BaseRender = async (
         if (!!!frame) {
         } else if (frame.done) {
           clearInterval(runner);
-          report.log('Painter', ['runner finished.']);
+          report.log('Painter', { msg: 'runner finished.' });
           resolve();
         } else {
           if (clearCanvas) {
@@ -1144,7 +1144,10 @@ export const renderBlocks: Painter.Render<BlockPositions> = (
   const stackPaintings: (() => void)[] = [];
 
   let paintBlock: Painter.PaintObject | null = null;
-  report.log('Painter', ['block positions: ', positions]);
+  report.log('Painter', {
+    msg: 'block positions on renderBlocks()',
+    positions,
+  });
   switch (positions.kind) {
     case 'pods':
       paintBlock = positions.viewType === 'flat' ? paintFlatPod : paintPod;
@@ -1183,7 +1186,10 @@ export const renderHoveredBlock: Painter.QuickRender<
   let paintBlock: Painter.PaintObject | null = null;
 
   if (!!position) {
-    report.log('Painter', [position]);
+    report.log('Painter', {
+      msg: 'position on renderHoveredBlock()',
+      position,
+    });
 
     switch (position.kind) {
       case 'pod':
@@ -1242,26 +1248,22 @@ export const renderShrinkingBlocks: Painter.QuickRender<
     } else {
       const { dx, dy, dz } = positions;
       positions.data.forEach((position) => {
-        report.debug('Painter', [
-          {
-            msg: 'shrinking',
-            row: position.row,
-            column: position.column,
-            position,
-          },
-        ]);
+        report.debug('Painter', {
+          msg: 'shrinking',
+          row: position.row,
+          column: position.column,
+          position,
+        });
 
         if (!!backCtx) {
           backRect = [position.x - (dx >> 1), position.y - dy * 3, dx, 3 * dy];
           backImageData = backCtx.getImageData(...backRect);
           backCtx.clearRect(...backRect);
-          report.debug('Painter', [
-            {
-              msg: 'shrinking',
-              backCtx,
-              backImageData,
-            },
-          ]);
+          report.debug('Painter', {
+            msg: 'shrinking',
+            backCtx,
+            backImageData,
+          });
         }
 
         const height = position.z ? (dz ?? 1) * position.z : 35;
@@ -1287,7 +1289,7 @@ export const renderShrinkingBlocks: Painter.QuickRender<
     }
   }
 
-  report.log('Painter', [{ msg: 'try shrinking' }]);
+  report.log('Painter', { msg: 'try shrinking' });
 
   await renderAnimated(ctx, stackPaintings, true, true);
 
@@ -1296,9 +1298,12 @@ export const renderShrinkingBlocks: Painter.QuickRender<
     ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height),
     () => {
       if (!!backCtx && !!backImageData && !!backRect) {
-        report.debug('Painter', [
-          { msg: 'restoring backCtx', backCtx, backImageData, backRect },
-        ]);
+        report.debug('Painter', {
+          msg: 'restoring backCtx',
+          backCtx,
+          backImageData,
+          backRect,
+        });
         backCtx.putImageData(backImageData!, backRect![0], backRect![1]);
       }
     },
@@ -1312,9 +1317,11 @@ export const renderHighlightedBlocks: Painter.Render<
   const stackPaintings: (() => void)[] = [];
 
   let paintBlock: Painter.PaintObject | null = null;
-  report.log('Painter', [
-    { positions, arePositionsMap: !isBlockPosition(positions) },
-  ]);
+  report.log('Painter', {
+    msg: 'on renderHighlightedBlocks()',
+    positions,
+    arePositionsMap: !isBlockPosition(positions),
+  });
   switch (positions.kind) {
     case 'pod':
       paintBlock = positions?.viewType === 'flat' ? paintFlatPod : paintPod;
@@ -1372,7 +1379,10 @@ export const renderGroups: Painter.Render<GroupPositions | null> = (
   let paintArea: Painter.PaintArea | null = null;
 
   if (!!positions) {
-    report.log('Painter', ['group positions: ', positions]);
+    report.log('Painter', {
+      msg: 'group positions on renderGroups',
+      positions,
+    });
     switch (positions.kind) {
       case 'deployments':
         paintArea = paintGroup;

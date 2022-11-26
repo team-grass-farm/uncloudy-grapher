@@ -79,7 +79,7 @@ export default (): [
    */
   useEffect(() => {
     if (canvasRef.blocks.current === null) return;
-    report.log('usePainter', ['dimensions changed:', dimensions]);
+    report.log('usePainter', { msg: 'dimensions changed', dimensions });
     Object.values(canvasRef).forEach((ref) => {
       if (ref.current) {
         ref.current.width = ref.current.clientWidth;
@@ -93,7 +93,7 @@ export default (): [
    */
   const paint = useCallback(
     (plot: Positioner.Plot) => {
-      report.log('usePainter', ['plot: ', plot]);
+      report.log('usePainter', { msg: 'plot changed', plot });
 
       setObjectSnapshot({
         groups2: renderGroups(
@@ -168,9 +168,10 @@ export default (): [
     });
     if (!!!ctxCutton || !!!ctxBlock) return;
 
-    report.log('usePainter', [
-      { msg: 'shranked', ctxBlock: ctxBlock.getImageData(0, 0, 10, 10) },
-    ]);
+    report.log('usePainter', {
+      msg: 'shranked',
+      ctxBlock: ctxBlock.getImageData(0, 0, 10, 10),
+    });
     const [image, callbackFn] = await renderShrinkingBlocks(
       ctxCutton,
       shrankPositions.cutton.blocks,
@@ -218,7 +219,11 @@ export default (): [
   useEffect(() => {
     return () => {
       if (!!shrankPositions.cutton.blocks) {
-        report.info('usePainter', ['executed TestingFn', testingFn]);
+        report.info(
+          'usePainter',
+          { msg: 'executed TestingFn', testingFn },
+          { listening: ['testingFn'] }
+        );
         !!testingFn && testingFn();
       }
     };
@@ -232,7 +237,10 @@ export default (): [
       canvasRef.stage.current?.getContext('2d');
     if (!!!ctx) return;
 
-    report.log('usePainter', [highlightedPositions]);
+    report.log('usePainter', {
+      msg: 'highlightPosition Changed',
+      highlightedPositions,
+    });
 
     // TODO code renderHighlightedBlock()
   }, [highlightedPositions]);

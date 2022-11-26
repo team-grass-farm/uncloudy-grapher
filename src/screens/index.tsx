@@ -1,3 +1,8 @@
+import {
+  BarChartOutlined,
+  CodeOutlined,
+  ToolOutlined,
+} from '@ant-design/icons';
 import { Cascader, Col, DatePicker, Row, Segmented } from 'antd';
 import moment from 'moment';
 import { ValueType } from 'rc-cascader/lib/Cascader';
@@ -6,8 +11,6 @@ import { DevelopmentOnlyAlert, UncloudyGraph } from '~components';
 import { useFetcher } from '~hooks';
 import { getFilteringOptions } from '~utils/fetcher';
 import { report } from '~utils/logger';
-
-import { BarChartOutlined, CodeOutlined, ToolOutlined } from '@ant-design/icons';
 
 import { MainBlock } from './styles';
 
@@ -83,7 +86,9 @@ export default () => {
               style={{ width: '100%' }}
               showTime
               placeholder={['시작일', '종료일']}
-              onChange={(val) => report.log('Screens', ['val: ', val])}
+              onChange={(val) =>
+                report.log('Screens', { msg: 'val onChange()', val })
+              }
               defaultValue={[
                 moment(new Date()).subtract(15, 'minutes'),
                 moment(new Date()),
