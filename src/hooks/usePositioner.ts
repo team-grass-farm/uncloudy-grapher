@@ -1,6 +1,9 @@
 import { RefObject, useCallback, useEffect, useState } from 'react';
 import { report } from '~utils/logger';
-import { getAdminViewPositions, getDeveloperViewPositions } from '~utils/positioner';
+import {
+  getAdminViewPositions,
+  getDeveloperViewPositions,
+} from '~utils/positioner';
 
 export default <T extends string = 'type'>(
   ref: RefObject<HTMLCanvasElement>
@@ -28,7 +31,7 @@ export default <T extends string = 'type'>(
 
   const pose = useCallback<Positioner.Pose>(
     (resourceMap, level) => {
-      report.log('usePositioner', ['resourceMap: ', resourceMap]);
+      report.log('usePositioner', { msg: 'resourceMap', resourceMap });
       resourceMap.type === 'admin'
         ? setAdminPlot(
             getAdminViewPositions(
@@ -60,7 +63,7 @@ export default <T extends string = 'type'>(
     let handler: NodeJS.Timeout | undefined;
     if (paused) {
       if (ref.current === null) return;
-      report.log('usePositioner', ['excuted handleResize()']);
+      report.log('usePositioner', { msg: 'excuted handleResize()' });
       setDimensions({
         width: ref.current.width,
         height: ref.current.height,
@@ -72,7 +75,7 @@ export default <T extends string = 'type'>(
     }
     return () => {
       clearTimeout(handler);
-      report.log('usePositioner', ['timeout cleared', paused]);
+      report.log('usePositioner', { msg: 'timeout cleared', paused });
     };
   }, [paused]);
 

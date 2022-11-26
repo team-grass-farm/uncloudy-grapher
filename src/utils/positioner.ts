@@ -420,7 +420,7 @@ const getSelectedBox = (maxCol: number, blockLength: number): Matrix | null => {
   } else {
     column = maxCol;
     row = Math.ceil(blockLength / maxCol);
-    report.debug('Positioner', ['case B']);
+    report.debug('Positioner', { msg: 'case B' });
   }
 
   return row * column > 0 ? { row, column } : null;
@@ -469,9 +469,10 @@ export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
         });
     }
   } else if (!!resourceMap.deployments && !!!resourceMap.namespaces) {
-    report.log('Positioner', [
-      { deploymentSize: resourceMap.deployments.size },
-    ]);
+    report.log('Positioner', {
+      msg: 'on getDeveloperViewPositions()',
+      deploymentSize: resourceMap.deployments.size,
+    });
 
     let rowCount = 0;
     let sel1Groups: { group: Matrix; startRow: number; numPods: number }[] = [];
@@ -482,12 +483,10 @@ export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
       ).length;
       let sel1Group = getSelectedBox(canvasColumn - 2, numPods);
 
-      report.debug('Positioner', [
-        'sel1Group: ',
-        sel1Group,
-        'numPods: ',
+      report.debug('Positioner', {
+        msg: 'on getDeveloperViewPositions()',
         numPods,
-      ]);
+      });
 
       if (!!sel1Group) {
         sel1Groups.push({
@@ -502,7 +501,11 @@ export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
       }
     });
 
-    report.debug('Positioner', [{ rowCount, sel1Groups }]);
+    report.debug('Positioner', {
+      msg: 'on getDeveloperViewPositions()',
+      rowCount,
+      sel1Groups,
+    });
 
     let thresholdRow = Math.floor(rowCount / availableCanvasRow);
     let paddingCol = 0;
@@ -512,10 +515,15 @@ export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
     let index = 0;
 
     sel1Groups.forEach(({ group, startRow, numPods }, deploymentId) => {
-      report.debug('Positioner', [{ group, startRow, numPods }]);
+      report.debug('Positioner', {
+        msg: 'on getDeveloperViewPositions()',
+        group,
+        startRow,
+        numPods,
+      });
 
       if (precedingRow > thresholdRow) {
-        report.debug('Positioner', ['executed newline', { maxColOnRow }]);
+        report.debug('Positioner', { msg: 'executed newline', maxColOnRow });
         paddingCol += 1 + maxColOnRow;
         paddingRow += 4;
         maxColOnRow = 0;
@@ -524,7 +532,7 @@ export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
 
       if (!!group) {
         let podCount = numPods;
-        report.debug('Positioner', ['podCount: ', numPods]);
+        report.debug('Positioner', { msg: 'podCount', numPods });
         Array.from(Array(group.row).keys())
           .reverse()
           .map((row) => {
@@ -551,7 +559,7 @@ export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
         index++;
       }
     });
-    report.log('Positioner', ['deployments: ', deployments]);
+    report.log('Positioner', { msg: 'deployments: ', deployments });
   } else if (!!!resourceMap.deployments && !!resourceMap.namespaces) {
     // // NOTE This is a sample code:
     // if (maxRow * canvasColumn > dataLength) {
