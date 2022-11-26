@@ -34,6 +34,16 @@ const isNone = (val: any): boolean => {
   }
 };
 
+const isValid = (val: any): boolean => {
+  if (Array.isArray(val)) {
+    return val.length > 0;
+  } else if (typeof val === 'object') {
+    return !Object.entries(val as Object).every(([_, val]) => val === null);
+  } else {
+    return !!val;
+  }
+};
+
 export const report = [
   'debug',
   'info',

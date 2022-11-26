@@ -46,6 +46,7 @@ export default (
       groups2: null,
     });
 
+  const [isMouseMoving, setIsMouseMoving] = useState(false);
   const [supportsPassive, setSupportsPassive] = useState(false);
 
   const ref = useRef<HTMLCanvasElement>(null);
@@ -113,20 +114,10 @@ export default (
 
   const handleMouseMove = useCallback(
     (ev: MouseEvent) => {
-      if (Math.abs(ev.movementX * ev.movementY) > 10) {
-        setHoveredPosition({
-          matrix: null,
-          block: null,
-          group1: null,
-          group2: null,
-        });
-        setShrankPositions({
-          cutton: { matrix: null, blocks: null, groups1: null, groups2: null },
-          pillar: { matrix: null, blocks: null, groups1: null, groups2: null },
-        });
-        return;
-      }
+      if (Math.abs(ev.movementX * ev.movementY) > 10) return;
+
       const point = getPointPosition(ev);
+      setIsMouseMoving(true);
 
       if (!IsSameMatrix(point, hoveredPointPosition)) {
         if (!!point && !!renderedPlot) {
@@ -160,15 +151,6 @@ export default (
           //     cuttonData,
           //   },
           // ]);
-
-          setHoveredPosition({
-            matrix: null,
-            block: !!hoveredData
-              ? ({ ...blocks, kind, data: hoveredData } as BlockPosition)
-              : null,
-            group1: null,
-            group2: null,
-          });
 
           if (!!hoveredData && !!cuttonData.size) {
             setShrankPositions({
@@ -215,6 +197,14 @@ export default (
               },
             });
           }
+          setHoveredPosition({
+            matrix: null,
+            block: !!hoveredData
+              ? ({ ...blocks, kind, data: hoveredData } as BlockPosition)
+              : null,
+            group1: null,
+            group2: null,
+          });
         } else {
           // setHoveredPosition({
           //   matrix: null,
@@ -229,13 +219,16 @@ export default (
           //   groups2: null,
           // });
         }
+
         setHoveredPointPosition(point);
       }
+      setIsMouseMoving(false);
     },
     [renderedPlot, hoveredPointPosition]
   );
 
   const handleMouseLeave = useCallback(() => {
+    report.log('usePainterEvent', { msg: 'leaving' });
     setHoveredPosition({
       matrix: null,
       block: null,
@@ -266,7 +259,7 @@ export default (
       ref.current!.removeEventListener('mousemove', handleMouseMove);
       ref.current!.removeEventListener('mouseleave', handleMouseLeave);
     };
-  }, [dimensions, level, renderedPlot, hoveredPointPosition]);
+  }, [dimensions, level, renderedPlot, hoveredPointPosition, isMouseMoving]);
 
   useEffect(() => {
     if (ref.current === null) return;

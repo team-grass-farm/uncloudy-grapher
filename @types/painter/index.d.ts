@@ -9,15 +9,19 @@ declare namespace Painter {
   type BlockOption = { renderTopHalfOnly?: boolean } & Option;
   type GroupOption = { text?: string } & Option;
 
-  interface Ref
+  interface Layer<T extends any>
     extends Record<
       ObjectLayerName | CalculatedLayerName | DebuggingLayerName,
-      RefObject<HTMLCanvasElement>
+      T
     > {
-    grid?: RefObject<HTMLCanvasElement>;
-    points?: RefObject<HTMLCanvasElement>;
-    event: RefObject<HTMLCanvasElement>;
+    grid?: T;
+    points?: T;
+    event: T;
   }
+
+  type Ref = Layer<RefObject<HTMLCanvasElement>>;
+  type Context = Layer<CanvasRenderingContext2D | null>;
+
   interface Flag extends Partial<Record<DebuggingLayerName, boolean>> {}
 
   interface ObjectSnapshot extends Record<ObjectLayerName, ImageData | null> {}
@@ -94,7 +98,7 @@ declare namespace Painter {
   type ClearRendered = (ctx: CanvasRenderingContext2D) => void;
 
   type Translate = (
-    ctx: CanvasRenderingContext2D,
+    ctx: CanvasRenderingContext2D | null,
     snapshot: ImageData | null,
     perspective: number
   ) => void;
