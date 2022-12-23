@@ -31,3 +31,16 @@ yarn serve
 ## Project members
 
 - See: [Team Members](https://github.com/team-grass-farm/internal-documents/blob/main/meeting-minutes/220522-meeting.md)
+
+## Upgeade packages
+
+```bash
+# syncyarnlock 설치
+$ yarn global add syncyarnlock
+
+# yarn.lock에서 설치된 버전으로 package.json을 업데이트합니다.
+$ syncyarnlock -s -k
+
+# package.json의 현재 버전 제약 조건으로 yarn.lock을 업데이트합니다.
+$ yarn install
+```
