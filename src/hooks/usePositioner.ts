@@ -31,6 +31,7 @@ export default <T extends string = 'type'>(
 
   const pose = useCallback<Positioner.Pose>(
     (resourceMap, level) => {
+      report.groupCollapsed('usePositioner', 'pose()');
       report.log('usePositioner', { msg: 'resourceMap', resourceMap });
       resourceMap.type === 'admin'
         ? setAdminPlot(
@@ -55,6 +56,7 @@ export default <T extends string = 'type'>(
           );
       setResourceMap(resourceMap);
       setLevel(level);
+      report.groupEnd();
     },
     [dimensions]
   );
