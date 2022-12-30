@@ -2,6 +2,7 @@ import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { usePainterEvent } from '~hooks';
 import { report } from '~utils/logger';
 import {
+  clearRendered,
   renderBlocks,
   renderGrids,
   renderGroups,
@@ -55,7 +56,8 @@ export default (): [
     groups1: useRef<HTMLCanvasElement | null>(null),
     blocks: useRef<HTMLCanvasElement | null>(null),
     stage: useRef<HTMLCanvasElement | null>(null),
-    cutton: useRef<HTMLCanvasElement | null>(null),
+    curtain1: useRef<HTMLCanvasElement | null>(null),
+    curtain2: useRef<HTMLCanvasElement | null>(null),
     event: eventRef,
   };
 
@@ -69,7 +71,8 @@ export default (): [
     groups1: null,
     blocks: null,
     stage: null,
-    cutton: null,
+    curtain1: null,
+    curtain2: null,
     event: null,
   });
 
@@ -87,16 +90,31 @@ export default (): [
   });
 
   const [stageSnapshot, setStageSnapshot] = useState<ImageData | null>(null);
-  const [cuttonSnapshot, setCuttonSnapshot] = useState<ImageData | null>(null);
+  const [curtainSnapshot, setCurtainSnapshot] = useState<ImageData | null>(
+    null
+  );
 
-  const [testingFn, setTestingFn] = useState<(() => void)[]>([]);
+  const [clearStage, setClearStage] = useState<(() => void) | null>(null);
+  const [clearCurtain, setClearCurtain] = useState<(() => void) | null>(null);
+
+  const [_clearCurtain, _setClearCurtain] = useState<(() => void) | null>(null);
 
   /**
    * Synchronize canvas' client size to their elements' size
    */
   useEffect(() => {
     if (canvasRef.blocks.current === null) return;
-    report.log('usePainter', { msg: 'dimensions changed', dimensions });
+
+    report.log(
+      'usePainter',
+      {
+        msg: 'dimensions changed',
+        width: dimensions.width,
+        height: dimensions.height,
+      },
+      { listening: ['width', 'height'] }
+    );
+
     Object.values(canvasRef).forEach((ref) => {
       if (ref.current) {
         ref.current.width = ref.current.clientWidth;
@@ -109,19 +127,19 @@ export default (): [
    * Updata cancas context when canvasRef changed
    */
   useEffect(() => {
-    const a = (
-      Object.entries(canvasRef) as [string, RefObject<HTMLCanvasElement>][]
-    ).reduce(
-      (acc, [key, ref]) => ({
-        ...acc,
-        [key]:
-          ref?.current?.getContext('2d', { willReadFrequently: true }) ?? null,
-      }),
-      canvasContext
+    setCanvasContext(
+      (
+        Object.entries(canvasRef) as [string, RefObject<HTMLCanvasElement>][]
+      ).reduce(
+        (acc, [key, ref]) => ({
+          ...acc,
+          [key]:
+            ref?.current?.getContext('2d', { willReadFrequently: true }) ??
+            null,
+        }),
+        canvasContext
+      )
     );
-
-    report.log('usePainter', { msg: 'canvasContext set()', a });
-    setCanvasContext(a);
   }, Object.values(canvasRef));
 
   /**
@@ -129,6 +147,7 @@ export default (): [
    */
   const paint = useCallback(
     (plot: Positioner.Plot) => {
+      report.groupCollapsed('usePainter', 'paint()');
       report.log('usePainter', { msg: 'plot changed', plot });
 
       setObjectSnapshot({
@@ -153,165 +172,104 @@ export default (): [
       }
       setLevelOnEvent(level);
       setRenderedPlotOnEvent(plot);
+      report.groupEnd();
     },
     [dimensions, level, visible]
   );
 
-  // const renderHoveredPosition = useCallback(
-  //   async (
-  //     ctxStage: CanvasRenderingContext2D,
-  //     hoveredBlockPosition: BlockPosition | null
-  //   ) => {
-  //     const [image, callbackFn] = await renderHoveredBlock(
-  //       ctxStage,
-  //       hoveredBlockPosition
-  //     );
-
-  //     !!image && setStageSnapshot(image);
-
-  //     return () => {
-  //       callbackFn && callbackFn();
-  //     };
-  //   },
-  //   []
-  // );
-
-  // /**
-  //  * Render hovered position if changed;
-  //  */
+  /**
+   * Render hovered position if changed;
+   */
   useEffect(() => {
     if (!!!canvasContext.stage) return;
 
-    // renderHoveredBlock(ctxStage, hoveredPosition.block);
-    // setPaintedHoveredPosition(hoveredPosition);
+    let snapshot: ImageData | null;
+    let clear: (() => void) | null;
+
+    if (!!hoveredPosition.block) {
+      if (
+        !!!paintedHoveredPosition ||
+        hoveredPosition.block !== paintedHoveredPosition.block
+      ) {
+        [snapshot, clear] = renderHoveredBlock(
+          canvasContext.stage,
+          hoveredPosition.block
+        );
+        setStageSnapshot(snapshot);
+        setClearStage(clear);
+      } else {
+        !!canvasContext.stage && clearRendered(canvasContext.stage);
+      }
+    }
+
+    setTimeout(() => {
+      setPaintedHoveredPosition(hoveredPosition);
+    }, 100);
+
+    return () => {
+      clear && clear();
+      setStageSnapshot(null);
+      !!canvasContext.stage && clearRendered(canvasContext.stage);
+    };
   }, [hoveredPosition]);
-
-  const renderShrankPositions = useCallback(async () => {
-    if (
-      !!!canvasContext.blocks ||
-      !!!canvasContext.stage ||
-      !!!canvasContext.cutton
-    )
-      return;
-
-    report.log('usePainter', {
-      msg: 'shranked',
-      ctxBlock: canvasContext.blocks.getImageData(0, 0, 10, 10),
-    });
-
-    // hoveredPosition && renderBlocks(ctxStage, hoveredPosition.block);
-    const value = await renderShrinkingBlocks(
-      canvasContext.cutton,
-      shrankPositions.cutton.blocks,
-      canvasContext.blocks
-    );
-
-    report.log('usePainter', { msg: 'shranked (done)', value });
-
-    const [image, callbackFn] = value;
-
-    !!image && setCuttonSnapshot(image);
-    !!callbackFn && addCallbackFn(callbackFn);
-    // const test = () => console.log('hi');
-    // setTestingFn({ test });
-    report.log('usePainter', { msg: 'shranked (done2)' });
-  }, [canvasContext, hoveredPosition]);
-
-  const addCallbackFn = useCallback(
-    (fn: () => void) => {
-      testingFn.push(fn);
-      report.log('usePainter', { msg: 'shranked (pushed)' });
-    },
-    [testingFn]
-  );
-
-  // useEffect(() => {
-  //   report.log('usePainter', [{ msg: 'testingFn', testingFn }]);
-  // }, [testingFn]);
 
   /**
    * Render shrinking positions if changed.
    */
   useEffect(() => {
-    // !!shrankPositions.blocks &&
-    //   !isBlockPosition(shrankPositions.blocks) &&
-    //   report.log('usePainter', [
-    //     {
-    //       msg: `shrinking ${[
-    //         ...shrankPositions.blocks.data.keys(),
-    //       ].toString()}`,
-    //       shrinkedBlockData: shrankPositions.blocks?.data,
-    //     },
-    //   ]);
+    if (
+      !!!canvasContext.blocks ||
+      !!!canvasContext.stage ||
+      !!!canvasContext.curtain1 ||
+      !!!canvasContext.curtain2
+    )
+      return;
 
-    // async () => {
-    //   const [image, callbackShrinkingFn] = renderShrinkingBlocks(
-    //     ctxCutton,
-    //     shrankPositions.cutton.blocks,
-    //     ctxBlock
-    //   );
+    let snapshot: ImageData | null;
+    let clear: (() => void) | null | undefined;
 
-    //   !!image && setCuttonSnapshot(image);
-    // };
+    // report.log(
+    //   'usePainter',
+    //   {
+    //     msg: 'hoveredChanged',
+    //     shrankPositionBlocks: shrankPositions.curtain1.blocks,
+    //     hoveredPosition: paintedHoveredPosition?.block,
+    //   },
+    //   { listening: ['hoveredPosition', 'shrankPositionBlocks'] }
+    // );
 
-    // return () => {
-    //   callbackShrinkingFn && callbackShrinkingFn();
-    // };
-
-    setPaintedHoveredPosition(hoveredPosition);
-
-    report.log(
-      'usePainter',
-      {
-        msg: 'hoveredChanged',
-        shrankPositionBlocks: shrankPositions.cutton.blocks,
-        hoveredPosition: hoveredPosition.block,
-      },
-      { listening: ['hoveredPosition', 'shrankPositionBlocks'] }
-    );
-
-    if (!!hoveredPosition.block) {
-      report.log('usePainter', {
-        msg: 'exists hoveredPosition.block',
-        conditions: hoveredPosition.block !== paintedHoveredPosition?.block,
-      });
-      if (
-        !!!paintedHoveredPosition ||
-        hoveredPosition.block !== paintedHoveredPosition.block
-      ) {
-        // if (testingFn) {
-        //   report.info('usePainter', ['executed TestingFn', testingFn]);
-        //   testingFn();
-        // }
-        if (shrankPositions.cutton.blocks) {
-          renderShrankPositions();
-        }
+    if (!!paintedHoveredPosition) {
+      if (shrankPositions.curtain1.blocks) {
+        [snapshot, clear] = renderShrinkingBlocks(
+          canvasContext.curtain1,
+          shrankPositions.curtain1.blocks,
+          canvasContext.blocks
+        );
+        setCurtainSnapshot(snapshot);
+        _setClearCurtain(clear);
       }
     }
 
     return () => {
-      if (!!testingFn) {
-        report.log(
-          'usePainter',
-          { msg: 'executed TestingFn', testingFn },
-          {
-            listening: ['testingFn'],
-          }
-        );
-        testingFn.map((fn) => fn());
-        setTestingFn([]);
-      }
+      // TODO: Add conditional statement if perspective changes
+      // setCurtainSnapshot(null);
     };
-  }, [hoveredPosition]);
+  }, [paintedHoveredPosition]);
 
-  // useEffect(() => {
-  //   return () => {
-  //     if (!!shrankPositions.cutton.blocks) {
-  //       report.info('usePainter', ['executed TestingFn', testingFn]);
-  //       !!testingFn && testingFn();
-  //     }
-  //   };
-  // }, [shrankPositions, testingFn, canvasRef.blocks]);
+  useEffect(() => {
+    report.log('usePainter', { msg: 'set curtainSnapshot' });
+    setClearCurtain(_clearCurtain);
+    if (!!curtainSnapshot) {
+    } else {
+      // !!canvasContext.curtain1 && clearRendered(canvasContext.curtain1);
+    }
+
+    return () => {};
+  }, [curtainSnapshot]);
+
+  useEffect(() => {
+    clearCurtain && clearCurtain();
+  }, [clearCurtain]);
 
   /**
    * Render highlighted positions if changed.
@@ -324,7 +282,7 @@ export default (): [
       highlightedPositions,
     });
 
-    // TODO code renderHighlightedBlock()
+    // TODO code renderHighlightedBlock()dj
   }, [highlightedPositions]);
 
   /**
@@ -334,8 +292,11 @@ export default (): [
     translate(canvasContext.blocks, objectSnapshot.blocks, perspective);
     translate(canvasContext.groups1, objectSnapshot.groups1, perspective);
     // TODO Find a way to get ImageData on return callback function of subSnapShot
-    translate(canvasContext.stage, stageSnapshot, perspective);
-    translate(canvasContext.cutton, cuttonSnapshot, perspective);
+    // translate(canvasContext.stage, stageSnapshot, perspective);
+    // translate(canvasContext.curtain1, curtainSnapshot, perspective);
+    // translate(canvasContext.curtain2, curtainSnapshot, perspective);
+    setStageSnapshot(null);
+    setCurtainSnapshot(null);
   }, [perspective]);
 
   return [

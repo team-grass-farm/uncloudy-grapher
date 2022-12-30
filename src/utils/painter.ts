@@ -1008,7 +1008,11 @@ const renderAnimated: Painter.BaseRender = (
     }
 
     if (!!!stackPaintings.length) {
-      report.debug('Painter', { msg: 'renderAnimated (nope)', stackPaintings });
+      report.debug(
+        'Painter',
+        { msg: 'renderAnimated (nope)', stackPaintings },
+        { listening: ['stackPaintings'] }
+      );
       resolve();
     } else {
       const frames = stackPaintings.entries();
@@ -1098,6 +1102,7 @@ export const renderLegend = (
 
 export const renderGrids: Painter.Render<LinePosition[]> = (ctx, positions) => {
   if (!!!ctx) return null;
+  report.groupCollapsed('Painter', 'renderGrids()');
   const stackPaintings: (() => void)[] = [];
 
   positions.forEach((position) => {
@@ -1107,6 +1112,7 @@ export const renderGrids: Painter.Render<LinePosition[]> = (ctx, positions) => {
   });
 
   render(ctx, stackPaintings, true, false);
+  report.groupEnd();
   return null;
 };
 
@@ -1115,6 +1121,7 @@ export const renderPoints: Painter.Render<PointPosition[]> = (
   positions
 ) => {
   if (!!!ctx) return null;
+  report.groupCollapsed('Painter', 'renderPoints()');
   const stackPaintings: (() => void)[] = [];
 
   positions.forEach(({ x, y }) => {
@@ -1122,6 +1129,7 @@ export const renderPoints: Painter.Render<PointPosition[]> = (
   });
 
   render(ctx, stackPaintings, true, false);
+  report.groupEnd();
   return null;
 };
 
@@ -1130,11 +1138,13 @@ export const renderHoveredPoint: Painter.Render<PointPosition | null> = (
   position
 ) => {
   if (!!!ctx || !!!position) return null;
+  report.groupCollapsed('Painter', 'renderHoveredPoint()');
   const stackPaintings: (() => void)[] = [];
 
   stackPaintings.push(...paintPoint(ctx, position.x, position.y, 5, 5, 0));
 
   render(ctx, stackPaintings, true, true);
+  report.groupEnd();
   return null;
 };
 
@@ -1144,10 +1154,13 @@ export const renderBlocks: Painter.Render<
   BlockPosition | BlockPositions | null
 > = (ctx, positions) => {
   if (!!!ctx) return null;
+  report.groupCollapsed('Painter', 'renderBlocks()');
+
   const stackPaintings: (() => void)[] = [];
 
   if (!!positions) {
     let paintBlock: Painter.PaintObject | null = null;
+
     report.log('Painter', {
       msg: 'block positions on renderBlocks()',
       positions,
@@ -1195,13 +1208,17 @@ export const renderBlocks: Painter.Render<
   }
 
   render(ctx, stackPaintings, true, true);
+  report.groupEnd();
   return ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
 };
 
-export const renderHoveredBlock: Painter.QuickRender<
-  BlockPosition | null
-> = async (ctx, position) => {
+export const renderHoveredBlock: Painter.QuickRender<BlockPosition | null> = (
+  ctx,
+  position
+) => {
   if (!!!ctx) return [null, null];
+  report.groupCollapsed('Painter', 'renderHoveredBlock()');
+
   const stackPaintings: (() => void)[] = [];
 
   let paintBlock: Painter.PaintObject | null = null;
@@ -1235,7 +1252,10 @@ export const renderHoveredBlock: Painter.QuickRender<
   }
 
   report.log('Painter', { msg: 'renderAnimated (Hovered)' });
+
   renderAnimated(ctx, stackPaintings, true, true);
+  report.groupEnd();
+
   return [
     ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height),
     () => {},
@@ -1244,8 +1264,9 @@ export const renderHoveredBlock: Painter.QuickRender<
 
 export const renderShrinkingBlocks: Painter.QuickRender<
   BlockPosition | BlockPositions | null
-> = async (ctx, positions, backCtx) => {
+> = (ctx, positions, backCtx) => {
   if (!!!ctx) return [null, null];
+  report.groupCollapsed('Painter', 'renderShrankBlock()');
 
   let backImageData: ImageData | null = null;
   let backRect: [number, number, number, number] | null = null;
@@ -1280,7 +1301,7 @@ export const renderShrinkingBlocks: Painter.QuickRender<
         if (!!backCtx) {
           backRect = [position.x - (dx >> 1), position.y - dy * 3, dx, 3 * dy];
           backImageData = backCtx.getImageData(...backRect);
-          backCtx.clearRect(...backRect);
+          backCtx.clearRect(...(backRect as [number, number, number, number]));
           report.debug('Painter', {
             msg: 'shrinking',
             backCtx,
@@ -1313,15 +1334,15 @@ export const renderShrinkingBlocks: Painter.QuickRender<
 
   report.log('Painter', { msg: 'try shrinking' });
 
-  await renderAnimated(ctx, stackPaintings, true, true);
+  renderAnimated(ctx, stackPaintings, true, true);
+  report.groupEnd();
 
-  // return ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
   return [
     ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height),
-    () => () => {
+    () => {
       if (!!backCtx && !!backImageData && !!backRect) {
         report.debug('Painter', {
-          msg: 'restoring backCtx',
+          msg: 'clearing last images',
           backCtx,
           backImageData,
           backRect,
@@ -1336,6 +1357,7 @@ export const renderHighlightedBlocks: Painter.Render<
   BlockPositions | BlockPosition | null
 > = (ctx, positions) => {
   if (!!!ctx) return null;
+  report.groupCollapsed('Painter', 'renderHighlightedBlocks()');
   const stackPaintings: (() => void)[] = [];
 
   if (!!positions) {
@@ -1388,6 +1410,7 @@ export const renderHighlightedBlocks: Painter.Render<
   }
 
   renderAnimated(ctx, stackPaintings, true, true);
+  report.groupEnd();
   return ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
 };
 
@@ -1396,6 +1419,7 @@ export const renderGroups: Painter.Render<GroupPositions | null> = (
   positions
 ) => {
   if (!!!ctx) return null;
+  report.groupCollapsed('Painter', 'renderGroups()');
   const stackPaintings: (() => void)[] = [];
 
   let paintArea: Painter.PaintArea | null = null;
@@ -1427,6 +1451,7 @@ export const renderGroups: Painter.Render<GroupPositions | null> = (
   }
 
   render(ctx, stackPaintings, true, false);
+  report.groupEnd();
   return ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
 };
 
@@ -1437,5 +1462,5 @@ export const translate: Painter.Translate = (ctx, snapshot, perspective) => {
 };
 
 export const clearRendered: Painter.ClearRendered = (ctx) => {
-  render(ctx, [], true, false);
+  renderAnimated(ctx, [], true, false);
 };

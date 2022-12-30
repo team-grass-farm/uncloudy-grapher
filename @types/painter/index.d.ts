@@ -1,7 +1,7 @@
 declare namespace Painter {
   type ObjectName = 'block' | 'group1' | 'group2';
   type ObjectLayerName = 'blocks' | 'groups1' | 'groups2';
-  type CalculatedLayerName = 'base' | 'stage' | 'cutton';
+  type CalculatedLayerName = 'base' | 'stage' | 'curtain1' | 'curtain2';
   type DebuggingLayerName = 'grid' | 'points';
 
   type Paint = (plot: Positioner.Plot) => void;
@@ -43,7 +43,7 @@ declare namespace Painter {
   }
 
   interface ShrankPositions
-    extends Record<'cutton' | 'pillar', Painter.Positions> {}
+    extends Record<'curtain1' | 'curtain2' | 'pillar', Painter.Positions> {}
 
   type PaintObject = (
     ctx: CanvasRenderingContext2D,
@@ -121,5 +121,5 @@ declare namespace Painter {
     ctx: CanvasRenderingContext2D,
     positions: T,
     backCtx?: CanvasRenderingContext2D | null
-  ) => Promise<[ImageData, () => void] | [null, null]>;
+  ) => [ImageData | null, (() => void) | null];
 }
