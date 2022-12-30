@@ -12,7 +12,7 @@ interface Option<T> {
   listening?: (keyof T)[];
 }
 
-type CallbackFn = <T extends Message>(
+type CallbackFn<T = Message> = (
   moduleName: string,
   message: T,
   option?: Option<T>
@@ -22,11 +22,17 @@ interface Report
   extends Record<
     'debug' | 'info' | 'log' | 'warn' | 'error' | 'assert',
     CallbackFn
-  > {}
+  > {
+  group: CallbackFn<string>;
+  groupCollapsed: CallbackFn<string>;
+  groupEnd: () => void;
+}
 
 const isNone = (val: any): boolean => {
   if (Array.isArray(val)) {
     return val.length === 0;
+  } else if (val === null) {
+    return true;
   } else if (typeof val === 'object') {
     return Object.entries(val as Object).every(([_, val]) => val === null);
   } else {
@@ -51,20 +57,27 @@ export const report = [
   'warn',
   'error',
   'assert',
+  'group',
+  'groupCollapsed',
+  'groupEnd',
 ].reduce<Report | {}>(
   (acc, logLevel) => ({
     ...acc,
     [logLevel]: ((moduleName, message, option) => {
-      if (!!option?.listening && option.listening.every(isNone)) return;
-      !LOGGER_BLACKLIST.some((b) => moduleName === b) &&
-        console[logLevel](
-          '%c ' + moduleName + ' %c',
-          'margin-left: -0.5rem; background: ' +
-            (option?.tagColor ?? '#999999aa') +
-            '; color: white',
-          'background: unset; color: unset',
-          message
-        );
+      if (logLevel === 'groupEnd') {
+        console[logLevel]();
+      } else if (!!option?.listening?.every((val) => isNone(message[val]))) {
+      } else {
+        !LOGGER_BLACKLIST.some((b) => moduleName === b) &&
+          console[logLevel](
+            '%c ' + moduleName + ' %c',
+            'background: ' +
+              (option?.tagColor ?? '#999999aa') +
+              '; color: white; font-weight: normal;',
+            'background: unset; color: unset',
+            message
+          );
+      }
     }) as CallbackFn,
   }),
   {}
