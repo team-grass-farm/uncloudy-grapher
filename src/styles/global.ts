@@ -15,7 +15,7 @@ const GlobalStyles = createGlobalStyle<{ theme: typeof theme }>`
     width: 100vw;
     margin: 0;
     padding: 0;
-    overflow-x: hidden;
+    overflow: hidden;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
       'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
       'Helvetica Neue', sans-serif;
