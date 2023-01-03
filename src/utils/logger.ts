@@ -67,16 +67,32 @@ export const report = [
       if (logLevel === 'groupEnd') {
         console[logLevel]();
       } else if (!!option?.listening?.every((val) => isNone(message[val]))) {
-      } else {
-        !LOGGER_BLACKLIST.some((b) => moduleName === b) &&
+      } else if (!LOGGER_BLACKLIST.some((b) => moduleName === b)) {
+        if (typeof message === 'string') {
           console[logLevel](
-            '%c ' + moduleName + ' %c',
+            '%c ' + moduleName + ' %c ' + message,
             'background: ' +
               (option?.tagColor ?? '#999999aa') +
               '; color: white; font-weight: normal;',
-            'background: unset; color: unset',
-            message
+            'background: unset; color: unset'
           );
+        } else {
+          const { msg, ...others } = message;
+          const texts = [
+            '%c ' + moduleName + ' %c ' + msg,
+            'background: ' +
+              (option?.tagColor ?? '#999999aa') +
+              '; color: white; font-weight: normal;',
+            'background: unset; color: unset; font-weight: normal',
+          ];
+          if (!!Object.keys(others).length) {
+            console.groupCollapsed(...texts);
+            console[logLevel](others);
+            console.groupEnd();
+          } else {
+            console[logLevel](...texts);
+          }
+        }
       }
     }) as CallbackFn,
   }),
