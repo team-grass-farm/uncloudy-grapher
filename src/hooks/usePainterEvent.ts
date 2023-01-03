@@ -261,7 +261,7 @@ export default (
   );
 
   const handleMouseLeave = useCallback(() => {
-    report.log('usePainterEvent', { msg: 'leaving' });
+    report.debug('usePainterEvent', { msg: 'leaving' });
     setHoveredPosition({
       matrix: null,
       block: null,
@@ -273,12 +273,13 @@ export default (
   const handleWheel = useCallback(
     (ev: WheelEvent) => {
       !supportsPassive && ev.preventDefault();
-      report.log('usePainterEvent', {
-        msg: 'new perspective ser',
+      const newPerspective = Math.min(0, perspective - (ev['wheelDelta'] >> 1));
+      report.debug('usePainterEvent', {
+        msg: `perspective: ${newPerspective}`,
         ev,
-        delta: -ev['wheelDelta'],
+        delta: ev['wheelDelta'],
       });
-      setPerspective(Math.min(0, perspective - (ev['wheelDelta'] >> 1)));
+      setPerspective(newPerspective);
     },
     [perspective, supportsPassive]
   );
