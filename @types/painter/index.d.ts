@@ -95,7 +95,7 @@ declare namespace Painter {
     animated: boolean
   ) => Promise<void>;
 
-  type ClearRendered = (ctx: CanvasRenderingContext2D) => void;
+  type ClearRendered = (ctx: CanvasRenderingContext2D | null) => void;
 
   type Translate = (
     ctx: CanvasRenderingContext2D | null,

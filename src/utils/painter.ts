@@ -1462,5 +1462,6 @@ export const translate: Painter.Translate = (ctx, snapshot, perspective) => {
 };
 
 export const clearRendered: Painter.ClearRendered = (ctx) => {
+  if (!!!ctx) return;
   renderAnimated(ctx, [], true, false);
 };

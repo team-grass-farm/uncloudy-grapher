@@ -19,6 +19,7 @@ export const MainBlock = styled.div`
 
     canvas {
       display: block;
+      position: relative;
       margin-top: -16rem;
       margin-bottom: -32rem;
       width: 200%;
@@ -73,6 +74,11 @@ export const MainBlock = styled.div`
     height: 1.5rem;
     white-space: nowrap;
     padding: 0.35rem;
+  }
+
+  article {
+    position: relative;
+    z-index: 1000;
   }
 
   aside {

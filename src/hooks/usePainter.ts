@@ -90,14 +90,16 @@ export default (): [
   });
 
   const [stageSnapshot, setStageSnapshot] = useState<ImageData | null>(null);
-  const [curtainSnapshot, setCurtainSnapshot] = useState<ImageData | null>(
+  const [curtain1Snapshot, setCurtain1Snapshot] = useState<ImageData | null>(
+    null
+  );
+  const [curtain2Snapshot, setCurtain2Snapshot] = useState<ImageData | null>(
     null
   );
 
   const [clearStage, setClearStage] = useState<(() => void) | null>(null);
-  const [clearCurtain, setClearCurtain] = useState<(() => void) | null>(null);
-
-  const [_clearCurtain, _setClearCurtain] = useState<(() => void) | null>(null);
+  const [clearCurtain1, setClearCurtain1] = useState<(() => void) | null>(null);
+  const [clearCurtain2, setClearCurtain2] = useState<(() => void) | null>(null);
 
   /**
    * Synchronize canvas' client size to their elements' size
@@ -213,6 +215,18 @@ export default (): [
     };
   }, [hoveredPosition]);
 
+  const saveCurtain = useCallback(
+    ([snapshot, clear]: [
+      ImageData | null,
+      (() => void) | null | undefined
+    ]) => {
+      report.log('usePainter', { msg: 'saveCurtain()' });
+      setCurtain1Snapshot(snapshot);
+      setClearCurtain1(() => clear ?? null);
+    },
+    [curtain1Snapshot, clearCurtain1]
+  );
+
   /**
    * Render shrinking positions if changed.
    */
@@ -225,51 +239,22 @@ export default (): [
     )
       return;
 
-    let snapshot: ImageData | null;
-    let clear: (() => void) | null | undefined;
-
-    // report.log(
-    //   'usePainter',
-    //   {
-    //     msg: 'hoveredChanged',
-    //     shrankPositionBlocks: shrankPositions.curtain1.blocks,
-    //     hoveredPosition: paintedHoveredPosition?.block,
-    //   },
-    //   { listening: ['hoveredPosition', 'shrankPositionBlocks'] }
-    // );
-
     if (!!paintedHoveredPosition) {
+      clearCurtain1 && clearCurtain1();
       if (shrankPositions.curtain1.blocks) {
-        [snapshot, clear] = renderShrinkingBlocks(
-          canvasContext.curtain1,
-          shrankPositions.curtain1.blocks,
-          canvasContext.blocks
+        saveCurtain(
+          renderShrinkingBlocks(
+            canvasContext.curtain1,
+            shrankPositions.curtain1.blocks,
+            canvasContext.blocks
+          )
         );
-        setCurtainSnapshot(snapshot);
-        _setClearCurtain(clear);
+      } else {
+        clearRendered(canvasContext.curtain1);
       }
-    }
-
-    return () => {
-      // TODO: Add conditional statement if perspective changes
-      // setCurtainSnapshot(null);
-    };
-  }, [paintedHoveredPosition]);
-
-  useEffect(() => {
-    report.log('usePainter', { msg: 'set curtainSnapshot' });
-    setClearCurtain(_clearCurtain);
-    if (!!curtainSnapshot) {
     } else {
-      // !!canvasContext.curtain1 && clearRendered(canvasContext.curtain1);
     }
-
-    return () => {};
-  }, [curtainSnapshot]);
-
-  useEffect(() => {
-    clearCurtain && clearCurtain();
-  }, [clearCurtain]);
+  }, [paintedHoveredPosition]);
 
   /**
    * Render highlighted positions if changed.
@@ -282,7 +267,7 @@ export default (): [
       highlightedPositions,
     });
 
-    // TODO code renderHighlightedBlock()dj
+    // TODO code renderHighlightedBlock()
   }, [highlightedPositions]);
 
   /**
@@ -291,12 +276,14 @@ export default (): [
   useEffect(() => {
     translate(canvasContext.blocks, objectSnapshot.blocks, perspective);
     translate(canvasContext.groups1, objectSnapshot.groups1, perspective);
-    // TODO Find a way to get ImageData on return callback function of subSnapShot
-    // translate(canvasContext.stage, stageSnapshot, perspective);
-    // translate(canvasContext.curtain1, curtainSnapshot, perspective);
-    // translate(canvasContext.curtain2, curtainSnapshot, perspective);
-    setStageSnapshot(null);
-    setCurtainSnapshot(null);
+
+    clearRendered(canvasContext.stage);
+    clearRendered(canvasContext.curtain1);
+    clearRendered(canvasContext.curtain2);
+
+    setClearStage(null);
+    setClearCurtain1(null);
+    setClearCurtain2(null);
   }, [perspective]);
 
   return [
