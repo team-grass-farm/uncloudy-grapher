@@ -1266,7 +1266,7 @@ export const renderShrinkingBlocks: Painter.QuickRender<
   BlockPosition | BlockPositions | null
 > = (ctx, positions, backCtx) => {
   if (!!!ctx) return [null, null];
-  report.groupCollapsed('Painter', 'renderShrankBlock()');
+  report.groupCollapsed('Painter', 'renderShrinkingBlock()');
 
   let backImageData: ImageData | null = null;
   let backRect: [number, number, number, number] | null = null;
@@ -1347,7 +1347,7 @@ export const renderShrinkingBlocks: Painter.QuickRender<
           backImageData,
           backRect,
         });
-        backCtx.putImageData(backImageData!, backRect![0], backRect![1]);
+        backCtx.putImageData(backImageData, backRect[0], backRect[1]);
       }
     },
   ];
