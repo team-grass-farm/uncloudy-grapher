@@ -12,7 +12,7 @@ const DY_OBJ = DY * 0.45;
 const c = (l: number, u: number) =>
   Math.round(Math.random() * (u || 255) + l || 0);
 
-const HEAD_H = 5; //노드 헤드 두께
+const HEAD_H = 2; //노드 헤드 두께
 const HEAD_MARGIN = 2; //노드 헤드 마진
 const LINE_BOLD = 2;
 const LINE_LIGHT = 1;
@@ -403,12 +403,22 @@ export const paintCluster: Painter.PaintArea = (
 export const paintPod: Painter.PaintObject = (ctx, x, y, dx, dy, h, option) => [
   () => {
     ctx.save();
+    // 20 < body_h < 40
     const body_h = h - HEAD_H - HEAD_MARGIN;
+    const level = parseInt('' + (40 - body_h), 10);
     const greyscale = option && option.selected === false;
 
     const lingrad = ctx.createLinearGradient(x - dx, y, x + dx, y);
-    lingrad.addColorStop(0, greyscale ? '#EEEEEE' : '#A3E8E9');
-    lingrad.addColorStop(1, greyscale ? '#999999' : '#009596');
+    lingrad.addColorStop(
+      0,
+      greyscale
+        ? '#EEEEEE'
+        : `rgb(${163 - level}, ${232 - level}, ${233 - level})`
+    );
+    lingrad.addColorStop(
+      1,
+      greyscale ? '#999999' : `rgb(0, ${149 - level}, ${150 - level})`
+    );
 
     const whitegrad = ctx.createLinearGradient(x - dx, y, x + dx, y);
     whitegrad.addColorStop(0, '#DDDDDD');
@@ -457,7 +467,11 @@ export const paintPod: Painter.PaintObject = (ctx, x, y, dx, dy, h, option) => [
     ctx.fill();
 
     //머리 큰 뚜껑
-    ctx.fillStyle = greyscale ? '#BBBBBB' : '#16BFC0';
+    // rgb(7, 93, 94)
+    // console.log('body_h: ', body_h);
+    ctx.fillStyle = greyscale
+      ? '#BBBBBB'
+      : `rgb(${10 + (level >> 2)}, ${191 - level * 3}, ${192 - level * 3})`;
     ctx.beginPath();
     ctx.ellipse(x, y - h, dx, dy, 0, 0, Math.PI * 2);
     ctx.fill();
