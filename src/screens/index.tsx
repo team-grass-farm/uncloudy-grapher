@@ -43,6 +43,7 @@ export default () => {
             Uncloudy Grapher
           </Col>
           <Col className="panel-col" span={24} sm={12}>
+            {/* @ts-expect-error */}
             <Segmented
               value={panelMode}
               onChange={(value) => setPanelMode(value as 'dev' | 'admin')}
