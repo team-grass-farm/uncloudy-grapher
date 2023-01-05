@@ -1577,3 +1577,266 @@ export const SAMPLE_PODS: Map<string, Resource.Pod> = new Map([
     },
   ],
 ]);
+
+export const SAMPLE_POD_JSON = {
+  apiVersion: 'v1',
+  kind: 'Pod',
+  metadata: {
+    annotations: {
+      'k8s.v1.cni.cncf.io/network-status':
+        '[{\n    "name": "openshift-sdn",\n    "interface": "eth0",\n    "ips": [\n        "10.100.39.10"\n    ],\n    "default": true,\n    "dns": {}\n}]',
+      'k8s.v1.cni.cncf.io/networks-status':
+        '[{\n    "name": "openshift-sdn",\n    "interface": "eth0",\n    "ips": [\n        "10.100.39.10"\n    ],\n    "default": true,\n    "dns": {}\n}]',
+      'openshift.io/deployment-config.latest-version': '12',
+      'openshift.io/deployment-config.name': 'sample-pod-running',
+      'openshift.io/deployment.name': 'sample-pod-running-12',
+      'openshift.io/scc': 'restricted',
+    },
+    creationTimestamp: '2022-10-30T00:45:52Z',
+    generateName: 'sample-pod-running-12-',
+    labels: {
+      app: 'sample-pod-running',
+      deployment: 'sample-pod-running-12',
+      deploymentconfig: 'sample-pod-running',
+      name: 'sample-pod-running',
+    },
+    name: 'sample-pod-running-12-npjlg',
+    namespace: 'sample-namespace',
+    ownerReferences: [
+      {
+        apiVersion: 'v1',
+        blockOwnerDeletion: true,
+        controller: true,
+        kind: 'ReplicationController',
+        name: 'sample-pod-running-12',
+        uid: 'abcdefdf-ashs-4de1-a5f3-9djd8sjw0afd',
+      },
+    ],
+    resourceVersion: '14526032106',
+    uid: '9e2c4818-ba28-378b-1682-13a95d0a8348',
+  },
+  spec: {
+    containers: [
+      {
+        env: [
+          {
+            name: 'TZ',
+            value: 'Asia/Seoul',
+          },
+          {
+            name: 'CURRENT_NAMESPACE_NAME',
+            valueFrom: {
+              fieldRef: {
+                apiVersion: 'v1',
+                fieldPath: 'metadata.namespace',
+              },
+            },
+          },
+          {
+            name: 'LOCAL_IP',
+            valueFrom: {
+              fieldRef: {
+                apiVersion: 'v1',
+                fieldPath: 'status.podIP',
+              },
+            },
+          },
+          {
+            name: 'NODE_NAME',
+            valueFrom: {
+              fieldRef: {
+                apiVersion: 'v1',
+                fieldPath: 'spec.nodeName',
+              },
+            },
+          },
+        ],
+        image:
+          'image-registry.openshift-image-registry.svc:5000/sample-namespace/sample-pod-running@sha256:s92da0f812c74e98545dde0c2d7e6d557f2dis293646f65di20f1e1962e129ds',
+        imagePullPolicy: 'Always',
+        name: 'sample-pod-running',
+        ports: [
+          {
+            containerPort: 8080,
+            protocol: 'TCP',
+          },
+        ],
+        resources: {
+          requests: {
+            cpu: '10m',
+          },
+        },
+        securityContext: {
+          capabilities: {
+            drop: ['KILL', 'MKNOD', 'SETGID', 'SETUID'],
+          },
+          runAsUser: 1001470000,
+        },
+        terminationMessagePath: '/dev/termination-log',
+        terminationMessagePolicy: 'File',
+        volumeMounts: [
+          {
+            mountPath: '/usr/app/vol',
+            name: 'vol',
+            readOnly: true,
+          },
+          {
+            mountPath: '/var/run/secrets/kubernetes.io/serviceaccount',
+            name: 'kube-api-access-bdbgp',
+            readOnly: true,
+          },
+        ],
+      },
+    ],
+    dnsPolicy: 'ClusterFirst',
+    enableServiceLinks: true,
+    imagePullSecrets: [
+      {
+        name: 'default-dockercfg-d8sj2',
+      },
+    ],
+    nodeName: 'worker-node-02',
+    preemptionPolicy: 'PreemptLowerPriority',
+    priority: 0,
+    restartPolicy: 'Always',
+    schedulerName: 'default-scheduler',
+    serviceAccount: 'sample-sa',
+    serviceAccountName: 'sample-sa',
+    terminationGracePeriodSeconds: 30,
+    tolerations: [
+      {
+        effect: 'NoExecute',
+        key: 'node.kubernetes.io/not-ready',
+        operator: 'Exists',
+        tolerationSeconds: 300,
+      },
+      {
+        effect: 'NoExecute',
+        key: 'node.kubernetes.io/unreachable',
+        operator: 'Exists',
+        tolerationSeconds: 300,
+      },
+      {
+        effect: 'NoSchedule',
+        key: 'node.kubernetes.io/memory-pressure',
+        operator: 'Exists',
+      },
+    ],
+    volumes: [
+      {
+        configMap: {
+          defaultMode: 420,
+          name: 'vol',
+        },
+        name: 'vol',
+      },
+      {
+        name: 'kube-api-access-uiw8s',
+        projected: {
+          defaultMode: 420,
+          sources: [
+            {
+              serviceAccountToken: {
+                expirationSeconds: 3607,
+                path: 'token',
+              },
+            },
+            {
+              configMap: {
+                items: [
+                  {
+                    key: 'ca.crt',
+                    path: 'ca.crt',
+                  },
+                ],
+                name: 'k8s-root-ca.crt',
+              },
+            },
+            {
+              downwardAPI: {
+                items: [
+                  {
+                    fieldRef: {
+                      apiVersion: 'v1',
+                      fieldPath: 'metadata.namespace',
+                    },
+                    path: 'namespace',
+                  },
+                ],
+              },
+            },
+            {
+              configMap: {
+                items: [
+                  {
+                    key: 'k8s-service-ca.crt',
+                    path: 'k8sservice-ca.crt',
+                  },
+                ],
+                name: 'k8s-service-ca.crt',
+              },
+            },
+          ],
+        },
+      },
+    ],
+  },
+  status: {
+    conditions: [
+      {
+        lastProbeTime: null,
+        lastTransitionTime: '2022-10-30T00:45:52Z',
+        status: 'True',
+        type: 'Initialized',
+      },
+      {
+        lastProbeTime: null,
+        lastTransitionTime: '2022-10-30T00:46:00Z',
+        status: 'True',
+        type: 'Ready',
+      },
+      {
+        lastProbeTime: null,
+        lastTransitionTime: '2022-10-30T00:46:00Z',
+        status: 'True',
+        type: 'ContainersReady',
+      },
+      {
+        lastProbeTime: null,
+        lastTransitionTime: '2022-10-30T00:45:52Z',
+        status: 'True',
+        type: 'PodScheduled',
+      },
+    ],
+    containerStatuses: [
+      {
+        containerID:
+          'cri-o://si0a824e61cd6fa0f2e995239545cc1550ec262c6a6fc16ed3e1d0e426d98705',
+        image:
+          'image-registry.openshift-image-registry.svc:5000/sample-namespace/sample-pod-running@sha256:siap10f829ds4e98545dde0c2d7e6d557f2dbec28361f65f9b1f1e1962e128sa',
+        imageID:
+          'image-registry.openshift-image-registry.svc:5000/sample-namespace/sample-pod-running@sha256:siap10f829ds4e98545dde0c2d7e6d557f2dbec28361f65f9b1f1e1962e128sa',
+        lastState: {},
+        name: 'sample-pod-running',
+        ready: true,
+        restartCount: 0,
+        started: true,
+        state: {
+          running: {
+            startedAt: '2022-10-30T00:45:59Z',
+          },
+        },
+      },
+    ],
+    hostIP: '192.168.100.49',
+    phase: 'Running',
+    podIP: '10.100.43.77',
+    podIPs: [
+      {
+        ip: '10.100.43.77',
+      },
+    ],
+    qosClass: 'Burstable',
+    startTime: '2022-10-30T00:45:52Z',
+  },
+};

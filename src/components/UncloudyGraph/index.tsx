@@ -1,6 +1,8 @@
 import { CloseOutlined } from '@ant-design/icons';
 import { Button, Col, Row, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
+import { ResourceEditor } from '~components';
+import { SAMPLE_POD_JSON } from '~constants';
 import { usePainter, usePositioner } from '~hooks';
 
 import { ExtrudedBlock, MainBlock } from './styles';
@@ -144,6 +146,7 @@ export default ({
             />
           </Col>
         </Row>
+        <ResourceEditor data={SAMPLE_POD_JSON} />
         <li>
           {highlighted.blocks ? JSON.stringify(highlighted.blocks) : 'none'}
         </li>
