@@ -276,8 +276,6 @@ export default (
       const newPerspective = Math.min(0, perspective - (ev['wheelDelta'] >> 1));
       report.debug('usePainterEvent', {
         msg: `perspective: ${newPerspective}`,
-        ev,
-        delta: ev['wheelDelta'],
       });
       setPerspective(newPerspective);
     },
