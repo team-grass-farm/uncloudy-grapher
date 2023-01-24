@@ -20,7 +20,7 @@ const isDevMode = process.env.NODE_ENV === 'development';
 export default (): [
   Painter.Ref,
   PointPosition | null,
-  Painter.Positions,
+  Painter.Models,
   Painter.Paint,
   React.Dispatch<1 | 2 | 3>,
   React.Dispatch<React.SetStateAction<Dimensions>>,
@@ -35,16 +35,16 @@ export default (): [
   const [
     eventRef,
     perspective,
-    hoveredPosition,
-    shrankPositions,
-    highlightedPositions,
+    hoveredModel,
+    shrankModels,
+    highlightedModels,
     hoveredPointPosition,
     setLevelOnEvent,
     setRenderedPlotOnEvent,
   ] = usePainterEvent(dimensions);
 
-  const [paintedHoveredPosition, setPaintedHoveredPosition] =
-    useState<Painter.Position | null>(null);
+  const [paintedHoveredModel, setPaintedHoveredModel] =
+    useState<Painter.Model | null>(null);
 
   const canvasRef: Painter.Ref = {
     ...(isDevMode && {
@@ -188,14 +188,14 @@ export default (): [
     let snapshot: ImageData | null;
     let clear: (() => void) | null;
 
-    if (!!hoveredPosition.block) {
+    if (!!hoveredModel.block) {
       if (
-        !!!paintedHoveredPosition ||
-        hoveredPosition.block !== paintedHoveredPosition.block
+        !!!paintedHoveredModel ||
+        hoveredModel.block !== paintedHoveredModel.block
       ) {
         [snapshot, clear] = renderHoveredBlock(
           canvasContext.stage,
-          hoveredPosition.block
+          hoveredModel.block
         );
         setStageSnapshot(snapshot);
         setClearStage(clear);
@@ -205,7 +205,7 @@ export default (): [
     }
 
     setTimeout(() => {
-      setPaintedHoveredPosition(hoveredPosition);
+      setPaintedHoveredModel(hoveredModel);
     }, 100);
 
     return () => {
@@ -213,7 +213,7 @@ export default (): [
       setStageSnapshot(null);
       !!canvasContext.stage && clearRendered(canvasContext.stage);
     };
-  }, [hoveredPosition]);
+  }, [hoveredModel]);
 
   const saveCurtain = useCallback(
     ([snapshot, clear]: [
@@ -239,13 +239,13 @@ export default (): [
     )
       return;
 
-    if (!!paintedHoveredPosition) {
+    if (!!paintedHoveredModel) {
       clearCurtain1 && clearCurtain1();
-      if (shrankPositions.curtain1.blocks) {
+      if (shrankModels.curtain1.blocks) {
         saveCurtain(
           renderShrinkingBlocks(
             canvasContext.curtain1,
-            shrankPositions.curtain1.blocks,
+            shrankModels.curtain1.blocks,
             canvasContext.blocks
           )
         );
@@ -254,7 +254,7 @@ export default (): [
       }
     } else {
     }
-  }, [paintedHoveredPosition]);
+  }, [paintedHoveredModel]);
 
   /**
    * Render highlighted positions if changed.
@@ -263,12 +263,12 @@ export default (): [
     if (!!!canvasContext.stage) return;
 
     report.log('usePainter', {
-      msg: 'highlightPosition Changed',
-      highlightedPositions,
+      msg: 'highlightModels Changed',
+      highlightedModels,
     });
 
     // TODO code renderHighlightedBlock()
-  }, [highlightedPositions]);
+  }, [highlightedModels]);
 
   /**
    * Translate canvases if perspective has changed.
@@ -289,7 +289,7 @@ export default (): [
   return [
     canvasRef,
     hoveredPointPosition,
-    highlightedPositions,
+    highlightedModels,
     paint,
     setLevel,
     setDimensions,
