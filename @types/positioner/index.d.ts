@@ -1,4 +1,16 @@
 declare namespace Positioner {
+  type CanvasValue = Record<
+    | 'DX'
+    | 'DY'
+    | 'A'
+    | 'numRows'
+    | 'numColumns'
+    | 'x0'
+    | 'y0'
+    | 'row0'
+    | 'column0',
+    number
+  >;
   type Pose = (resourceMap: Positioner.ResourceMap, level: 1 | 2 | 3) => void;
 
   type AdminResourceMap =
@@ -28,9 +40,9 @@ declare namespace Positioner {
     : never;
 
   interface Plot {
-    blocks: BlockPositions;
-    groups1: GroupPositions | null;
-    groups2: GroupPositions | null;
+    blocks: Model<BlockPositions>;
+    groups1: Model<GroupPositions> | null;
+    groups2: Model<GroupPositions> | null;
   }
 
   type GetCursorPosition = (
@@ -47,18 +59,7 @@ declare namespace Positioner {
     width: number,
     height: number,
     level: 1 | 2 | 3
-  ) => Record<
-    | 'DX'
-    | 'DY'
-    | 'A'
-    | 'numRows'
-    | 'numColumns'
-    | 'x0'
-    | 'y0'
-    | 'row0'
-    | 'column0',
-    number
-  >;
+  ) => CanvasValue;
 
   type GetPointPositions = (
     width: number,
@@ -81,35 +82,48 @@ declare namespace Positioner {
   ) => LinePosition[];
 
   type GetPointPosition = (
-    canvasValues: {
-      DX: number;
-      DY: number;
-      x0: number;
-      y0: number;
-      row0: number;
-      column0: number;
-    },
-    matrix: Matrix,
-    z?: number
+    canvasValue: CanvasValue,
+    matrix: PointMatrix | BlockMatrix,
+    kind?: never,
+    z?: never
   ) => PointPosition;
 
-  type GetBlockPositions = (
+  type GetBlockPosition = (
+    canvasValue: CanvasValue,
+    matrix: BlockMatrix,
+    kind: BlockKind,
+    z?: number
+  ) => BlockPosition;
+
+  type GetBlockModels = (
     width: number,
     height: number,
     level: 1 | 2 | 3,
-    matrixes: Matrix[] | null,
-    kind: `${BlockKind}s`
-  ) => BlockPositions | null;
+    matrixes: BlockMatrix[] | null,
+    objectKind: BlockKind
+  ) => Model<BlockPositions> | null;
 
-  type GetGroupPositions = (
+  type GetGroupPosition = (
+    canvasValue: CanvasValue,
+    matrix: GroupMatrix,
+    kind: GroupKind,
+    z?: number
+  ) => GroupPosition;
+
+  type GetGroupModels = (
     width: number,
     height: number,
     level: 1 | 2 | 3,
-    matrixes: [Matrix, Matrix][] | null,
-    type: `${GroupKind}s`
-  ) => GroupPositions | null;
+    matrixes: GroupMatrix[] | null,
+    objectKind: GroupKind
+  ) => Model<GroupPositions> | null;
 
-  type GetViewPositions<T extends 'dev' | 'admin'> = (
+  type GetEndPointMatrix = (
+    maxCol: number,
+    blockLength: number
+  ) => PointMatrix | null;
+
+  type GetViewPositions<T extends 'admin' | 'dev'> = (
     resourceMap: ResourceMap<T>,
     width: number,
     height: number,

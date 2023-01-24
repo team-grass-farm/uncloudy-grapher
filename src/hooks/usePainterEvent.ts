@@ -8,9 +8,9 @@ export default (
 ): [
   React.RefObject<HTMLCanvasElement>,
   number,
-  Painter.Position,
-  Painter.ShrankPositions,
-  Painter.Positions,
+  Painter.Model,
+  Painter.ShrankModels,
+  Painter.Models,
   PointPosition | null,
   React.Dispatch<1 | 2 | 3>,
   React.Dispatch<Positioner.Plot | null>
@@ -26,26 +26,22 @@ export default (
   const [highlightedPointPosition, setHighlightedPointPosition] =
     useState<PointPosition | null>(null);
 
-  const [hoveredPosition, setHoveredPosition] = useState<Painter.Position>({
-    matrix: null,
+  const [hoveredModel, setHoveredModel] = useState<Painter.Model>({
     block: null,
     group1: null,
     group2: null,
   });
-  const [shrankPositions, setShrankPositions] =
-    useState<Painter.ShrankPositions>({
-      curtain1: { matrix: null, blocks: null, groups1: null, groups2: null },
-      curtain2: { matrix: null, blocks: null, groups1: null, groups2: null },
-      pillar: { matrix: null, blocks: null, groups1: null, groups2: null },
-    });
+  const [shrankPositions, setShrankPositions] = useState<Painter.ShrankModels>({
+    curtain1: { blocks: null, groups1: null, groups2: null },
+    curtain2: { blocks: null, groups1: null, groups2: null },
+    pillar: { blocks: null, groups1: null, groups2: null },
+  });
 
-  const [highlightedPositions, setHighlightedPositions] =
-    useState<Painter.Positions>({
-      matrix: null,
-      blocks: null,
-      groups1: null,
-      groups2: null,
-    });
+  const [highlightedModels, setHighlightedModels] = useState<Painter.Models>({
+    blocks: null,
+    groups1: null,
+    groups2: null,
+  });
 
   const [isMouseMoving, setIsMouseMoving] = useState(false);
   const [supportsPassive, setSupportsPassive] = useState(false);
@@ -67,16 +63,16 @@ export default (
     );
   };
 
-  const getBlockPositionsFromMatrix = (
-    matrix: Matrix
-  ): PointPosition | null => {
-    const point =
+  const getBlockPositionFromMatrix = (
+    matrix: PointMatrix | BlockMatrix
+  ): BlockPosition | null => {
+    const blockPosition =
       renderedPlot?.blocks.data.get(matrix.row + ',' + matrix.column) ?? null;
-    return !!point
+    return !!blockPosition
       ? {
-          ...point,
-          x: point.x + perspective,
-          y: point.y - perspective * 0.57,
+          ...blockPosition,
+          x: blockPosition.x + perspective,
+          y: blockPosition.y - perspective * 0.57,
         }
       : null;
   };
@@ -88,10 +84,10 @@ export default (
       if (!IsSameMatrix(point, highlightedPointPosition)) {
         if (!!point && !!renderedPlot) {
           const { blocks } = renderedPlot;
-          const hoveredKind = blocks.kind.slice(0, -1) as BlockKind;
+          const hoveredKind = blocks.objectKind;
           // const hoveredData =
           //   blocks.data.get(point!.row + ',' + point!.column) ?? null;
-          const hoveredData = getBlockPositionsFromMatrix(point);
+          const hoveredData = getBlockPositionFromMatrix(point);
 
           report.debug('usePainterEvent', {
             msg: 'onHandleClick()',
@@ -99,14 +95,13 @@ export default (
             hoveredData,
           });
 
-          setHighlightedPositions({
-            matrix: null,
+          setHighlightedModels({
             blocks: !!hoveredData
               ? ({
                   ...blocks,
                   kind: hoveredKind,
                   data: hoveredData,
-                } as BlockPosition)
+                } as Model<BlockPositions | BlockPosition>)
               : null,
             groups1: null,
             groups2: null,
@@ -138,28 +133,36 @@ export default (
       if (!IsSameMatrix(point, hoveredPointPosition)) {
         if (!!point && !!renderedPlot) {
           const { blocks } = renderedPlot;
-          const kind = blocks.kind.slice(0, -1) as BlockKind;
+          const kind = blocks.objectKind;
           // const hoveredData =
           //   blocks.data.get(point.row + ',' + point.column) ?? null;
           // if (!!hoveredData) {
           //   hoveredData.x = hoveredData.x + perspective;
           //   hoveredData.y = hoveredData.y - perspective * 0.57;
           // }
-          const hoveredData = getBlockPositionsFromMatrix(point);
+          const hoveredData = getBlockPositionFromMatrix(point);
 
           const curtain1Data = new Map(
-            ([{ row: point.row - 1, column: point.column + 1 }] as Matrix[])
-              .map((p): [string, PointPosition | null] => {
-                return [p.row + ',' + p.column, getBlockPositionsFromMatrix(p)];
+            (
+              [
+                { row: point.row - 1, column: point.column + 1 },
+              ] as PointMatrix[]
+            )
+              .map((p): [string, BlockPosition | null] => {
+                return [p.row + ',' + p.column, getBlockPositionFromMatrix(p)];
               })
-              .filter((datum): datum is [string, PointPosition] => !!datum[1])
+              .filter((datum): datum is [string, BlockPosition] => !!datum[1])
           );
           const pillarData = new Map(
-            ([{ row: point.row - 2, column: point.column + 2 }] as Matrix[])
-              .map((p): [string, PointPosition | null] => {
-                return [p.row + ',' + p.column, getBlockPositionsFromMatrix(p)];
+            (
+              [
+                { row: point.row - 2, column: point.column + 2 },
+              ] as PointMatrix[]
+            )
+              .map((p): [string, BlockPosition | null] => {
+                return [p.row + ',' + p.column, getBlockPositionFromMatrix(p)];
               })
-              .filter((datum): datum is [string, PointPosition] => !!datum[1])
+              .filter((datum): datum is [string, BlockPosition] => !!datum[1])
           );
 
           // report.debug('usePainterEvent', [
@@ -176,33 +179,30 @@ export default (
           if (!!hoveredData && !!curtain1Data.size) {
             setShrankPositions({
               curtain1: {
-                matrix: null,
                 blocks:
                   curtain1Data.size > 0
-                    ? ({
+                    ? {
                         ...blocks,
-                        kind: blocks.kind,
+                        kind: blocks.objectKind,
                         data: curtain1Data,
-                      } as BlockPositions)
+                      }
                     : null,
                 groups1: null,
                 groups2: null,
               },
               curtain2: {
-                matrix: null,
                 blocks: null,
                 groups1: null,
                 groups2: null,
               },
               pillar: {
-                matrix: null,
                 blocks:
                   pillarData.size > 0
-                    ? ({
+                    ? {
                         ...blocks,
-                        kind: blocks.kind,
+                        kind: blocks.objectKind,
                         data: pillarData,
-                      } as BlockPositions)
+                      }
                     : null,
                 groups1: null,
                 groups2: null,
@@ -211,42 +211,36 @@ export default (
           } else {
             setShrankPositions({
               curtain1: {
-                matrix: null,
                 blocks: null,
                 groups1: null,
                 groups2: null,
               },
               curtain2: {
-                matrix: null,
                 blocks: null,
                 groups1: null,
                 groups2: null,
               },
               pillar: {
-                matrix: null,
                 blocks: null,
                 groups1: null,
                 groups2: null,
               },
             });
           }
-          setHoveredPosition({
-            matrix: null,
+          setHoveredModel({
             block: !!hoveredData
-              ? ({ ...blocks, kind, data: hoveredData } as BlockPosition)
+              ? { ...blocks, kind, data: hoveredData }
               : null,
             group1: null,
             group2: null,
           });
         } else {
-          // setHoveredPosition({
-          //   matrix: null,
+          // setHoveredModel({
           //   block: null,
           //   group1: null,
           //   group2: null,
           // });
           // setShrinkedPositions({
-          //   matrix: null,
           //   blocks: null,
           //   groups1: null,
           //   groups2: null,
@@ -262,8 +256,7 @@ export default (
 
   const handleMouseLeave = useCallback(() => {
     report.debug('usePainterEvent', { msg: 'leaving' });
-    setHoveredPosition({
-      matrix: null,
+    setHoveredModel({
       block: null,
       group1: null,
       group2: null,
@@ -328,9 +321,9 @@ export default (
   return [
     ref,
     perspective,
-    hoveredPosition,
+    hoveredModel,
     shrankPositions,
-    highlightedPositions,
+    highlightedModels,
     hoveredPointPosition,
     setLevel,
     setRenderedPlot,
