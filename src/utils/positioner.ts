@@ -320,19 +320,20 @@ const getPointPosition: Positioner.GetPointPosition = (c, matrix) => {
   return { kind: 'point', x, y, row, column };
 };
 
-const getBlockPosition: Positioner.GetBlockPosition = (c, matrix, kind, z) => ({
+const getBlockPosition: Positioner.GetBlockPosition = (c, matrix, kind) => ({
   ...getPointPosition(c, matrix),
   id: matrix.id,
   kind,
+  z: 45 - parseInt('' + (matrix.depth ?? 0)),
 });
 
-const getGroupPosition: Positioner.GetGroupPosition = (c, matrix, kind, z) => {
-  const { id, start, end } = matrix;
+const getGroupPosition: Positioner.GetGroupPosition = (c, matrix, kind) => {
   return {
-    start: getPointPosition(c, start),
-    end: getPointPosition(c, end),
-    id,
+    start: getPointPosition(c, matrix.start),
+    end: getPointPosition(c, matrix.end),
+    id: matrix.id,
     kind,
+    z: matrix.depth,
   };
 };
 
@@ -350,14 +351,13 @@ const getBlockModels: Positioner.GetBlockModels = (
   height,
   level,
   matrixes,
-  kind
+  objectKind
 ) => {
   if (!!!matrixes) return null;
   const canvasValues = getCanvasValues(width, height, level);
-  let highest = 50;
 
   return {
-    objectKind: kind,
+    objectKind,
     viewType: level === 3 ? 'flat' : 'normal',
     dx: canvasValues.DX,
     dy: canvasValues.DY,
@@ -365,12 +365,7 @@ const getBlockModels: Positioner.GetBlockModels = (
     data: new Map(
       matrixes.map((matrix) => [
         [matrix.row, matrix.column].toString(),
-        getBlockPosition(
-          canvasValues,
-          matrix,
-          kind,
-          highest - (Math.random() * 20 + 5)
-        ),
+        getBlockPosition(canvasValues, matrix, objectKind),
       ])
     ),
   };
@@ -391,13 +386,13 @@ const getGroupModels: Positioner.GetGroupModels = (
   height,
   level,
   matrixes,
-  kind
+  objectKind
 ) => {
   if (!!!matrixes) return null;
   const canvasValues = getCanvasValues(width, height, level);
 
   return {
-    objectKind: kind,
+    objectKind,
     viewType: level === 3 ? 'flat' : 'normal',
     dx: canvasValues.DX,
     dy: canvasValues.DY,
@@ -409,7 +404,7 @@ const getGroupModels: Positioner.GetGroupModels = (
           matrix.end.row,
           matrix.end.column,
         ].toString(),
-        getGroupPosition(canvasValues, matrix, kind),
+        getGroupPosition(canvasValues, matrix, objectKind),
       ])
     ),
   };
@@ -473,7 +468,14 @@ export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
         for (let column = 0; column < endPointMatrix.column; column++) {
           const pod = podQue.next();
           if (pod.done) break;
-          else pods.push({ id: pod.value.id, kind: 'pod', row, column });
+          else
+            pods.push({
+              id: pod.value.id,
+              kind: 'pod',
+              row,
+              column,
+              depth: Math.random() * 20,
+            });
         }
       }
     }
@@ -562,6 +564,7 @@ export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
               kind: 'pod',
               row: paddingRow + precedingRow + row,
               column: paddingCol + column,
+              depth: Math.random() * 20,
             });
         }
       }

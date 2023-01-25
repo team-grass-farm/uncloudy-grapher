@@ -10,6 +10,7 @@ declare interface PointMatrix {
   kind: 'point';
   row: number;
   column: number;
+  depth?: never;
 }
 
 declare interface BlockMatrix {
@@ -17,6 +18,7 @@ declare interface BlockMatrix {
   kind: BlockKind;
   row: number;
   column: number;
+  depth?: number;
 }
 
 declare interface GroupMatrix {
@@ -24,6 +26,7 @@ declare interface GroupMatrix {
   kind: GroupKind;
   start: PointMatrix;
   end: PointMatrix;
+  depth?: number;
 }
 
 declare interface LinePosition {
