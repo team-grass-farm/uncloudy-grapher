@@ -995,7 +995,11 @@ const render: Painter.BaseRender = async (
       // ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     }
 
-    report.debug('Painter', { msg: 'onRender()', stackPaintings });
+    report.debug(
+      'Painter',
+      { msg: 'onRender()', stackPaintings },
+      { listening: ['stackPaintings'] }
+    );
     stackPaintings.forEach((paintObject) => {
       paintObject();
     });
@@ -1036,8 +1040,7 @@ const renderAnimated: Painter.BaseRender = (
         } else if (frame.done) {
           clearInterval(runner);
           report.debug('Painter', {
-            msg: 'renderAnimated (done)',
-            stackPaintings,
+            msg: `done renderAnimated (${stackPaintings.length} frames)`,
           });
           resolve();
         } else {
