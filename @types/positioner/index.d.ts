@@ -91,8 +91,7 @@ declare namespace Positioner {
   type GetBlockPosition = (
     canvasValue: CanvasValue,
     matrix: BlockMatrix,
-    kind: BlockKind,
-    z?: number
+    kind: BlockKind
   ) => BlockPosition;
 
   type GetBlockModels = (
@@ -106,8 +105,7 @@ declare namespace Positioner {
   type GetGroupPosition = (
     canvasValue: CanvasValue,
     matrix: GroupMatrix,
-    kind: GroupKind,
-    z?: number
+    kind: GroupKind
   ) => GroupPosition;
 
   type GetGroupModels = (
