@@ -40,9 +40,9 @@ declare namespace Positioner {
     : never;
 
   interface Plot {
-    blocks: Model<BlockPositions>;
-    groups1: Model<GroupPositions> | null;
-    groups2: Model<GroupPositions> | null;
+    blocks: View<BlockPositions>;
+    groups1: View<GroupPositions> | null;
+    groups2: View<GroupPositions> | null;
   }
 
   type GetCursorPosition = (
@@ -61,11 +61,11 @@ declare namespace Positioner {
     level: 1 | 2 | 3
   ) => CanvasValue;
 
-  type GetPointPositions = (
+  type GetPointViews = (
     width: number,
     height: number,
     level: 1 | 2 | 3
-  ) => PointPosition[];
+  ) => View<PointPositions>;
 
   type GetHighlightedPointPosition = (
     width: number,
@@ -75,11 +75,11 @@ declare namespace Positioner {
     cy: number
   ) => PointPosition | null;
 
-  type GetLinePositions = (
+  type GetGridViews = (
     width: number,
     height: number,
     level: 1 | 2 | 3
-  ) => LinePosition[];
+  ) => View<LinePositions>;
 
   type GetPointPosition = (
     canvasValue: CanvasValue,
@@ -94,13 +94,13 @@ declare namespace Positioner {
     kind: BlockKind
   ) => BlockPosition;
 
-  type GetBlockModels = (
+  type GetBlockViews = (
     width: number,
     height: number,
     level: 1 | 2 | 3,
     matrixes: BlockMatrix[] | null,
     objectKind: BlockKind
-  ) => Model<BlockPositions> | null;
+  ) => View<BlockPositions> | null;
 
   type GetGroupPosition = (
     canvasValue: CanvasValue,
@@ -108,20 +108,20 @@ declare namespace Positioner {
     kind: GroupKind
   ) => GroupPosition;
 
-  type GetGroupModels = (
+  type GetGroupViews = (
     width: number,
     height: number,
     level: 1 | 2 | 3,
     matrixes: GroupMatrix[] | null,
     objectKind: GroupKind
-  ) => Model<GroupPositions> | null;
+  ) => View<GroupPositions> | null;
 
   type GetEndPointMatrix = (
     maxCol: number,
     blockLength: number
   ) => PointMatrix | null;
 
-  type GetViewPositions<T extends 'admin' | 'dev'> = (
+  type GetPlot<T extends 'admin' | 'dev'> = (
     resourceMap: ResourceMap<T>,
     width: number,
     height: number,
