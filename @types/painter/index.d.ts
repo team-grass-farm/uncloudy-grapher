@@ -43,7 +43,7 @@ declare namespace Painter {
   interface SavedShrankViews
     extends Record<'curtain1' | 'curtain2' | 'pillar', Painter.SavedViews> {}
 
-  type PaintObject = (
+  type PaintBlock = (
     ctx: CanvasRenderingContext2D,
     x: number,
     y: number,
@@ -62,7 +62,7 @@ declare namespace Painter {
     option?: Option
   ) => (() => void)[];
 
-  type PaintArea = (
+  type PaintGroup = (
     ctx: CanvasRenderingContext2D,
     start: PointPosition,
     end: PointPosition,
