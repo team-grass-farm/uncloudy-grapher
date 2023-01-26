@@ -35,7 +35,7 @@ const NODEGROUP_H = 10;
 const DEPLOYMENTGROUP_NM = 'Deployment Group';
 const DEPLOYMENTGROUP_H = 5;
 
-export const paintCube: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
+export const paintCube: Painter.PaintBlock = (ctx, x, y, dx, dy, h) => [
   () => {
     ctx.save();
     ctx.translate(x, y);
@@ -91,7 +91,7 @@ export const paintCube: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
  * @param h: 노드 블럭의 높이
  * @returns () => void
  */
-export const paintNode: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
+export const paintNode: Painter.PaintBlock = (ctx, x, y, dx, dy, h) => [
   () => {
     ctx.save();
 
@@ -217,7 +217,7 @@ export const paintNode: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
   },
 ];
 
-export const paintFlatNode: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
+export const paintFlatNode: Painter.PaintBlock = (ctx, x, y, dx, dy, h) => [
   () => {
     ctx.save();
 
@@ -243,7 +243,7 @@ export const paintFlatNode: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
  *      D
  * @returns () => void
  */
-export const paintNodeGroup: Painter.PaintArea = (
+export const paintNodeGroup: Painter.PaintGroup = (
   ctx,
   start,
   end,
@@ -344,7 +344,7 @@ export const paintNodeGroup: Painter.PaintArea = (
  *      D
  * @returns () => void
  */
-export const paintCluster: Painter.PaintArea = (
+export const paintCluster: Painter.PaintGroup = (
   ctx,
   start,
   end,
@@ -400,7 +400,7 @@ export const paintCluster: Painter.PaintArea = (
  * @param h: 파드 블럭의 높이
  * @returns () => void
  */
-export const paintPod: Painter.PaintObject = (ctx, x, y, dx, dy, h, option) => [
+export const paintPod: Painter.PaintBlock = (ctx, x, y, dx, dy, h, option) => [
   () => {
     ctx.save();
     // 20 < body_h < 40
@@ -483,7 +483,7 @@ export const paintPod: Painter.PaintObject = (ctx, x, y, dx, dy, h, option) => [
 /**
  * @deprecated
  */
-export const paintAnimatedPod: Painter.PaintObject = (
+export const paintAnimatedPod: Painter.PaintBlock = (
   ctx,
   x,
   y,
@@ -511,7 +511,7 @@ export const paintAnimatedPod: Painter.PaintObject = (
  * @param option
  * @returns {void}
  */
-export const paintGroup: Painter.PaintArea = (
+export const paintDeploymentGroup: Painter.PaintGroup = (
   ctx,
   start,
   end,
@@ -592,7 +592,7 @@ export const paintGroup: Painter.PaintArea = (
   },
 ];
 
-export const paintFlatPod: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
+export const paintFlatPod: Painter.PaintBlock = (ctx, x, y, dx, dy, h) => [
   () => {
     ctx.save();
 
@@ -631,7 +631,7 @@ export const paintFlatPod: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
  *      D
  * @returns () => void
  */
-export const paintNamespace: Painter.PaintArea = (
+export const paintNamespace: Painter.PaintGroup = (
   ctx,
   start,
   end,
@@ -691,7 +691,7 @@ export const paintNamespace: Painter.PaintArea = (
  
  * @returns () => void
  */
-export const paintFlatDeploymentGroup: Painter.PaintArea = (
+export const paintFlatDeploymentGroup: Painter.PaintGroup = (
   ctx,
   start,
   end,
@@ -730,7 +730,7 @@ export const paintFlatDeploymentGroup: Painter.PaintArea = (
  
  * @returns () => void
  */
-export const paintFlatNodeGroup: Painter.PaintArea = (
+export const paintFlatNodeGroup: Painter.PaintGroup = (
   ctx,
   start,
   end,
@@ -769,7 +769,7 @@ export const paintFlatNodeGroup: Painter.PaintArea = (
  
  * @returns () => void
  */
-export const paintFlatNamespace: Painter.PaintArea = (
+export const paintFlatNamespace: Painter.PaintGroup = (
   ctx,
   start,
   end,
@@ -819,7 +819,7 @@ export const paintFlatNamespace: Painter.PaintArea = (
  
  * @returns () => void
  */
-export const paintFlatCluster: Painter.PaintArea = (
+export const paintFlatCluster: Painter.PaintGroup = (
   ctx,
   start,
   end,
@@ -854,7 +854,7 @@ export const paintFlatCluster: Painter.PaintArea = (
   },
 ];
 
-export const paintPoint: Painter.PaintObject = (ctx, x, y, dx, dy, h) => [
+export const paintPoint: Painter.PaintBlock = (ctx, x, y, dx, dy, h) => [
   () => {
     ctx.save();
     ctx.fillStyle = '#dd5555';
@@ -880,7 +880,7 @@ export const paintLine: Painter.PaintLine = (ctx, x1, y1, x2, y2) => [
   },
 ];
 
-export const paintGrasses: Painter.PaintObject = (
+export const paintGrasses: Painter.PaintBlock = (
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -925,7 +925,7 @@ export const paintGrasses: Painter.PaintObject = (
 /**
  * @deprecated
  */
-// export const paintMonthText: Painter.PaintObject = (
+// export const paintMonthText: Painter.PaintBlock = (
 //   ctx,
 //   x,
 //   y,
@@ -952,7 +952,7 @@ export const paintGrasses: Painter.PaintObject = (
 /**
  * @deprecated
  */
-// export const paintDayText: Painter.PaintObject = (
+// export const paintDayText: Painter.PaintBlock = (
 //   ctx,
 //   x,
 //   y,
@@ -1000,8 +1000,8 @@ const render: Painter.BaseRender = async (
       { msg: 'onRender()', stackPaintings },
       { listening: ['stackPaintings'] }
     );
-    stackPaintings.forEach((paintObject) => {
-      paintObject();
+    stackPaintings.forEach((paintBlock) => {
+      paintBlock();
     });
   })();
 
@@ -1175,7 +1175,7 @@ export const renderBlocks: Painter.Render<BlockPosition | BlockPositions> = (
   const stackPaintings: (() => void)[] = [];
 
   if (!!view) {
-    let paintBlock: Painter.PaintObject | null = null;
+    let paintBlock: Painter.PaintBlock | null = null;
 
     report.log('Painter', {
       msg: 'block view on renderBlocks()',
@@ -1238,7 +1238,7 @@ export const renderHoveredBlock: Painter.QuickRender<BlockPosition> = (
   const stackPaintings: (() => void)[] = [];
 
   if (!!view) {
-    let paintBlock: Painter.PaintObject | null = null;
+    let paintBlock: Painter.PaintBlock | null = null;
 
     report.log('Painter', {
       msg: 'view on renderHoveredBlock()',
@@ -1292,7 +1292,7 @@ export const renderShrinkingBlocks: Painter.QuickRender<
   const stackPaintings: (() => void)[] = [];
 
   if (!!view) {
-    let paintBlock: Painter.PaintObject | null = null;
+    let paintBlock: Painter.PaintBlock | null = null;
 
     switch (view.objectKind) {
       case 'pod':
@@ -1385,7 +1385,7 @@ export const renderHighlightedBlocks: Painter.Render<
   const stackPaintings: (() => void)[] = [];
 
   if (!!view) {
-    let paintBlock: Painter.PaintObject | null = null;
+    let paintBlock: Painter.PaintBlock | null = null;
 
     report.log('Painter', {
       msg: 'on renderHighlightedBlocks',
@@ -1450,7 +1450,7 @@ export const renderGroups: Painter.Render<GroupPositions> = (ctx, view) => {
   const stackPaintings: (() => void)[] = [];
 
   if (!!view) {
-    let paintArea: Painter.PaintArea | null = null;
+    let paintGroup: Painter.PaintGroup | null = null;
 
     report.log('Painter', {
       msg: 'group positions on renderGroups',
@@ -1459,14 +1459,14 @@ export const renderGroups: Painter.Render<GroupPositions> = (ctx, view) => {
 
     switch (view.objectKind) {
       case 'deployment':
-        paintArea = paintGroup;
+        paintGroup = paintDeploymentGroup;
     }
 
-    if (!!paintArea) {
+    if (!!paintGroup) {
       const { dx, dy } = view;
       view.data.forEach((position) => {
         stackPaintings.push(
-          ...paintArea!(ctx, position.start, position.end, dx, dy, 5)
+          ...paintGroup!(ctx, position.start, position.end, dx, dy, 5)
         );
       });
     }
