@@ -110,14 +110,15 @@ const getCanvasValues: Positioner.GetCanvasValues = (width, height, level) => {
  * @returns {PointPosition[]}: 렌더링 가능한 모든 포지션
  * @see @types/positioner/index.d.ts
  */
-export const getPointPositions: Positioner.GetPointPositions = (
+export const getPointViews: Positioner.GetPointViews = (
   width,
   height,
   level
 ) => {
-  const ret: PointPosition[] = [];
+  const ret: PointPositions = new Map();
   const { DX, DY, numRows, numColumns, x0, y0, row0, column0 } =
     getCanvasValues(width, height, level);
+  let count = 0;
 
   switch (level) {
     case 1:
@@ -125,7 +126,7 @@ export const getPointPositions: Positioner.GetPointPositions = (
       Array.from(Array(parseInt('' + numRows) + 1).keys()).map((py) => {
         Array.from(Array(numColumns).keys()).map((px) => {
           if (!(px % 2)) {
-            ret.push({
+            ret.set('' + count++, {
               kind: 'point',
               x: x0 + px * DX,
               y: y0 + py * 2 * DY + (px % 2 ? DY : 0),
@@ -133,7 +134,7 @@ export const getPointPositions: Positioner.GetPointPositions = (
               column: column0 + py + (px >> 1),
             });
           } else {
-            ret.push({
+            ret.set('' + count++, {
               kind: 'point',
               x: x0 + px * DX,
               y: y0 + py * 2 * DY + (px % 2 ? DY : 0),
@@ -147,7 +148,7 @@ export const getPointPositions: Positioner.GetPointPositions = (
     case 3:
       Array.from(Array(numRows).keys()).map((py) => {
         Array.from(Array(numColumns).reverse().keys()).map((px) => {
-          ret.push({
+          ret.set('' + count++, {
             kind: 'point',
             x: x0 + px * DX,
             y: y0 + py * DY,
@@ -238,17 +239,14 @@ export const getHighlightedPointPosition: Positioner.GetHighlightedPointPosition
  * @returns {LinePosition[]}
  * @see @types/positioner/index.d.ts
  */
-export const getGridPositions: Positioner.GetLinePositions = (
-  width,
-  height,
-  level
-) => {
-  const ret: LinePosition[] = [];
+export const getGridViews: Positioner.GetGridViews = (width, height, level) => {
+  const ret: LinePositions = new Map();
   const { DX, DY, A, numRows, numColumns, x0, y0 } = getCanvasValues(
     width,
     height,
     level
   );
+  let count = 0;
 
   switch (level) {
     case 1:
@@ -259,19 +257,19 @@ export const getGridPositions: Positioner.GetLinePositions = (
           x4 = x0 - DX + px * 2 * DX,
           y4 = y0;
 
-        ret.push({
+        ret.set('' + count++, {
           x1: -y3 / A + x3,
           y1: 0,
           x2: (height - y3) / A + x3,
           y2: height,
-          type: 'grid',
+          kind: 'grid',
         });
-        ret.push({
+        ret.set('' + count++, {
           x1: y4 / A + x4,
           y1: 0,
           x2: -(height - y4) / A + x4,
           y2: height,
-          type: 'grid',
+          kind: 'grid',
         });
       });
       break;
@@ -279,24 +277,24 @@ export const getGridPositions: Positioner.GetLinePositions = (
       Array.from(Array(numColumns).keys()).map((px) => {
         const x3 = x0 - DX / 2 + px * DX;
 
-        ret.push({
+        ret.set('' + count++, {
           x1: x3,
           y1: 0,
           x2: x3,
           y2: height,
-          type: 'grid',
+          kind: 'grid',
         });
       });
 
       Array.from(Array(numRows).keys()).map((py) => {
         const y3 = y0 - DY / 2 + py * DY;
 
-        ret.push({
+        ret.set('' + count++, {
           x1: 0,
           y1: y3,
           x2: width,
           y2: y3,
-          type: 'grid',
+          kind: 'grid',
         });
       });
       break;
@@ -346,7 +344,7 @@ const getGroupPosition: Positioner.GetGroupPosition = (c, matrix, kind) => {
  * @param type : 그룹 타입
  * @returns {BlockPositions}
  */
-const getBlockModels: Positioner.GetBlockModels = (
+const getBlockViews: Positioner.GetBlockViews = (
   width,
   height,
   level,
@@ -358,7 +356,7 @@ const getBlockModels: Positioner.GetBlockModels = (
 
   return {
     objectKind,
-    viewType: level === 3 ? 'flat' : 'normal',
+    type: level === 3 ? 'flat' : 'normal',
     dx: canvasValues.DX,
     dy: canvasValues.DY,
     dz: 1,
@@ -381,7 +379,7 @@ const getBlockModels: Positioner.GetBlockModels = (
  * @returns {GroupPositions}
  * @see @types/positioner/index.d.ts
  */
-const getGroupModels: Positioner.GetGroupModels = (
+const getGroupViews: Positioner.GetGroupViews = (
   width,
   height,
   level,
@@ -393,7 +391,7 @@ const getGroupModels: Positioner.GetGroupModels = (
 
   return {
     objectKind,
-    viewType: level === 3 ? 'flat' : 'normal',
+    type: level === 3 ? 'flat' : 'normal',
     dx: canvasValues.DX,
     dy: canvasValues.DY,
     data: new Map(
@@ -441,7 +439,7 @@ const getEndPointMatrix: Positioner.GetEndPointMatrix = (
  * @returns {PositionMap} 포인트 값
  * @see @types/positioner/index.d.ts
  */
-export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
+export const getDevPlot: Positioner.GetPlot<'dev'> = (
   resourceMap,
   width,
   height,
@@ -618,9 +616,9 @@ export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
   }
 
   return {
-    blocks: getBlockModels(width, height, level, pods, 'pod')!,
-    groups1: getGroupModels(width, height, level, deployments, 'deployment'),
-    groups2: getGroupModels(width, height, level, namespaces, 'namespace'),
+    blocks: getBlockViews(width, height, level, pods, 'pod')!,
+    groups1: getGroupViews(width, height, level, deployments, 'deployment'),
+    groups2: getGroupViews(width, height, level, namespaces, 'namespace'),
   };
 };
 
@@ -635,7 +633,7 @@ export const getDeveloperViewPositions: Positioner.GetViewPositions<'dev'> = (
  * @returns {PositionMap} 포인트 값
  * @see @types/positioner/index.d.ts
  */
-export const getAdminViewPositions: Positioner.GetViewPositions<'admin'> = (
+export const getAdminPlot: Positioner.GetPlot<'admin'> = (
   resourceMap,
   width,
   height,
@@ -675,26 +673,26 @@ export const getAdminViewPositions: Positioner.GetViewPositions<'admin'> = (
 
   if (!!resourceMap.pods) {
     return {
-      blocks: getBlockModels(width, height, level, pods, 'pod')!,
-      groups1: getGroupModels(
+      blocks: getBlockViews(width, height, level, pods, 'pod')!,
+      groups1: getGroupViews(
         width,
         height,
         level,
         nodes as GroupMatrix[],
         'node'
       ),
-      groups2: getGroupModels(width, height, level, clusters, 'cluster'),
+      groups2: getGroupViews(width, height, level, clusters, 'cluster'),
     };
   } else {
     return {
-      blocks: getBlockModels(
+      blocks: getBlockViews(
         width,
         height,
         level,
         nodes as BlockMatrix[],
         'node'
       )!,
-      groups1: getGroupModels(
+      groups1: getGroupViews(
         width,
         height,
         level,

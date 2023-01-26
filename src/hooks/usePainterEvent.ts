@@ -8,9 +8,9 @@ export default (
 ): [
   React.RefObject<HTMLCanvasElement>,
   number,
-  Painter.Model,
-  Painter.ShrankModels,
-  Painter.Models,
+  Painter.SavedView,
+  Painter.SavedShrankViews,
+  Painter.SavedViews,
   PointPosition | null,
   React.Dispatch<1 | 2 | 3>,
   React.Dispatch<Positioner.Plot | null>
@@ -26,18 +26,19 @@ export default (
   const [highlightedPointPosition, setHighlightedPointPosition] =
     useState<PointPosition | null>(null);
 
-  const [hoveredModel, setHoveredModel] = useState<Painter.Model>({
+  const [hoveredView, setHoveredView] = useState<Painter.SavedView>({
     block: null,
     group1: null,
     group2: null,
   });
-  const [shrankPositions, setShrankPositions] = useState<Painter.ShrankModels>({
-    curtain1: { blocks: null, groups1: null, groups2: null },
-    curtain2: { blocks: null, groups1: null, groups2: null },
-    pillar: { blocks: null, groups1: null, groups2: null },
-  });
+  const [shrankPositions, setShrankPositions] =
+    useState<Painter.SavedShrankViews>({
+      curtain1: { blocks: null, groups1: null, groups2: null },
+      curtain2: { blocks: null, groups1: null, groups2: null },
+      pillar: { blocks: null, groups1: null, groups2: null },
+    });
 
-  const [highlightedModels, setHighlightedModels] = useState<Painter.Models>({
+  const [highlightedViews, setHighlightedViews] = useState<Painter.SavedViews>({
     blocks: null,
     groups1: null,
     groups2: null,
@@ -95,13 +96,13 @@ export default (
             hoveredData,
           });
 
-          setHighlightedModels({
+          setHighlightedViews({
             blocks: !!hoveredData
-              ? ({
+              ? {
                   ...blocks,
-                  kind: hoveredKind,
+                  objectKind: hoveredKind,
                   data: hoveredData,
-                } as Model<BlockPositions | BlockPosition>)
+                }
               : null,
             groups1: null,
             groups2: null,
@@ -133,7 +134,7 @@ export default (
       if (!IsSameMatrix(point, hoveredPointPosition)) {
         if (!!point && !!renderedPlot) {
           const { blocks } = renderedPlot;
-          const kind = blocks.objectKind;
+          const objectKind = blocks.objectKind;
           // const hoveredData =
           //   blocks.data.get(point.row + ',' + point.column) ?? null;
           // if (!!hoveredData) {
@@ -183,7 +184,7 @@ export default (
                   curtain1Data.size > 0
                     ? {
                         ...blocks,
-                        kind: blocks.objectKind,
+                        objectKind,
                         data: curtain1Data,
                       }
                     : null,
@@ -200,7 +201,7 @@ export default (
                   pillarData.size > 0
                     ? {
                         ...blocks,
-                        kind: blocks.objectKind,
+                        objectKind,
                         data: pillarData,
                       }
                     : null,
@@ -227,15 +228,15 @@ export default (
               },
             });
           }
-          setHoveredModel({
+          setHoveredView({
             block: !!hoveredData
-              ? { ...blocks, kind, data: hoveredData }
+              ? { ...blocks, objectKind, data: hoveredData }
               : null,
             group1: null,
             group2: null,
           });
         } else {
-          // setHoveredModel({
+          // setHoveredView({
           //   block: null,
           //   group1: null,
           //   group2: null,
@@ -256,7 +257,7 @@ export default (
 
   const handleMouseLeave = useCallback(() => {
     report.debug('usePainterEvent', { msg: 'leaving' });
-    setHoveredModel({
+    setHoveredView({
       block: null,
       group1: null,
       group2: null,
@@ -321,9 +322,9 @@ export default (
   return [
     ref,
     perspective,
-    hoveredModel,
+    hoveredView,
     shrankPositions,
-    highlightedModels,
+    highlightedViews,
     hoveredPointPosition,
     setLevel,
     setRenderedPlot,

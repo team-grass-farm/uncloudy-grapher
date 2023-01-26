@@ -12,7 +12,7 @@ import {
   renderShrinkingBlocks,
   translate,
 } from '~utils/painter';
-import { getGridPositions, getPointPositions } from '~utils/positioner';
+import { getGridViews, getPointViews } from '~utils/positioner';
 
 const isDevMode = process.env.NODE_ENV === 'development';
 
@@ -20,7 +20,7 @@ const isDevMode = process.env.NODE_ENV === 'development';
 export default (): [
   Painter.Ref,
   PointPosition | null,
-  Painter.Models,
+  Painter.SavedViews,
   Painter.Paint,
   React.Dispatch<1 | 2 | 3>,
   React.Dispatch<React.SetStateAction<Dimensions>>,
@@ -35,16 +35,16 @@ export default (): [
   const [
     eventRef,
     perspective,
-    hoveredModel,
-    shrankModels,
-    highlightedModels,
+    hoveredView,
+    shrankViews,
+    highlightedViews,
     hoveredPointPosition,
     setLevelOnEvent,
     setRenderedPlotOnEvent,
   ] = usePainterEvent(dimensions);
 
-  const [paintedHoveredModel, setPaintedHoveredModel] =
-    useState<Painter.Model | null>(null);
+  const [paintedHoveredView, setPaintedHoveredView] =
+    useState<Painter.SavedView | null>(null);
 
   const canvasRef: Painter.Ref = {
     ...(isDevMode && {
@@ -162,14 +162,14 @@ export default (): [
         renderGrids(
           canvasContext.grid ?? null,
           visible.grid
-            ? getGridPositions(dimensions.width, dimensions.height, level ?? 2)
-            : []
+            ? getGridViews(dimensions.width, dimensions.height, level ?? 2)
+            : null
         );
         renderPoints(
           canvasContext.points ?? null,
           visible.points
-            ? getPointPositions(dimensions.width, dimensions.height, level ?? 2)
-            : []
+            ? getPointViews(dimensions.width, dimensions.height, level ?? 2)
+            : null
         );
       }
       setLevelOnEvent(level);
@@ -188,14 +188,14 @@ export default (): [
     let snapshot: ImageData | null;
     let clear: (() => void) | null;
 
-    if (!!hoveredModel.block) {
+    if (!!hoveredView.block) {
       if (
-        !!!paintedHoveredModel ||
-        hoveredModel.block !== paintedHoveredModel.block
+        !!!paintedHoveredView ||
+        hoveredView.block !== paintedHoveredView.block
       ) {
         [snapshot, clear] = renderHoveredBlock(
           canvasContext.stage,
-          hoveredModel.block
+          hoveredView.block
         );
         setStageSnapshot(snapshot);
         setClearStage(clear);
@@ -205,7 +205,7 @@ export default (): [
     }
 
     setTimeout(() => {
-      setPaintedHoveredModel(hoveredModel);
+      setPaintedHoveredView(hoveredView);
     }, 100);
 
     return () => {
@@ -213,7 +213,7 @@ export default (): [
       setStageSnapshot(null);
       !!canvasContext.stage && clearRendered(canvasContext.stage);
     };
-  }, [hoveredModel]);
+  }, [hoveredView]);
 
   const saveCurtain = useCallback(
     ([snapshot, clear]: [
@@ -239,13 +239,13 @@ export default (): [
     )
       return;
 
-    if (!!paintedHoveredModel) {
+    if (!!paintedHoveredView) {
       clearCurtain1 && clearCurtain1();
-      if (shrankModels.curtain1.blocks) {
+      if (shrankViews.curtain1.blocks) {
         saveCurtain(
           renderShrinkingBlocks(
             canvasContext.curtain1,
-            shrankModels.curtain1.blocks,
+            shrankViews.curtain1.blocks,
             canvasContext.blocks
           )
         );
@@ -254,7 +254,7 @@ export default (): [
       }
     } else {
     }
-  }, [paintedHoveredModel]);
+  }, [paintedHoveredView]);
 
   /**
    * Render highlighted positions if changed.
@@ -263,12 +263,12 @@ export default (): [
     if (!!!canvasContext.stage) return;
 
     report.log('usePainter', {
-      msg: 'highlightModels Changed',
-      highlightedModels,
+      msg: 'highlightViews Changed',
+      highlightedViews,
     });
 
     // TODO code renderHighlightedBlock()
-  }, [highlightedModels]);
+  }, [highlightedViews]);
 
   /**
    * Translate canvases if perspective has changed.
@@ -289,7 +289,7 @@ export default (): [
   return [
     canvasRef,
     hoveredPointPosition,
-    highlightedModels,
+    highlightedViews,
     paint,
     setLevel,
     setDimensions,

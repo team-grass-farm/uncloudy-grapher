@@ -1,9 +1,6 @@
 import { RefObject, useCallback, useEffect, useState } from 'react';
 import { report } from '~utils/logger';
-import {
-  getAdminViewPositions,
-  getDeveloperViewPositions,
-} from '~utils/positioner';
+import { getAdminPlot, getDevPlot } from '~utils/positioner';
 
 export default <T extends string = 'type'>(
   ref: RefObject<HTMLCanvasElement>
@@ -35,7 +32,7 @@ export default <T extends string = 'type'>(
       report.log('usePositioner', { msg: 'resourceMap', resourceMap });
       resourceMap.type === 'admin'
         ? setAdminPlot(
-            getAdminViewPositions(
+            getAdminPlot(
               {
                 type: 'admin',
                 pods: option['pods'] ? resourceMap.pods : undefined,
@@ -47,12 +44,7 @@ export default <T extends string = 'type'>(
             )
           )
         : setDevPlot(
-            getDeveloperViewPositions(
-              resourceMap,
-              dimensions.width,
-              dimensions.height,
-              level
-            )
+            getDevPlot(resourceMap, dimensions.width, dimensions.height, level)
           );
       setResourceMap(resourceMap);
       setLevel(level);

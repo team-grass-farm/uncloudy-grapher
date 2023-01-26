@@ -29,14 +29,25 @@ declare interface GroupMatrix {
   depth?: number;
 }
 
+declare type Position =
+  | LinePosition
+  | LinePositions
+  | PointPosition
+  | PointPositions
+  | BlockPosition
+  | BlockPositions
+  | GroupPosition
+  | GroupPositions;
+
 declare interface LinePosition {
-  // TODO change type to kind
-  type: LineKind;
+  kind: LineKind;
   x1: number;
   y1: number;
   x2: number;
   y2: number;
 }
+
+declare interface LinePositions extends Map<string, LinePosition> {}
 
 declare interface PointPosition extends PointMatrix {
   id?: never;
@@ -45,6 +56,8 @@ declare interface PointPosition extends PointMatrix {
   y: number;
   z?: never;
 }
+
+declare interface PointPositions extends Map<string, PointPosition> {}
 
 declare interface BlockPosition extends BlockMatrix {
   id: string;
@@ -65,49 +78,22 @@ declare interface GroupPosition extends GroupMatrix {
 
 declare interface GroupPositions extends Map<string, GroupPosition> {}
 
-declare interface Model<
+type PositionKind<
   T extends BlockPosition | BlockPositions | GroupPosition | GroupPositions
-> {
-  objectKind: T extends BlockPosition | BlockPositions ? BlockKind : GroupKind;
-  viewType: 'flat' | 'normal';
-  dx: number;
-  dy: number;
-  dz?: number;
-  zIndex?: number;
-  data: T;
-}
+> = T extends BlockPosition | BlockPositions ? BlockKind : GroupKind;
 
-// declare interface BlockPosition {
-//   id: string;
-//   kind: BlockKind;
-//   viewType: 'flat' | 'normal';
-//   dx: number;
-//   dy: number;
-//   dz?: number;
-//   data: PointPosition;
-// }
-
-// declare interface GroupPosition {
-//   // id: string;
-//   kind: GroupKind;
-//   viewType: 'flat' | 'normal';
-//   zIndex: number;
-//   data: { start: PointPosition; end: PointPosition };
-// }
-
-// declare interface BlockPositions extends BlockPosition {
-//   kind: `${BlockKind}s`;
-//   viewType: 'flat' | 'normal';
-//   dx: number;
-//   dy: number;
-//   dz?: number;
-//   data: Map<string, PointPosition>;
-// }
-
-// declare interface GroupPositions {
-//   kind: `${GroupKind}s`;
-//   viewType: 'flat' | 'normal';
-//   dx: number;
-//   dy: number;
-//   data: Map<string, { start: PointPosition; end: PointPosition }>;
-// }
+declare type View<T extends Position> = T extends
+  | PointPosition
+  | PointPositions
+  | LinePosition
+  | LinePositions
+  ? T
+  : {
+      objectKind: PositionKind<T>;
+      type: 'flat' | 'normal';
+      dx: number;
+      dy: number;
+      dz?: number;
+      zIndex?: number;
+      data: T;
+    };

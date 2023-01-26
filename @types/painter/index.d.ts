@@ -28,20 +28,20 @@ declare namespace Painter {
   interface SubSnapshot
     extends Record<CalculatedLayerName, (() => void) | null> {}
 
-  interface Model extends Record<ObjectName, any> {
-    block: Model<BlockPosition> | null;
-    group1: Model<GroupPosition> | null;
-    group2: Model<GroupPosition> | null;
+  interface SavedView extends Record<ObjectName, any> {
+    block: View<BlockPosition> | null;
+    group1: View<GroupPosition> | null;
+    group2: View<GroupPosition> | null;
   }
 
-  interface Models extends Record<ObjectLayerName, any> {
-    blocks: Model<BlockPositions> | null;
-    groups1: Model<GroupPositions> | null;
-    groups2: Model<GroupPositions> | null;
+  interface SavedViews extends Record<ObjectLayerName, any> {
+    blocks: View<BlockPosition | BlockPositions> | null;
+    groups1: View<GroupPosition | GroupPositions> | null;
+    groups2: View<GroupPosition | GroupPositions> | null;
   }
 
-  interface ShrankModels
-    extends Record<'curtain1' | 'curtain2' | 'pillar', Painter.Models> {}
+  interface SavedShrankViews
+    extends Record<'curtain1' | 'curtain2' | 'pillar', Painter.SavedViews> {}
 
   type PaintObject = (
     ctx: CanvasRenderingContext2D,
@@ -101,21 +101,14 @@ declare namespace Painter {
     perspective: number
   ) => void;
 
-  type Rendering =
-    | PointPosition
-    | PointPosition[]
-    | LinePosition[]
-    | Model<BlockPosition | BlockPositions | GroupPosition | GroupPositions>
-    | null;
-
-  type Render<T extends Rendering> = (
+  type Render<T extends Position> = (
     ctx: CanvasRenderingContext2D | null,
-    positions: T
+    view: View<T> | null
   ) => ImageData | null;
 
-  type QuickRender<T extends Rendering> = (
+  type QuickRender<T extends Position> = (
     ctx: CanvasRenderingContext2D,
-    positions: T,
+    view: View<T> | null,
     backCtx?: CanvasRenderingContext2D | null
   ) => [ImageData | null, (() => void) | null];
 }
