@@ -12,6 +12,9 @@ const DY_OBJ = DY * 0.45;
 const c = (l: number, u: number) =>
   Math.round(Math.random() * (u || 255) + l || 0);
 
+const cos = Math.cos(-Math.PI / 6);
+const sin = Math.sin(-Math.PI / 6);
+
 const HEAD_H = 2; //노드 헤드 두께
 const HEAD_MARGIN = 2; //노드 헤드 마진
 const LINE_BOLD = 2;
@@ -500,6 +503,28 @@ export const paintAnimatedPod: Painter.PaintBlock = (
   return ret;
 };
 
+export const paintGroupText: Painter.PaintText = (
+  ctx,
+  start,
+  end,
+  dx,
+  dy,
+  h,
+  text
+) => [
+  () => {
+    ctx.save();
+    ctx.translate(end.x, end.y);
+    ctx.textAlign = 'right';
+    ctx.font = dx * 0.4 + 'px non-serif';
+    ctx.fillStyle = '#BF9565';
+
+    ctx.transform(cos, sin, -sin + 1, cos, -8 * dx, 8.75 * dy);
+    ctx.fillText(text, 10 * dx, dy);
+    ctx.restore();
+  },
+];
+
 /**
  *
  * @param ctx
@@ -587,8 +612,13 @@ export const paintDeploymentGroup: Painter.PaintGroup = (
     );
 
     ctx.fill();
-
     ctx.restore();
+
+    if (!!option?.text) {
+      // TODO Remove array styled callback
+      paintGroupText(ctx, start, end, dx, dy, 0, option.text)[0]();
+      ctx.restore();
+    }
   },
 ];
 
@@ -1464,9 +1494,20 @@ export const renderGroups: Painter.Render<GroupPositions> = (ctx, view) => {
 
     if (!!paintGroup) {
       const { dx, dy } = view;
-      view.data.forEach((position) => {
+      view.data.forEach(({ id, start, end }) => {
+        const text = id.split('-')[0];
+        const limit = (1 + end.row - start.row) * 5;
+        report.log('Painter', {
+          msg: 'on renderGroups()',
+          text,
+          limit,
+          start,
+          end,
+        });
         stackPaintings.push(
-          ...paintGroup!(ctx, position.start, position.end, dx, dy, 5)
+          ...paintGroup!(ctx, start, end, dx, dy, 5, {
+            text: text.length > limit ? text.slice(0, limit - 2) + '..' : text,
+          })
         );
       });
     }

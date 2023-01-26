@@ -72,6 +72,16 @@ declare namespace Painter {
     option?: GroupOption
   ) => (() => void)[];
 
+  type PaintText = (
+    ctx: CanvasRenderingContext2D,
+    start: PointPosition,
+    end: PointPosition,
+    dx: nymber,
+    dy: number,
+    h: number,
+    text: string
+  ) => (() => void)[];
+
   type PaintCallback = (
     ctx: CanvasRenderingContext2D,
     x: number,
