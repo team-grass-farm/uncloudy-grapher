@@ -1,6 +1,12 @@
 import type { Page } from '~models';
 
-export interface Props extends Page.ComponentProps<'div'> {
+export interface Props<T extends Resource.Pod | Resource.Node>
+  extends Page.ComponentProps<'div'> {
   id?: string;
-  data: any;
+  metric: T extends Resource.Pod
+    ? Resource.Pod.Metric[] | null
+    : Resource.Node.Metric[] | null;
+  data: T extends Resource.Pod
+    ? Resource.Pod.API | null
+    : Resource.Node.API | null;
 }

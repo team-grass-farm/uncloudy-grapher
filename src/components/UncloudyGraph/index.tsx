@@ -13,7 +13,9 @@ export default ({
   id,
   panelMode: type,
   data,
+  detailedData,
   options,
+  onRequestDetailedData,
   ...otherProps
 }: Props) => {
   const [
@@ -68,6 +70,12 @@ export default ({
   }, [options]);
 
   useEffect(() => {
+    const data = highlightedView.blocks?.data;
+    if (data instanceof Map) {
+      onRequestDetailedData(data.keys().next().value);
+    } else if (data instanceof Object) {
+      onRequestDetailedData(data.id);
+    }
     setShowExtruded(!!highlightedView.blocks);
   }, [highlightedView]);
 
@@ -151,12 +159,10 @@ export default ({
             />
           </Col>
         </Row>
-        <ResourceEditor data={SAMPLE_POD_JSON} />
-        <li>
-          {highlightedView.blocks
-            ? JSON.stringify(highlightedView.blocks)
-            : 'none'}
-        </li>
+        <ResourceEditor<Resource.Pod>
+          metric={detailedData.metric}
+          data={detailedData.api}
+        />
       </ExtrudedBlock>
     </>
   );

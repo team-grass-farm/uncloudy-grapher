@@ -1,10 +1,21 @@
-import { useEffect, useState } from 'react';
-import { SAMPLE_DEPLOYMENTS, SAMPLE_NODES, SAMPLE_PODS } from '~constants';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  SAMPLE_DEPLOYMENTS,
+  SAMPLE_NODES,
+  SAMPLE_POD_JSON,
+  SAMPLE_POD_METRICS,
+  SAMPLE_PODS,
+} from '~constants';
+import { report } from '~utils/logger';
 
 export default (
   type: 'production' | 'development' | 'offline' = 'production',
   enableSamples?: boolean
-): [Resource.Map] => {
+): [
+  Resource.Map,
+  { metric: Resource.Pod.Metric[] | null; api: Resource.Pod.API | null },
+  (s: string) => void
+] => {
   const [pods, setPods] = useState<Map<string, Resource.Pod>>(new Map());
   const [nodes, setNodes] = useState<Map<string, Resource.Node>>(new Map());
   const [deployments, setDeployments] = useState<
@@ -14,6 +25,21 @@ export default (
   const [clusters, setClusters] = useState<Map<string, Resource.Cluster>>(
     new Map()
   );
+
+  const [podMetric, setPodMetric] = useState<Resource.Pod.Metric[] | null>(
+    null
+  );
+  const [podAPI, setPodAPI] = useState<Resource.Pod.API | null>(null);
+
+  const requestDetailedData = useCallback((id: string) => {
+    report.log('useFetcher', {
+      msg: 'request detailed data',
+      id,
+      metric: SAMPLE_POD_METRICS.get(id),
+    });
+    setPodMetric(SAMPLE_POD_METRICS.get(id) ?? null);
+    setPodAPI(SAMPLE_POD_JSON as Resource.Pod.API);
+  }, []);
 
   useEffect(() => {
     if (type === 'offline' && enableSamples) {
@@ -48,5 +74,12 @@ export default (
     // setClusters(Array.from(info).map((val) => ({ id: val })));
   }, [nodes]);
 
-  return [{ pods, nodes, deployments, namespaces, clusters }];
+  return [
+    { pods, nodes, deployments, namespaces, clusters },
+    {
+      metric: podMetric,
+      api: podAPI,
+    },
+    requestDetailedData,
+  ];
 };
