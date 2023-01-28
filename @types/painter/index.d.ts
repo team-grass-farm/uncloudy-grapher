@@ -99,8 +99,7 @@ declare namespace Painter {
   type BaseRender = (
     ctx: CanvasRenderingContext2D,
     stackPaintings: (() => void)[],
-    clearCanvas: boolean,
-    animated: boolean
+    clearCanvas: boolean
   ) => Promise<void>;
 
   type ClearRendered = (ctx: CanvasRenderingContext2D | null) => void;
