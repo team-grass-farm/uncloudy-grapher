@@ -14,7 +14,6 @@ declare namespace Resource {
   /**
    * @draft designed for k8s  api
    */
-  /*
   interface API {
     apiVersion: string;
     kind: string;
@@ -22,7 +21,6 @@ declare namespace Resource {
     spec: any;
     status: any;
   }
-  */
 
   interface Deployment {
     id: string;
@@ -56,6 +54,11 @@ declare namespace Resource {
         memorySpec: number;
       };
     }
+
+    /**
+     * @draft designed for k8s node api
+     */
+    interface API extends Resource.API {}
   }
 
   interface Pod {
@@ -80,7 +83,6 @@ declare namespace Resource {
     /**
      * @draft designed for k8s pod api
      */
-    /*
     interface API extends Resource.API {
       apiVersion: 'v1';
       kind: 'Pod';
@@ -117,6 +119,5 @@ declare namespace Resource {
       activeDeadlineSeconds?: number;
       affinity: Affinity;
     }
-  */
   }
 }

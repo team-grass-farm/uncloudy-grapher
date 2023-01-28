@@ -24,7 +24,10 @@ export default () => {
       level: 2,
     });
 
-  const [resourceMap] = useFetcher('offline', debuggingOptions.showBlocks);
+  const [resourceMap, detailed, onRequestDetailedData] = useFetcher(
+    'offline',
+    debuggingOptions.showBlocks
+  );
   const [panelMode, setPanelMode] = useState<'dev' | 'admin'>('dev');
   const [filterOptions, setFilterOptions] = useState<Page.Option[]>([]);
   const [filter, setFilter] = useState<ValueType>([]);
@@ -102,7 +105,9 @@ export default () => {
         <UncloudyGraph
           panelMode={panelMode}
           data={resourceMap}
+          detailedData={detailed}
           options={debuggingOptions}
+          onRequestDetailedData={onRequestDetailedData}
         />
         <DevelopmentOnlyAlert
           data={debuggingOptions}
