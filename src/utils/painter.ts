@@ -952,9 +952,6 @@ export const paintGrasses: Painter.PaintBlock = (
   return stack;
 };
 
-/**
- * @deprecated
- */
 // export const paintMonthText: Painter.PaintBlock = (
 //   ctx,
 //   x,
@@ -979,9 +976,6 @@ export const paintGrasses: Painter.PaintBlock = (
 //   },
 // ];
 
-/**
- * @deprecated
- */
 // export const paintDayText: Painter.PaintBlock = (
 //   ctx,
 //   x,
@@ -1005,11 +999,18 @@ export const paintGrasses: Painter.PaintBlock = (
 //   },
 // ];
 
-const render: Painter.BaseRender = async (
+/**
+ * A base function to render a static standstill frame.
+ *
+ * @async
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {(() => void)[]} stackPaintings
+ * @param {boolean} clearCanvas
+ */
+const renderStaticFrame: Painter.BaseRender = async (
   ctx,
   stackPaintings,
-  clearCanvas,
-  animated
+  clearCanvas
 ) =>
   await (() => {
     ctx.lineJoin = 'round';
@@ -1035,11 +1036,18 @@ const render: Painter.BaseRender = async (
     });
   })();
 
-const renderAnimated: Painter.BaseRender = (
+/**
+ * A base function to render multiple animated frames.
+ *
+ * @async
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {(() => void)[]} stackPaintings
+ * @param {boolean} clearCanvas
+ */
+const renderAnimatedFrames: Painter.BaseRender = (
   ctx,
   stackPaintings,
-  clearCanvas,
-  animated
+  clearCanvas
 ) =>
   new Promise((resolve) => {
     ctx.lineJoin = 'round';
@@ -1144,7 +1152,7 @@ export const renderLegend = (
     //   );
   }
 
-  render(ctx, stackPaintings, true, false);
+  renderStaticFrame(ctx, stackPaintings, true);
 };
 
 export const renderGrids: Painter.Render<LinePositions> = (ctx, view) => {
@@ -1158,7 +1166,7 @@ export const renderGrids: Painter.Render<LinePositions> = (ctx, view) => {
     );
   });
 
-  render(ctx, stackPaintings, true, false);
+  renderStaticFrame(ctx, stackPaintings, true);
   report.groupEnd();
   return null;
 };
@@ -1172,7 +1180,7 @@ export const renderPoints: Painter.Render<PointPositions> = (ctx, view) => {
     stackPaintings.push(...paintPoint(ctx, x, y, 0, 0, 0));
   });
 
-  render(ctx, stackPaintings, true, false);
+  renderStaticFrame(ctx, stackPaintings, true);
   report.groupEnd();
   return null;
 };
@@ -1187,7 +1195,7 @@ export const renderHoveredPoint: Painter.Render<PointPosition> = (
 
   stackPaintings.push(...paintPoint(ctx, view.x, view.y, 5, 5, 0));
 
-  render(ctx, stackPaintings, true, true);
+  renderStaticFrame(ctx, stackPaintings, true);
   report.groupEnd();
   return null;
 };
@@ -1253,7 +1261,7 @@ export const renderBlocks: Painter.Render<BlockPosition | BlockPositions> = (
     }
   }
 
-  render(ctx, stackPaintings, true, true);
+  renderStaticFrame(ctx, stackPaintings, true);
   report.groupEnd();
   return ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
 };
@@ -1301,7 +1309,7 @@ export const renderHoveredBlock: Painter.QuickRender<BlockPosition> = (
 
   report.log('Painter', { msg: 'renderAnimated (Hovered)' });
 
-  renderAnimated(ctx, stackPaintings, true, true);
+  renderAnimatedFrames(ctx, stackPaintings, true);
   report.groupEnd();
 
   return [
@@ -1387,7 +1395,7 @@ export const renderShrinkingBlocks: Painter.QuickRender<
 
   report.log('Painter', { msg: 'try shrinking' });
 
-  renderAnimated(ctx, stackPaintings, true, true);
+  renderAnimatedFrames(ctx, stackPaintings, true);
   report.groupEnd();
 
   return [
@@ -1468,7 +1476,7 @@ export const renderHighlightedBlocks: Painter.Render<
     }
   }
 
-  renderAnimated(ctx, stackPaintings, true, true);
+  renderAnimatedFrames(ctx, stackPaintings, true);
   report.groupEnd();
   return ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
 };
@@ -1513,7 +1521,7 @@ export const renderGroups: Painter.Render<GroupPositions> = (ctx, view) => {
     }
   }
 
-  render(ctx, stackPaintings, true, false);
+  renderStaticFrame(ctx, stackPaintings, true);
   report.groupEnd();
   return ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
 };
@@ -1526,5 +1534,5 @@ export const translate: Painter.Translate = (ctx, snapshot, perspective) => {
 
 export const clearRendered: Painter.ClearRendered = (ctx) => {
   if (!!!ctx) return;
-  renderAnimated(ctx, [], true, false);
+  renderAnimatedFrames(ctx, [], true);
 };
