@@ -1017,13 +1017,7 @@ const renderStaticFrame: Painter.BaseRender = async (
     ctx.fillStyle = 'transparent';
     ctx.scale(1, 1);
     if (clearCanvas) {
-      ctx.clearRect(
-        0,
-        ctx.canvas.height >> 1,
-        ctx.canvas.width >> 1,
-        ctx.canvas.height
-      );
-      // ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     }
 
     report.debug(
