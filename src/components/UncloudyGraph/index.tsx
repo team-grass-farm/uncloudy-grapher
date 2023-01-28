@@ -19,7 +19,8 @@ export default ({
   const [
     ref,
     hoveredPoint,
-    highlighted,
+    hoveredView,
+    highlightedView,
     paint,
     setLevelOnPainter,
     setDimensions,
@@ -67,13 +68,17 @@ export default ({
   }, [options]);
 
   useEffect(() => {
-    !!highlighted.blocks && setShowExtruded(true);
-  }, [highlighted]);
+    setShowExtruded(!!highlightedView.blocks);
+  }, [highlightedView]);
 
   return (
     <>
       <MainBlock id={id} {...otherProps}>
-        <section>
+        <section
+          className={
+            Object.values(hoveredView).some((val) => !!val) ? 'focused' : ''
+          }
+        >
           {Object.entries(ref).map(([refName, ref]) => (
             <canvas
               ref={ref}
@@ -148,7 +153,9 @@ export default ({
         </Row>
         <ResourceEditor data={SAMPLE_POD_JSON} />
         <li>
-          {highlighted.blocks ? JSON.stringify(highlighted.blocks) : 'none'}
+          {highlightedView.blocks
+            ? JSON.stringify(highlightedView.blocks)
+            : 'none'}
         </li>
       </ExtrudedBlock>
     </>

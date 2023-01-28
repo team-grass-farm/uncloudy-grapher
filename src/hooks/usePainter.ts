@@ -20,6 +20,7 @@ const isDevMode = process.env.NODE_ENV === 'development';
 export default (): [
   Painter.Ref,
   PointPosition | null,
+  Painter.SavedView,
   Painter.SavedViews,
   Painter.Paint,
   React.Dispatch<1 | 2 | 3>,
@@ -289,6 +290,7 @@ export default (): [
   return [
     canvasRef,
     hoveredPointPosition,
+    hoveredView,
     highlightedViews,
     paint,
     setLevel,
