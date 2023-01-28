@@ -31,13 +31,11 @@ export default (
     group1: null,
     group2: null,
   });
-  const [shrankPositions, setShrankPositions] =
-    useState<Painter.SavedShrankViews>({
-      curtain1: { blocks: null, groups1: null, groups2: null },
-      curtain2: { blocks: null, groups1: null, groups2: null },
-      pillar: { blocks: null, groups1: null, groups2: null },
-    });
-
+  const [shrankViews, setShrankViews] = useState<Painter.SavedShrankViews>({
+    curtain1: { blocks: null, groups1: null, groups2: null },
+    curtain2: { blocks: null, groups1: null, groups2: null },
+    pillar: { blocks: null, groups1: null, groups2: null },
+  });
   const [highlightedViews, setHighlightedViews] = useState<Painter.SavedViews>({
     blocks: null,
     groups1: null,
@@ -178,7 +176,7 @@ export default (
           // ]);
 
           if (!!hoveredData && !!curtain1Data.size) {
-            setShrankPositions({
+            setShrankViews({
               curtain1: {
                 blocks:
                   curtain1Data.size > 0
@@ -210,7 +208,7 @@ export default (
               },
             });
           } else {
-            setShrankPositions({
+            setShrankViews({
               curtain1: {
                 blocks: null,
                 groups1: null,
@@ -323,7 +321,7 @@ export default (
     ref,
     perspective,
     hoveredView,
-    shrankPositions,
+    shrankViews,
     highlightedViews,
     hoveredPointPosition,
     setLevel,

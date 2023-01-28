@@ -46,8 +46,8 @@ export const MainBlock = styled.div`
       } */
     }
 
-    &:hover canvas {
-      // SHOULD Care these post-calculated css's order, 'none' things due to the canvas layers' order
+    &.focused canvas {
+      // SHOULD be aware of these post-calculated css's order and 'none' things due to the canvas layers' order
       &#blocks {
         filter: ${'saturate(0.2)'};
       }
