@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { ResourceEditor } from '~components';
 import { SAMPLE_POD_JSON } from '~constants';
 import { usePainter, usePositioner } from '~hooks';
+import { report } from '~utils/logger';
 
 import { ExtrudedBlock, MainBlock } from './styles';
 
@@ -11,11 +12,11 @@ import type { Props, ViewOption } from './types';
 
 export default ({
   id,
-  panelMode: type,
-  data,
-  detailedData,
+  panelMode,
+  data: _data,
   options,
   onRequestDetailedData,
+  onClearDetailedData,
   ...otherProps
 }: Props) => {
   const [
@@ -29,20 +30,40 @@ export default ({
     setVisible,
   ] = usePainter();
   const [dimensions, plot, pose] = usePositioner(ref.base);
-  const [showExtruded, setShowExtruded] = useState<boolean>(false);
   const [viewOptions, setViewOptions] = useState<ViewOption[]>(['deployments']);
 
+  const [savedContext, setSavedContext] = useState<
+    Pick<Props, 'panelMode' | 'options'>
+  >({ panelMode, options });
+  const [data, setData] = useState<Resource.Map>(_data);
   useEffect(() => {
+    if (data.updatedAt != _data.updatedAt) {
+      report.log('UncloudyGraph', {
+        msg: `render request accepted`,
+        savedContext,
+        data,
+      });
+      setData(_data);
+    }
+  }, [_data]);
+
+  useEffect(() => {
+    setSavedContext({ panelMode, options });
+  }, [panelMode, options]);
+
+  useEffect(() => {
+    const { panelMode, options } = savedContext;
+
     if (!!!options.level) return;
 
-    if (type === 'admin') {
+    if (panelMode === 'admin') {
       const { pods, clusters, nodes } = data;
 
-      pose({ type, pods, nodes, clusters }, options.level);
+      pose({ type: panelMode, pods, nodes, clusters }, options.level);
     } else {
       pose(
         {
-          type,
+          type: panelMode,
           pods: data.pods,
           ...viewOptions.reduce(
             (acc, viewOption) => ({ ...acc, [viewOption]: data[viewOption] }),
@@ -52,7 +73,7 @@ export default ({
         options.level
       );
     }
-  }, [type, options, data, viewOptions]);
+  }, [savedContext, data]);
 
   useEffect(() => (plot ? paint(plot) : undefined), [plot]);
 
@@ -75,8 +96,9 @@ export default ({
       onRequestDetailedData(data.keys().next().value);
     } else if (data instanceof Object) {
       onRequestDetailedData(data.id);
+    } else if (!!!data) {
+      onClearDetailedData();
     }
-    setShowExtruded(!!highlightedView.blocks);
   }, [highlightedView]);
 
   return (
@@ -127,7 +149,7 @@ export default ({
               >
                 <Select.Option key="CPUUsage">CPU 점유율</Select.Option>
                 <Select.Option key="memoryUsage">메모리 점유율</Select.Option>
-                {type === 'admin' && (
+                {panelMode === 'admin' && (
                   <>
                     <Select.Option key="numPods">파드 수</Select.Option>
                     <Select.Option key="nodeId">노드명</Select.Option>
@@ -135,7 +157,7 @@ export default ({
                     <Select.Option key="clusters">클러스터</Select.Option>
                   </>
                 )}
-                {type === 'dev' && (
+                {panelMode === 'dev' && (
                   <>
                     <Select.Option key="deployments">배포 그룹</Select.Option>
                     <Select.Option key="namespaces">네임스페이스</Select.Option>
@@ -146,7 +168,7 @@ export default ({
           </Row>
         </aside>
       </MainBlock>
-      <ExtrudedBlock hidden={!!!showExtruded}>
+      {/* <ExtrudedBlock hidden={!!!showExtruded}>
         <Row>
           <Col span={16}>
             <h2>파드 상세 정보</h2>
@@ -159,11 +181,11 @@ export default ({
             />
           </Col>
         </Row>
-        <ResourceEditor<Resource.Pod>
-          metric={detailedData.metric}
-          data={detailedData.api}
+        <ResourceEditor
+          id={'d-' + detailedData?.id}
+          detailedData={detailedData}
         />
-      </ExtrudedBlock>
+      </ExtrudedBlock> */}
     </>
   );
 };

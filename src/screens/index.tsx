@@ -7,8 +7,12 @@ import { Cascader, Col, DatePicker, Row, Segmented } from 'antd';
 import moment from 'moment';
 import { ValueType } from 'rc-cascader/lib/Cascader';
 import React, { useEffect, useState } from 'react';
-import { DevelopmentOnlyAlert, UncloudyGraph } from '~components';
-import { useFetcher } from '~hooks';
+import {
+  DetailedGraph,
+  DevelopmentOnlyAlert,
+  UncloudyGraph,
+} from '~components';
+import { useDetailedFetcher, useMetaFetcher } from '~hooks';
 import { getFilteringOptions } from '~utils/fetcher';
 import { report } from '~utils/logger';
 
@@ -24,7 +28,8 @@ export default () => {
       level: 2,
     });
 
-  const [resourceMap, detailed, onRequestDetailedData] = useFetcher(
+  const [resourceMap] = useMetaFetcher('offline', debuggingOptions.showBlocks);
+  const [detailedData, onRequestDetailedData] = useDetailedFetcher(
     'offline',
     debuggingOptions.showBlocks
   );
@@ -36,6 +41,14 @@ export default () => {
     setFilterOptions(getFilteringOptions(panelMode));
     setFilter([]);
   }, [panelMode]);
+
+  useEffect(() => {
+    report.log('Screen', { msg: 'ResourceMap changed' });
+  }, [resourceMap]);
+
+  useEffect(() => {
+    report.log('Screen', { msg: 'detailedData changed' });
+  }, [detailedData]);
 
   return (
     <MainBlock>
@@ -105,9 +118,14 @@ export default () => {
         <UncloudyGraph
           panelMode={panelMode}
           data={resourceMap}
-          detailedData={detailed}
           options={debuggingOptions}
           onRequestDetailedData={onRequestDetailedData}
+          onClearDetailedData={() => onRequestDetailedData(null)}
+        />
+        <DetailedGraph
+          data={detailedData}
+          onRequestDetailedData={onRequestDetailedData}
+          onClearDetailedData={() => onRequestDetailedData(null)}
         />
         <DevelopmentOnlyAlert
           data={debuggingOptions}
