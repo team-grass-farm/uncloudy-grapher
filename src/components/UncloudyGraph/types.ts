@@ -4,10 +4,6 @@ export interface Props extends Page.ComponentProps<'div'> {
   id?: string;
   panelMode: 'dev' | 'admin';
   data: Resource.Map;
-  detailedData: {
-    metric: Resource.Pod.Metric[] | null;
-    api: Resource.Pod.API | null;
-  };
   options: {
     showBlocks?: boolean;
     showGrids?: boolean;
@@ -15,6 +11,7 @@ export interface Props extends Page.ComponentProps<'div'> {
     level?: 1 | 2 | 3;
   };
   onRequestDetailedData: (id: string) => any;
+  onClearDetailedData: () => any;
 }
 
 export type ViewOption =

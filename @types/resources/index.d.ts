@@ -1,26 +1,34 @@
 declare namespace Resource {
   interface Map {
-    clusters?: Map<string, Resource.Cluster>;
-    pods?: Map<string, Resource.Pod>;
-    nodes?: Map<string, Resource.Node>;
-    deployments?: Map<string, Resource.Deployment>;
-    namespaces?: Map<string, string>;
+    clusters: Map<string, Resource.Cluster>;
+    pods: Map<string, Resource.Pod>;
+    nodes: Map<string, Resource.Node>;
+    deployments: Map<string, Resource.Deployment>;
+    namespaces: Map<string, string>;
+    updatedAt: Date;
   }
 
   interface Cluster {
     id: string;
   }
 
+  type Detail = {
+    id: string;
+    kind: 'pod';
+    metric: Pod.Metric[] | null;
+    api: Pod.API | null;
+  };
+
   /**
    * @draft designed for k8s  api
    */
-  interface API {
-    apiVersion: string;
-    kind: string;
-    metadata: any;
-    spec: any;
-    status: any;
-  }
+  // interface API {
+  //   apiVersion: string;
+  //   kind: string;
+  //   metadata: any;
+  //   spec: any;
+  //   status: any;
+  // }
 
   interface Deployment {
     id: string;

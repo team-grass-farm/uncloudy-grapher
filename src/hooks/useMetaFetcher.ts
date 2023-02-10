@@ -1,21 +1,16 @@
-import { useCallback, useEffect, useState } from 'react';
-import {
-  SAMPLE_DEPLOYMENTS,
-  SAMPLE_NODES,
-  SAMPLE_POD_JSON,
-  SAMPLE_POD_METRICS,
-  SAMPLE_PODS,
-} from '~constants';
+import { useEffect, useState } from 'react';
+import { SAMPLE_DEPLOYMENTS, SAMPLE_NODES, SAMPLE_PODS } from '~constants';
 import { report } from '~utils/logger';
 
+type ServiceType = 'production' | 'development' | 'offline';
+
 export default (
-  type: 'production' | 'development' | 'offline' = 'production',
+  _type: ServiceType = 'production',
   enableSamples?: boolean
-): [
-  Resource.Map,
-  { metric: Resource.Pod.Metric[] | null; api: Resource.Pod.API | null },
-  (s: string) => void
-] => {
+): [Resource.Map] => {
+  const [type, setType] = useState<ServiceType>(_type);
+  const [updatedAt, setUpdatedAt] = useState<Date>(new Date());
+
   const [pods, setPods] = useState<Map<string, Resource.Pod>>(new Map());
   const [nodes, setNodes] = useState<Map<string, Resource.Node>>(new Map());
   const [deployments, setDeployments] = useState<
@@ -26,28 +21,22 @@ export default (
     new Map()
   );
 
-  const [podMetric, setPodMetric] = useState<Resource.Pod.Metric[] | null>(
-    null
-  );
-  const [podAPI, setPodAPI] = useState<Resource.Pod.API | null>(null);
-
-  const requestDetailedData = useCallback((id: string) => {
-    report.log('useFetcher', {
-      msg: 'request detailed data',
-      id,
-      metric: SAMPLE_POD_METRICS.get(id),
-    });
-    setPodMetric(SAMPLE_POD_METRICS.get(id) ?? null);
-    setPodAPI(SAMPLE_POD_JSON as Resource.Pod.API);
-  }, []);
+  useEffect(() => {
+    if (_type !== type) {
+      setType(_type);
+      report.log('useMetaFetcher', { msg: 'fetched service type' });
+    }
+  }, [_type]);
 
   useEffect(() => {
-    if (type === 'offline' && enableSamples) {
+    if (type === 'offline') {
       setPods(SAMPLE_PODS);
       setNodes(SAMPLE_NODES);
       setDeployments(SAMPLE_DEPLOYMENTS);
+      setUpdatedAt(new Date());
+      report.log('useMetaFetcher', { msg: 'fetched sample data' });
     }
-  }, [enableSamples]);
+  }, [type]);
 
   useEffect(() => {
     // const info: Set<[string, string]> = new Set();
@@ -74,12 +63,5 @@ export default (
     // setClusters(Array.from(info).map((val) => ({ id: val })));
   }, [nodes]);
 
-  return [
-    { pods, nodes, deployments, namespaces, clusters },
-    {
-      metric: podMetric,
-      api: podAPI,
-    },
-    requestDetailedData,
-  ];
+  return [{ pods, nodes, deployments, namespaces, clusters, updatedAt }];
 };
