@@ -10,8 +10,8 @@ export interface Props extends Page.ComponentProps<'div'> {
     showPoints?: boolean;
     level?: 1 | 2 | 3;
   };
-  onRequestDetailedData: (id: string) => any;
-  onClearDetailedData: () => any;
+  onRequestDetailedData?: (id: string) => any;
+  onClearDetailedData?: () => any;
 }
 
 export type ViewOption =

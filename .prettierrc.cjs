@@ -1,4 +1,5 @@
 module.exports = {
+  ...require('./.config/.prettierrc.js'),
   singleQuote: true,
   semi: true,
   useTabs: false,
@@ -6,13 +7,13 @@ module.exports = {
   // trailingComma: 'all',
   printWidth: 80,
   jsxBracketSameLine: false,
-  arrowParens: "always",
+  arrowParens: 'always',
   overrides: [
     {
-      files: "styles.ts",
+      files: 'styles.ts',
       options: {
-        jsxBracketSameLine: true
-      }
-    }
-  ]
+        jsxBracketSameLine: true,
+      },
+    },
+  ],
 };

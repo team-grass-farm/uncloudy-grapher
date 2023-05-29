@@ -1,0 +1,20 @@
+version: "3.9"
+services:
+  grafana:
+    # image: grafana/grafana:${GRAFANA_VERSION:-latest}
+    container_name: grafana-plugin-test
+    build:
+      context: ./.config
+      args:
+        grafana_version: ${GRAFANA_VERSION:-latest}
+    ports:
+      - 3100:3000/tcp
+    volumes:
+      # - ${REPO_PATH}/volumes/grafana/data:/var/lib/grafana:rw
+      - ${REPO_PATH}/volumes/grafana/config:/etc/grafana/provisioning
+      - ${REPO_PATH}/dist:/var/lib/grafana/plugins/teamgrassfarm-uncloudy-graph-panel
+    environment:
+      - GF_SECURITY_ADMIN_USER=${USERNAME}
+      - GF_SECURITY_ADMIN_PASSWORD=${PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    restart: on-failure:10

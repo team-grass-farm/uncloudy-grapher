@@ -1,4 +1,5 @@
 module.exports = {
+  extends: './.config/.eslintrc',
   root: true,
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint', 'react-hooks'],

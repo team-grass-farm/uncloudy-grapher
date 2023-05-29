@@ -1,0 +1,5 @@
+REPO_PATH=.
+CERT-PATH=./volumes/
+USERNAME=admin
+PASSWORD=admin
+GRAFANA_VERSION=9.5.2

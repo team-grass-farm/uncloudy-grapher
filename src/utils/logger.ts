@@ -19,10 +19,7 @@ type CallbackFn<T = Message> = (
 ) => void;
 
 interface Report
-  extends Record<
-    'debug' | 'info' | 'log' | 'warn' | 'error' | 'assert',
-    CallbackFn
-  > {
+  extends Record<'debug' | 'info' | 'log' | 'warn' | 'error', CallbackFn> {
   group: CallbackFn<string>;
   groupCollapsed: CallbackFn<string>;
   groupEnd: () => void;
@@ -50,17 +47,18 @@ const isValid = (val: any): boolean => {
   }
 };
 
-export const report = [
-  'debug',
-  'info',
-  'log',
-  'warn',
-  'error',
-  'assert',
-  'group',
-  'groupCollapsed',
-  'groupEnd',
-].reduce<Report | {}>(
+export const report = (
+  [
+    'debug',
+    'info',
+    'log',
+    'warn',
+    'error',
+    'group',
+    'groupCollapsed',
+    'groupEnd',
+  ] as (keyof Report)[]
+).reduce<Report | {}>(
   (acc, logLevel) => ({
     ...acc,
     [logLevel]: ((moduleName, message, option) => {
@@ -90,6 +88,7 @@ export const report = [
             console[logLevel](others);
             console.groupEnd();
           } else {
+            console.debug(...texts);
             console[logLevel](...texts);
           }
         }

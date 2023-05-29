@@ -8,8 +8,9 @@ import { report } from '~utils/logger';
 
 import { ExtrudedBlock, MainBlock } from './styles';
 
-import type { Props, ViewOption } from './types';
+import { PanelProps } from '@grafana/data';
 
+import type { Props, ViewOption } from './types';
 export default ({
   id,
   panelMode,
@@ -18,7 +19,8 @@ export default ({
   onRequestDetailedData,
   onClearDetailedData,
   ...otherProps
-}: Props) => {
+}: // SHOULD modify props first
+PanelProps & Props) => {
   const [
     ref,
     hoveredPoint,
@@ -106,11 +108,12 @@ export default ({
   useEffect(() => {
     const data = highlightedView.blocks?.data;
     if (data instanceof Map) {
-      onRequestDetailedData(data.keys().next().value);
+      !!onRequestDetailedData &&
+        onRequestDetailedData(data.keys().next().value);
     } else if (data instanceof Object) {
-      onRequestDetailedData(data.id);
+      !!onRequestDetailedData && onRequestDetailedData(data.id);
     } else if (!!!data) {
-      onClearDetailedData();
+      !!onClearDetailedData && onClearDetailedData();
     }
   }, [highlightedView]);
 
