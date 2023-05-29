@@ -265,7 +265,7 @@ export default (
   const handleWheel = useCallback(
     (ev: WheelEvent) => {
       !supportsPassive && ev.preventDefault();
-      const newPerspective = Math.min(0, perspective - (ev['wheelDelta'] >> 1));
+      const newPerspective = Math.min(0, perspective - (ev['deltaY'] >> 1));
       report.debug('usePainterEvent', {
         msg: `perspective: ${newPerspective}`,
       });

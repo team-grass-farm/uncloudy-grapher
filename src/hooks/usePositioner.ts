@@ -2,15 +2,17 @@ import { RefObject, useCallback, useEffect, useState } from 'react';
 import { report } from '~utils/logger';
 import { getAdminPlot, getDevPlot } from '~utils/positioner';
 
-export default <T extends string = 'type'>(
+export default (
   ref: RefObject<HTMLCanvasElement>
 ): [Dimensions, Positioner.Plot | null, Positioner.Pose] => {
   const [plot, setPlot] = useState<Positioner.Plot | null>(null);
   const [resourceMap, setResourceMap] = useState<Positioner.ResourceMap | null>(
     null
   );
-  const [level, setLevel] = useState<1 | 2 | 3 | null>(null);
-  const [option, setOption] = useState<T[]>(['type'] as T[]);
+  // const [level, setLevel] = useState<1 | 2 | 3 | null>(null);
+  const [poseOption, setPoseOption] = useState<Positioner.PoseOption | null>(
+    null
+  );
   const [adminPlot, setAdminPlot] = useState<Positioner.Plot | null>(null);
   const [devPlot, setDevPlot] = useState<Positioner.Plot | null>(null);
 
@@ -27,27 +29,29 @@ export default <T extends string = 'type'>(
   }, []);
 
   const pose = useCallback<Positioner.Pose>(
-    (resourceMap, level) => {
+    (resourceMap, poseOption) => {
       report.groupCollapsed('usePositioner', 'pose()');
       report.log('usePositioner', { msg: 'resourceMap', resourceMap });
       resourceMap.type === 'admin'
         ? setAdminPlot(
             getAdminPlot(
-              {
-                type: 'admin',
-                pods: option['pods'] ? resourceMap.pods : undefined,
-                nodes: option['nodes'],
-              } as Positioner.ResourceMap<'admin'>,
+              resourceMap,
               dimensions.width,
               dimensions.height,
-              level
+              poseOption.level
             )
           )
         : setDevPlot(
-            getDevPlot(resourceMap, dimensions.width, dimensions.height, level)
+            getDevPlot(
+              resourceMap,
+              dimensions.width,
+              dimensions.height,
+              poseOption.level
+            )
           );
       setResourceMap(resourceMap);
-      setLevel(level);
+      // setLevel(poseOption.level);
+      setPoseOption(poseOption);
       report.groupEnd();
     },
     [dimensions]
@@ -62,7 +66,7 @@ export default <T extends string = 'type'>(
         width: ref.current.width,
         height: ref.current.height,
       });
-      !!resourceMap && !!level && pose(resourceMap, level);
+      !!resourceMap && !!poseOption && pose(resourceMap, poseOption);
       setPaused(false);
     } else {
       handler = undefined;

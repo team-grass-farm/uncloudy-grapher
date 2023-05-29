@@ -59,18 +59,31 @@ export default ({
     if (panelMode === 'admin') {
       const { pods, clusters, nodes } = data;
 
-      pose({ type: panelMode, pods, nodes, clusters }, options.level);
+      pose(
+        { type: panelMode, pods, nodes, clusters },
+        {
+          level: options.level,
+          CPUUsage: viewOptions.includes('CPUUsage'),
+          memoryUsage: viewOptions.includes('memoryUsage'),
+        }
+      );
     } else {
       pose(
         {
           type: panelMode,
           pods: data.pods,
-          ...viewOptions.reduce(
-            (acc, viewOption) => ({ ...acc, [viewOption]: data[viewOption] }),
-            {}
-          ),
+          deployments: viewOptions.includes('deployments')
+            ? data.deployments
+            : undefined,
+          namespaces: viewOptions.includes('namespaces')
+            ? data.namespaces
+            : undefined,
         },
-        options.level
+        {
+          level: options.level,
+          CPUUsage: viewOptions.includes('CPUUsage'),
+          memoryUsage: viewOptions.includes('memoryUsage'),
+        }
       );
     }
   }, [savedContext, data]);

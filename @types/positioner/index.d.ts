@@ -11,21 +11,27 @@ declare namespace Positioner {
     | 'column0',
     number
   >;
-  type Pose = (resourceMap: Positioner.ResourceMap, level: 1 | 2 | 3) => void;
 
-  type AdminResourceMap =
-    | {
-        type: 'admin';
-        pods: Map<string, Resource.Pod>;
-        nodes?: Map<string, Resource.Node>;
-        clusters?: Map<string, Resource.Cluster>;
-      }
-    | {
-        type: 'admin';
-        pods?: never;
-        nodes: Map<string, Resource.Pod>;
-        clusters?: Map<string, Resource.Cluster>;
-      };
+  type PoseOption = {
+    level: 1 | 2 | 3;
+    CPUUsage: boolean;
+    memoryUsage: boolean;
+    numPods?: boolean;
+    nodeId?: boolean;
+  };
+
+  type Pose = (
+    resourceMap: Positioner.ResourceMap,
+    poseOption: PoseOption
+  ) => void;
+
+  type AdminResourceMap = {
+    type: 'admin';
+    pods: Map<string, Resource.Pod>;
+    nodes?: Map<string, Resource.Node>;
+    clusters?: Map<string, Resource.Cluster>;
+  };
+
   interface DeveloperResourceMap {
     type: 'dev';
     pods: Map<string, Resource.Pod>;
