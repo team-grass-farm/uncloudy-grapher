@@ -1,7 +1,6 @@
-import config from '~config';
-import { AppStore } from '~models';
-
 import { createSlice } from '@reduxjs/toolkit';
+import config from 'config';
+import { AppStore } from '~models';
 
 const initialState = new AppStore();
 

@@ -8,8 +8,10 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "build:plugin": "webpack -c ./.config/webpack/webpack.config.ts --env production",
-    "dev": "webpack -w -c ./.config/webpack/webpack.config.ts --env development",
+    "build:plugin2": "webpack -c ./.config/webpack/webpack.config.ts --env production",
+    "build:plugin": "webpack --node-env=production",
+    "dev2": "webpack -w -c ./.config/webpack/webpack.config.ts --env development",
+    "dev:plugin": "webpack -w -c ./webpack.config.ts --env development",
     "test": "jest --watch --onlyChanged",
     "test:ci": "jest --passWithNoTests --maxWorkers 4",
     "typecheck": "tsc --noEmit",
@@ -19,8 +21,8 @@
     "e2e:update": "yarn exec cypress install && yarn exec grafana-e2e run --update-screenshots",
     "server": "docker-compose up --build",
     "sign": "npx --yes @grafana/sign-plugin@latest",
-    "build": "webpack --node-env=production --progress",
-    "serve": "webpack serve --node-env=development --hot"
+    "build:web": "webpack --env web --env production --progress",
+    "dev:web": "webpack serve --env web --env development --hot"
   },
   "resolutions": {
     "@types/react": "17.0.2",
@@ -81,7 +83,9 @@
     "core-js": "3.26.1",
     "css-loader": "^6.7.3",
     "eslint": "^8.30.0",
+    "eslint-plugin-jsdoc": "^46.2.3",
     "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-webpack-plugin": "^4.0.1",
     "file-loader": "^6.2.0",

@@ -5,15 +5,17 @@ import HtmlWebpackPlugin from 'html-webpack-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
 import * as webpack from 'webpack';
 import { WebpackManifestPlugin } from 'webpack-manifest-plugin';
+import { merge } from 'webpack-merge';
 
+import grafanaConfig from './.config/webpack/webpack.config';
 import config from './src/config';
 
-const isDevelopment = config.IS_DEV_MODE;
+import type { Configuration } from 'webpack';
+//@typescript-eslint/no-unused-vars
+import type * as webpackDevServer from 'webpack-dev-server';
 
-console.log('[Webpack] development: ', isDevelopment, process.env.NODE_ENV);
-
-export default {
-  mode: process.env.NODE_ENV,
+const getCustomConfig = (env: any): Configuration => ({
+  mode: !!env.pruduction ? 'production' : 'development',
   devtool: 'source-map',
   entry: [__dirname + '/src/index.tsx', 'webpack/hot/dev-server.js'],
   output: {
@@ -31,7 +33,9 @@ export default {
             loader: 'babel-loader',
             options: {
               presets: ['@babel/react'],
-              plugins: [isDevelopment && 'react-refresh/babel'].filter(Boolean),
+              plugins: [!!env.development && 'react-refresh/babel'].filter(
+                Boolean
+              ),
             },
           },
         ],
@@ -141,14 +145,11 @@ export default {
     port: 3000,
   },
   plugins: [
-    new webpack.EnvironmentPlugin({
-      NODE_ENV: isDevelopment ? 'development' : 'production',
-    }),
     new WebpackManifestPlugin({
       fileName: 'manifest.json',
       basePath: 'build/',
     }),
-    !isDevelopment
+    !!env.production
       ? new CleanWebpackPlugin({
           cleanAfterEveryBuildPatterns: ['build'],
         })
@@ -161,14 +162,14 @@ export default {
     new webpack.ProvidePlugin({
       process: 'process/browser',
     }),
-    isDevelopment ? new ReactRefreshWebpackPlugin() : () => ({}),
+    !!env.development ? new ReactRefreshWebpackPlugin() : () => ({}),
     new ForkTsCheckerWebpackPlugin(),
   ],
   optimization: {
     splitChunks: {
       chunks: 'all',
     },
-    minimize: !isDevelopment,
+    minimize: !!env.production,
     minimizer: [
       !config.ENABLE_CONSOLE_LOG
         ? new TerserPlugin({
@@ -181,4 +182,11 @@ export default {
         : () => ({}),
     ],
   },
+});
+
+export default async (env): Promise<Configuration> => {
+  console.log('[Webpack] cwd: ', process.cwd());
+  return !!env.web
+    ? getCustomConfig(env)
+    : merge(await grafanaConfig(env), getCustomConfig(env));
 };

@@ -8,8 +8,6 @@ import { report } from '~utils/logger';
 
 import { ExtrudedBlock, MainBlock } from './styles';
 
-import { PanelProps } from '@grafana/data';
-
 import type { Props, ViewOption } from './types';
 export default ({
   id,
@@ -19,8 +17,7 @@ export default ({
   onRequestDetailedData,
   onClearDetailedData,
   ...otherProps
-}: // SHOULD modify props first
-PanelProps & Props) => {
+}: Props) => {
   const [
     ref,
     hoveredPoint,

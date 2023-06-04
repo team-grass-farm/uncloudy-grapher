@@ -1,10 +1,10 @@
-import { UncloudyGraph, UncloudyGraphProps } from '~components';
+import { PluginWrapper, PluginWrapperProps } from '~components';
 import { useMetaFetcher } from '~hooks';
 
 import { PanelPlugin } from '@grafana/data';
 
-export const plugin = new PanelPlugin<UncloudyGraphProps>(
-  UncloudyGraph
+export const plugin = new PanelPlugin<PluginWrapperProps>(
+  PluginWrapper
 ).setPanelOptions((builder) => {
   const [resourceMap] = useMetaFetcher('offline', true);
   return builder.addRadio({

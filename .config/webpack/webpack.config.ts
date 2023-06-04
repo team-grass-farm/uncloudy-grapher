@@ -8,13 +8,13 @@
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import ESLintPlugin from 'eslint-webpack-plugin';
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
-import LiveReloadPlugin from 'webpack-livereload-plugin';
 import path from 'path';
 import ReplaceInFileWebpackPlugin from 'replace-in-file-webpack-plugin';
 import { Configuration } from 'webpack';
+import LiveReloadPlugin from 'webpack-livereload-plugin';
 
-import { getPackageJson, getPluginJson, hasReadme, getEntries } from './utils';
-import { SOURCE_DIR, DIST_DIR } from './constants';
+import { DIST_DIR, SOURCE_DIR } from './constants';
+import { getEntries, getPackageJson, getPluginJson, hasReadme } from './utils';
 
 const pluginJson = getPluginJson();
 
@@ -26,7 +26,7 @@ const config = async (env): Promise<Configuration> => ({
     },
   },
 
-  context: path.join(process.cwd(), SOURCE_DIR),
+  context: process.cwd(),
 
   devtool: env.production ? 'source-map' : 'eval-source-map',
 
@@ -81,7 +81,7 @@ const config = async (env): Promise<Configuration> => ({
           loader: 'swc-loader',
           options: {
             jsc: {
-              baseUrl: './src',
+              baseUrl: '.',
               target: 'es2015',
               loose: false,
               parser: {
@@ -96,7 +96,7 @@ const config = async (env): Promise<Configuration> => ({
       },
       {
         test: /\.css$/,
-        use: ["style-loader", "css-loader"]
+        use: ['style-loader', 'css-loader'],
       },
       {
         test: /\.s[ac]ss$/,
@@ -142,17 +142,17 @@ const config = async (env): Promise<Configuration> => ({
       patterns: [
         // If src/README.md exists use it; otherwise the root README
         // To `compiler.options.output`
-        { from: hasReadme() ? 'README.md' : '../README.md', to: '.', force: true },
-        { from: 'plugin.json', to: '.' },
-        { from: '../LICENSE', to: '.' },
-        { from: '../CHANGELOG.md', to: '.', force: true },
+        { from: hasReadme() ? 'README.md' : 'README.md', to: '.', force: true },
+        { from: 'plugin.json', to: '.', context: SOURCE_DIR + '/' },
+        { from: 'LICENSE', to: '.' },
+        { from: 'CHANGELOG.md', to: '.', force: true },
         { from: '**/*.json', to: '.' }, // TODO<Add an error for checking the basic structure of the repo>
-        { from: '**/*.svg', to: '.', noErrorOnMissing: true }, // Optional
-        { from: '**/*.png', to: '.', noErrorOnMissing: true }, // Optional
-        { from: '**/*.html', to: '.', noErrorOnMissing: true }, // Optional
-        { from: 'img/**/*', to: '.', noErrorOnMissing: true }, // Optional
-        { from: 'libs/**/*', to: '.', noErrorOnMissing: true }, // Optional
-        { from: 'static/**/*', to: '.', noErrorOnMissing: true }, // Optional
+        { from: '**/*.svg', to: '.', noErrorOnMissing: true, context: SOURCE_DIR + '/' }, // Optional
+        { from: '**/*.png', to: '.', noErrorOnMissing: true, context: SOURCE_DIR + '/' }, // Optional
+        { from: '**/*.html', to: '.', noErrorOnMissing: true, context: SOURCE_DIR + '/' }, // Optional
+        { from: 'img/**/*', to: '.', noErrorOnMissing: true, context: SOURCE_DIR + '/' }, // Optional
+        { from: 'libs/**/*', to: '.', noErrorOnMissing: true, context: SOURCE_DIR + '/' }, // Optional
+        { from: 'static/**/*', to: '.', noErrorOnMissing: true, context: SOURCE_DIR + '/' }, // Optional
       ],
     }),
     // Replace certain template-variables in the README and plugin.json
@@ -181,7 +181,7 @@ const config = async (env): Promise<Configuration> => ({
       issue: {
         include: [{ file: '**/*.{ts,tsx}' }],
       },
-      typescript: { configFile: path.join(process.cwd(), 'tsconfig.json') },
+      typescript: { configFile: path.join(process.cwd(), 'tsconfig.json'), context: process.cwd() },
     }),
     new ESLintPlugin({
       extensions: ['.ts', '.tsx'],
