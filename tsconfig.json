@@ -33,7 +33,7 @@
       "~apis": ["apis/index.ts"],
       "~assets/*": ["../public/*"],
       "~components": ["components/index.ts"],
-      "~config": ["../config/index.ts"],
+      "~config": ["config/index.ts"],
       "~constants": ["constants/index.ts"],
       "~hooks": ["hooks/index.ts"],
       "~models": ["models/index.ts"],

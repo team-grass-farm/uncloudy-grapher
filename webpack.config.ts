@@ -1,3 +1,4 @@
+import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
 import { CleanWebpackPlugin } from 'clean-webpack-plugin';
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
@@ -5,9 +6,7 @@ import TerserPlugin from 'terser-webpack-plugin';
 import * as webpack from 'webpack';
 import { WebpackManifestPlugin } from 'webpack-manifest-plugin';
 
-import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
-
-import config from './config';
+import config from './src/config';
 
 const isDevelopment = config.IS_DEV_MODE;
 
@@ -123,7 +122,7 @@ export default {
       '~apis': __dirname + '/src/apis',
       '~assets': __dirname + '/public',
       '~components': __dirname + '/src/components',
-      '~config': __dirname + '/config',
+      '~config': __dirname + '/src/config',
       '~constants': __dirname + '/src/constants',
       '~hooks': __dirname + '/src/hooks',
       '~models': __dirname + '/src/models',
